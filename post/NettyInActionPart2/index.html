@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《Netty实战》阅读笔记 Part2:编解码器 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595696428282">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="解码器
+
+定义：将网络格式转换为应用程序的数据的组件。
+用法：每当需要为ChannelPipeline中的下一个ChannelInboundHandler转换入站数据时会用到。
+
+ByteToMessageDecoder抽象类
+
+Repla..." />
+    <meta name="keywords" content="Netty" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1595696428282" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《Netty实战》阅读笔记 Part2:编解码器</h2>
+            <div class="post-date">2020-07-25</div>
+            
+              <div class="feature-container" style="background-image: url('https://usuichi.github.io/post-images/NettyInActionPart2.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="解码器">解码器</h1>
+<ul>
+<li>定义：将网络格式转换为应用程序的数据的组件。</li>
+<li>用法：每当需要为ChannelPipeline中的下一个ChannelInboundHandler转换入站数据时会用到。</li>
+</ul>
+<h2 id="bytetomessagedecoder抽象类">ByteToMessageDecoder抽象类</h2>
+<figure data-type="image" tabindex="1"><img src="https://usuichi.github.io/post-images/1595692528072.png" alt="" loading="lazy"></figure>
+<h2 id="replayingdecoder抽象类">ReplayingDecoder抽象类</h2>
+<ul>
+<li>它扩展了ByteToMessageDecoder类，使我们不必调用readableBytes()方法。</li>
+<li>它通过使用一个自定义的ByteBuf实现，ReplayingDecoderByteBuf，包装传入的ByteBuf实现了这一点，其将在内部执行该调用.</li>
+</ul>
+<h2 id="messagetomessagedecoder抽象类">MessageToMessageDecoder抽象类</h2>
+<figure data-type="image" tabindex="2"><img src="https://usuichi.github.io/post-images/1595692691899.png" alt="" loading="lazy"></figure>
+<h2 id="toolongframeexception类">TooLongFrameException类</h2>
+<ul>
+<li>由于Netty是一个异步框架，所以需要在字节可以解码之前在内存中缓冲它们。因此，不能让解码器缓冲大量的数据以至于耗尽可用的内存。</li>
+<li>该异常类将由解码器在帧超出指定的大小限制时抛出。</li>
+</ul>
+<h1 id="编码器">编码器</h1>
+<ul>
+<li>定义：将应用程序的数据转换为网络格式的组件。</li>
+<li>用法：实现了ChannelOutboundHandler，并将出站数据从一种格式转换为另一种格式。</li>
+</ul>
+<h2 id="messagetobyteencoder抽象类">MessageToByteEncoder抽象类</h2>
+<figure data-type="image" tabindex="3"><img src="https://usuichi.github.io/post-images/1595693105887.png" alt="" loading="lazy"></figure>
+<h2 id="messagetomessageencoder抽象类">MessageToMessageEncoder抽象类</h2>
+<figure data-type="image" tabindex="4"><img src="https://usuichi.github.io/post-images/1595693195950.png" alt="" loading="lazy"></figure>
+<h1 id="编解码器">编解码器</h1>
+<ul>
+<li>定义：同时具有编码器和解码器两种功能的单一组件。</li>
+<li>用法：可以在同一个类中管理入站和出站数据和消息的转换。</li>
+</ul>
+<h2 id="bytetomessagecodec抽象类">ByteToMessageCodec抽象类</h2>
+<ul>
+<li>它结合了ByteToMessageDecoder和MessageToByteEncoder。<br>
+<img src="https://usuichi.github.io/post-images/1595693537627.png" alt="" loading="lazy"></li>
+</ul>
+<h2 id="messagetomessagecodec抽象类">MessageToMessageCodec抽象类</h2>
+<ul>
+<li>它结合了MessageToMessageDecoder和MessageToMessageEncoder。<br>
+<img src="https://usuichi.github.io/post-images/1595693822462.png" alt="" loading="lazy"></li>
+</ul>
+<h2 id="combinedchannelduplexhandler类">CombinedChannelDuplexHandler类</h2>
+<ul>
+<li>问题：结合一个解码器和编码器可能会对可重用性造成影响。</li>
+<li>使用该类既能够避免这种惩罚，又不会牺牲将一个解码器和一个编码器作为一个单独的单元部署所带来的便利性。</li>
+</ul>
+<h1 id="ssltls">SSL/TLS</h1>
+<ul>
+<li>Netty实现了SslHandler，且在内部使用SSLEngine来完成加密通信的工作。<br>
+<img src="https://usuichi.github.io/post-images/1595694563270.png" alt="" loading="lazy"></li>
+<li>在大多数情况下，SslHandler将是ChannelPipeline中的第一个ChannelHandler。这确保了只有在所有其他的ChannelHandler 将它们的逻辑应用到数据之后，才会进行加密。</li>
+</ul>
+<h1 id="httphttps">HTTP/HTTPS</h1>
+<p><img src="https://usuichi.github.io/post-images/1595694826117.png" alt="" loading="lazy"><br>
+<img src="https://usuichi.github.io/post-images/1595694837413.png" alt="" loading="lazy"><br>
+<img src="https://usuichi.github.io/post-images/1595694851593.png" alt="" loading="lazy"></p>
+<h2 id="聚合消息">聚合消息</h2>
+<ul>
+<li>HTTP的请求和响应可能由许多部分组成，因此你需要聚合它们以形成完整的消息。为了消除这项繁琐的任务，Netty 提供了一个聚合器，它可以将多个消息部分合并为FullHttpRequest或者FullHttpResponse消息，因此将总是看到完整的消息内容。</li>
+<li>HttpObjectAggregator</li>
+</ul>
+<h2 id="压缩">压缩</h2>
+<ul>
+<li>HttpContentDecompressor</li>
+</ul>
+<h2 id="https">HTTPS</h2>
+<ul>
+<li>SslHandler</li>
+</ul>
+<h2 id="websocket">WebSocket</h2>
+<ul>
+<li>WebSocket在客户端和服务器之间提供了真正的双向数据交换。</li>
+<li>要想向应用程序中添加对于WebSocket 的支持，需要将适当的客户端或者服务器WebSocketChannelHandler 添加到ChannelPipeline 中。这个类将处理由WebSocket 定义的称为帧的特殊消息类型。<br>
+<img src="https://usuichi.github.io/post-images/1595695623414.png" alt="" loading="lazy"><br>
+<img src="https://usuichi.github.io/post-images/1595695682513.png" alt="" loading="lazy"></li>
+</ul>
+<h1 id="空闲连接和超时">空闲连接和超时</h1>
+<figure data-type="image" tabindex="5"><img src="https://usuichi.github.io/post-images/1595695807827.png" alt="" loading="lazy"></figure>
+<h1 id="解码协议">解码协议</h1>
+<ul>
+<li>基于分隔符的协议：使用定义的字符来标记的消息或者消息段（通常被称为帧）的开头或者结尾。</li>
+<li>基于长度的协议：通过将它的长度编码到帧的头部来定义帧。</li>
+</ul>
+<h1 id="写大型数据">写大型数据</h1>
+<ul>
+<li>在写大型数据时，需要准备好处理到远程节点的连接是慢速连接的情况，这种情况会导致内存释放的延迟。</li>
+<li>FileRegion接口：通过支持零拷贝的文件传输的Channel 来发送的文件区域。</li>
+<li>ChunkedWriteHandler：在需要将数据从文件系统复制到用户内存中时可以使用，它支持异步写大型数据流，而又不会导致大量的内存消耗。</li>
+</ul>
+<h1 id="protocol-buffers序列化">Protocol Buffers序列化</h1>
+<figure data-type="image" tabindex="6"><img src="https://usuichi.github.io/post-images/1595696318655.png" alt="" loading="lazy"></figure>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/Q5fhtngaHL/" class="tag">
+                    Netty
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/NettyInActionPart1/">
+                  <h3 class="post-title">
+                    《Netty实战》阅读笔记 Part1:Netty的概念及体系结构
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

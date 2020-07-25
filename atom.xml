@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://usuichi.github.io</id>
     <title>wzl&apos;s blog</title>
-    <updated>2020-07-25T08:23:34.563Z</updated>
+    <updated>2020-07-25T17:01:11.693Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://usuichi.github.io"/>
     <link rel="self" href="https://usuichi.github.io/atom.xml"/>
@@ -10,6 +10,13 @@
     <logo>https://usuichi.github.io/images/avatar.png</logo>
     <icon>https://usuichi.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, wzl&apos;s blog</rights>
+    <entry>
+        <title type="html"><![CDATA[《Netty实战》阅读笔记 Part2:编解码器]]></title>
+        <id>https://usuichi.github.io/post/NettyInActionPart2/</id>
+        <link href="https://usuichi.github.io/post/NettyInActionPart2/">
+        </link>
+        <updated>2020-07-25T09:21:36.000Z</updated>
+    </entry>
     <entry>
         <title type="html"><![CDATA[《Netty实战》阅读笔记 Part1:Netty的概念及体系结构]]></title>
         <id>https://usuichi.github.io/post/NettyInActionPart1/</id>
