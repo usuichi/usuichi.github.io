@@ -1,22 +1,109 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://usuichi.github.io</id>
-    <title>wzl&apos;s blog</title>
-    <updated>2020-07-25T07:37:10.446Z</updated>
-    <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://usuichi.github.io"/>
-    <link rel="self" href="https://usuichi.github.io/atom.xml"/>
-    <subtitle>A programmer&apos;s reading notes.</subtitle>
-    <logo>https://usuichi.github.io/images/avatar.png</logo>
-    <icon>https://usuichi.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2020, wzl&apos;s blog</rights>
-    <entry>
-        <title type="html"><![CDATA[《Netty实战》阅读笔记 Part1:Netty的概念及体系结构]]></title>
-        <id>https://usuichi.github.io/post/NettyInActionPart1/</id>
-        <link href="https://usuichi.github.io/post/NettyInActionPart1/">
-        </link>
-        <updated>2020-07-24T08:25:24.000Z</updated>
-        <content type="html"><![CDATA[<ul>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《Netty实战》阅读笔记 Part1:Netty的概念及体系结构 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595662543122">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+Netty是一个异步的、事件驱动的、基于NIO(Non-blocking I/O)的开源框架，用于快速开发高性能、高可靠性的网络服务器和客户端程序。
+
+基本概念
+
+
+Channel：是入站或出站数据的载体。它可以被打开或关闭，连接或断开。..." />
+    <meta name="keywords" content="Netty" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1595662543122" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《Netty实战》阅读笔记 Part1:Netty的概念及体系结构</h2>
+            <div class="post-date">2020-07-24</div>
+            
+              <div class="feature-container" style="background-image: url('https://usuichi.github.io/post-images/NettyInActionPart1.png')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <ul>
 <li>Netty是一个异步的、事件驱动的、基于NIO(Non-blocking I/O)的开源框架，用于快速开发高性能、高可靠性的网络服务器和客户端程序。</li>
 </ul>
 <h1 id="基本概念">基本概念</h1>
@@ -464,6 +551,45 @@ void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exceptio
 </ul>
 </li>
 </ul>
-]]></content>
-    </entry>
-</feed>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/Q5fhtngaHL/" class="tag">
+                    Netty
+                  </a>
+                
+              </div>
+            
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
