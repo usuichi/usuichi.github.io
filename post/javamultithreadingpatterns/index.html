@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《图解Java多线程设计模式》阅读笔记 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595775138734">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+Single Threaded Execution模式
+
+含义：同一时间内只能让一个线程执行处理。有时也称为临界区(Critical section)。
+使用场景：多个线程访问状态可能发生变化的共享资源，且需要确保共享资源安全性时使用。
+..." />
+    <meta name="keywords" content="multithreading" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1595775138734" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《图解Java多线程设计模式》阅读笔记</h2>
+            <div class="post-date">2020-07-26</div>
+            
+            <div class="post-content" v-pre>
+              <figure data-type="image" tabindex="1"><img src="https://usuichi.github.io/post-images/1595775029428.png" alt="" loading="lazy"></figure>
+<h1 id="single-threaded-execution模式">Single Threaded Execution模式</h1>
+<ul>
+<li>含义：同一时间内只能让一个线程执行处理。有时也称为临界区(Critical section)。</li>
+<li>使用场景：多个线程访问状态可能发生变化的共享资源，且需要确保共享资源安全性时使用。</li>
+<li>举例：synchronized</li>
+</ul>
+<h2 id="角色">角色</h2>
+<ul>
+<li>SharedResource：可被多个线程访问的类。主要分为两类：
+<ol>
+<li>safeMethod：多个线程同时调用也不会发生问题的方法。</li>
+<li>unsafeMethod：多个线程同时调用会发生问题，因此必须加以保护的方法。</li>
+</ol>
+</li>
+</ul>
+<h2 id="特点">特点</h2>
+<ul>
+<li>可能死锁：
+<ul>
+<li>死锁产生的四个必要条件如下：
+<ol>
+<li>互斥条件：进程要求对所分配的资源进行排它性控制，即在一段时间内某资源仅为一进程所占用。</li>
+<li>请求和保持条件：当进程因请求资源而阻塞时，对已获得的资源保持不放。</li>
+<li>不剥夺条件：进程已获得的资源在未使用完之前，不能剥夺，只能在使用完时由自己释放。</li>
+<li>环路等待条件：在发生死锁时，必然存在一个进程--资源的环形链。</li>
+</ol>
+</li>
+<li>预防死锁：
+<ol>
+<li>资源一次性分配：一次性分配所有资源，这样就不会再有请求了：（破坏请求条件）</li>
+<li>只要有一个资源得不到分配，也不给这个进程分配其他的资源：（破坏请保持条件）</li>
+<li>可剥夺资源：即当某进程获得了部分资源，但得不到其它资源，则释放已占有的资源（破坏不可剥夺条件）</li>
+<li>资源有序分配法：系统给每类资源赋予一个编号，每一个进程按编号递增的顺序请求资源，释放则相反（破坏环路等待条件）</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>可能继承反常：对线程安全的SharedResource进行子类化，可能会导致其失去安全性。</li>
+<li>可能降低程序性能：
+<ol>
+<li>获取锁需要花费时间。</li>
+<li>线程冲突会引起等待。</li>
+</ol>
+</li>
+</ul>
+<h1 id="immutable模式">Immutable模式</h1>
+<ul>
+<li>含义：实例的内部状态不会发生改变。</li>
+<li>使用场景：
+<ul>
+<li>共享资源被创建后状态不再发生变化，且被频繁访问时使用。</li>
+<li>某一个类在使用时可以分为允许修改和不允许修改两种情况，这样就可拆分成mutable和immutable两个类，两个类的实例互相创建。</li>
+</ul>
+</li>
+<li>举例：String&lt;-&gt;StringBuilder；Copy-on-write</li>
+</ul>
+<h2 id="角色-2">角色</h2>
+<ul>
+<li>Immutable：字段的值不可修改的类。</li>
+</ul>
+<h2 id="特点-2">特点</h2>
+<ul>
+<li>需要确保不可变性，常使用final关键字。</li>
+</ul>
+<h1 id="guarded-suspension模式">Guarded Suspension模式</h1>
+<ul>
+<li>含义：通过让线程等待来保证实例的安全性。</li>
+<li>使用场景：有条件的Single Threaded Execution。</li>
+<li>举例：忙等待，自旋锁，polling</li>
+</ul>
+<h2 id="角色-3">角色</h2>
+<ul>
+<li>GuardedObject：
+<ul>
+<li>持有一个被守护的方法(guardedMethod)，当线程执行guardedMethod方法（通常通过while语句和wait方法实现）时，若守护条件成立，则可以立即执行，若守护条件不成立，就要进行等待。</li>
+<li>可能持有其他改变实例状态（特别是改变守护条件）的方法(stateChangingMethod，通过notify/notifyAll方法实现)</li>
+</ul>
+</li>
+</ul>
+<h2 id="特点-3">特点</h2>
+<ul>
+<li>相当于在Single Threaded Execution模式上附加了条件。</li>
+<li>相当于多线程版本的if。</li>
+<li>在调用wait方法时，在参数中指定超时时间，可在超时还没有notify/notifyAll时中断处理。</li>
+</ul>
+<h1 id="balking模式">Balking模式</h1>
+<ul>
+<li>含义：如果现在不满足守护条件，就停止处理，直接返回。</li>
+<li>使用场景：多线程应用存在并不需要执行、不需要等待守护条件成立、守护条件仅在第一次成立这种情况。</li>
+<li>举例：</li>
+</ul>
+<h2 id="角色-4">角色</h2>
+<ul>
+<li>GuardedObject：
+<ul>
+<li>持有一个被守护的方法(guardedMethod)，当线程执行guardedMethod方法（通常通过while语句和wait方法实现）时，若守护条件成立，则可以立即执行，若守护条件不成立，就直接返回。</li>
+<li>可能持有其他改变实例状态的方法(stateChangingMethod)</li>
+</ul>
+</li>
+</ul>
+<h2 id="特点-4">特点</h2>
+<ul>
+<li>返回结果的表示：
+<ul>
+<li>忽略balk。</li>
+<li>通过返回值表示balk。</li>
+<li>通过异常来表示balk的发生。</li>
+</ul>
+</li>
+<li>Guarded timed：介于Balking和Guarded Suspension之间的模式，在守护条件成立前等待一段时间，如果到时条件还未成立则balk。</li>
+<li>synchronized中没有超时和中断。</li>
+</ul>
+<h1 id="producer-consumer模式">Producer-Consumer模式</h1>
+<ul>
+<li>含义：Producer生产数据，Consumer使用数据，生产者需要安全地将数据交给消费者。</li>
+</ul>
+<h2 id="角色-5">角色</h2>
+<ul>
+<li>Data：由Producer生成，供Consumer使用。</li>
+<li>Producer：生成Data，并将其传递给Channel。</li>
+<li>Consumer：从Channel中获取Data并使用。</li>
+<li>Channel：保管从Producer中获取的Data，响应Consumer的请求传递Data。为了确保安全性，Channel会对Producer和Consumer的访问执行互斥处理。</li>
+</ul>
+<h2 id="特点-5">特点</h2>
+<ul>
+<li>传递Data的顺序：
+<ul>
+<li>队列：先接收的先传递</li>
+<li>栈：后接收的先传递</li>
+<li>优先队列：优先的先传递。</li>
+</ul>
+</li>
+<li>中间角色的意义：
+<ul>
+<li>线程的协调运行需要考虑“放在中间的东西”。</li>
+<li>线程的互斥处理要考虑“应该保护的东西”。</li>
+</ul>
+</li>
+</ul>
+<h1 id="read-write-lock模式">Read-Write Lock模式</h1>
+<ul>
+<li>含义：分开考虑读操作和写操作。在执行读取操作之前，线程必须获取用于读取的锁，而在执行写入操作之前，线程必须获取用于写入的锁。</li>
+<li>使用场景：多个线程可以同时读取，但在读取时不可以写入。有一个线程在写入时，其他线程不可读取或写入。</li>
+</ul>
+<h2 id="角色-6">角色</h2>
+<ul>
+<li>Reader：对SharedResource执行read操作。</li>
+<li>Writer：对SharedResource执行write操作。</li>
+<li>SharedResource：Reader和Writer共享的资源。提供read操作（不修改内部状态）和write操作（修改内部状态）。</li>
+<li>ReadWriteLock：实现read操作时所需的readLock/readUnlock，实现write操作时所需的writeLock/writeUnlock。</li>
+</ul>
+<h2 id="特点-6">特点</h2>
+<ul>
+<li>利用read操作的线程间不会冲突的特性来提高程序性能。</li>
+<li>适合读取操作繁重的情况。</li>
+<li>适合读取频率比写入频率高的情况。</li>
+</ul>
+<h1 id="thread-per-message模式">Thread-Per-Message模式</h1>
+<ul>
+<li>含义：为每个命令或请求新分配一个线程，由这个线程来执行处理。</li>
+<li>使用场景：消息由委托线程指派给执行线程。</li>
+</ul>
+<h2 id="角色-7">角色</h2>
+<ul>
+<li>Client：会向Host发出请求(request)，但并不知道Host是如何实现该请求的。</li>
+<li>Host：收到Client的请求后，新建并启动一个线程，新线程将使用Helper来处理(Handle)请求。</li>
+<li>Helper：为Host提供处理请求的功能。</li>
+</ul>
+<h2 id="特点-7">特点</h2>
+<ul>
+<li>能够提高Client对应的Host的响应性，降低延迟时间，尤其是Handle操作非常耗时时。但启动线程也很花费时间。因此响应性取决于“Handle花费的时间”和“线程启动花费的时间”之间的均衡。</li>
+<li>适用于操作顺序没有要求时。</li>
+<li>适用于不需要返回值时。</li>
+<li>适用于服务器端。</li>
+</ul>
+<h1 id="worker-thread模式">Worker Thread模式</h1>
+<ul>
+<li>含义：工人线程(worker thread)会逐个取回工作并进行处理，当所有工作全部完成后，工人线程会等待新的工作到来。</li>
+<li>使用场景：如果可以将自己的工作交给他人，那么自己就可以做下一项工作。</li>
+</ul>
+<h2 id="角色-8">角色</h2>
+<ul>
+<li>Client：创建Request并将其传递给Channel。</li>
+<li>Channel：接收来自Client的Request并将其传递给Worker。</li>
+<li>Worker：从Channel中获取Request，并完成业务逻辑，当一项任务完成后，会继续获得下一个Request。</li>
+<li>Request：保存了进行任务所必需的信息。</li>
+</ul>
+<h2 id="特点-8">特点</h2>
+<ul>
+<li>通过轮流地和反复地使用线程来提高吞吐量。</li>
+<li>Worker的数量是可以自由定义的；如果Channel可以存储很多Request，就可以缓冲Clinet与Worker的速度差异，但会消耗更多内存，因此需要权衡容量与资源。</li>
+<li>调用与执行分裂，可以提高响应速度，控制执行顺序，允许取消和反复执行，为分布式的改造奠基。</li>
+</ul>
+<h1 id="future模式">Future模式</h1>
+<ul>
+<li>含义：假设有一个方法需要很长时间才能获取运行结果，那么与其一直等待结果，不如先拿一张“提货单”，获取提货单并不耗费时间。</li>
+</ul>
+<h2 id="角色-9">角色</h2>
+<ul>
+<li>Client：向Host发出Request，并会立即接收到请求的处理结果（返回值）为VirtualData。</li>
+<li>Host：创建新线程，并在新线程中创建RealData。同时它会将Future当做VirtualData返回给Client。</li>
+<li>VirtualData：意义是让Future与RealData具有一致性。</li>
+<li>RealData：真实数据，通常创建该对象需要很久。</li>
+<li>Future：相当于RealData的“提货单”，由Host传递给Client。对Client而言，Future和VirtualData是等价的。</li>
+</ul>
+<h2 id="特点-9">特点</h2>
+<ul>
+<li>虽然Java的方法调用全部都是同步的，但Thread-Per-Thread模式通过在方法中创建一个新的线程，模拟实现了异步方法调用，但无法获取异步方法调用的“返回值”。使用Future来“稍后设置处理结果”，从而操作异步方法调用的“返回值”。</li>
+<li>该模式可以将“准备方法的返回值”与“使用方法的返回值”分离开。将伴随方法调用的一连串处理如同“慢动作”一样分解后，把各个处理（启动、执行、准备返回值、使用返回值）分配给各个线程。</li>
+<li>变种：
+<ol>
+<li>结合Guarded Suspension来等待RealData创建完成。</li>
+<li>通常返回值仅被设置到Future中一次，但有时也会有反复设置返回值的需求。</li>
+</ol>
+</li>
+</ul>
+<h1 id="two-phase-termination模式">Two-Phase Termination模式</h1>
+<ul>
+<li>含义：分两阶段终止，先执行完终止处理，再终止线程。</li>
+<li>使用场景：在希望提前结束线程的时候，如果立即停止线程，可能会使共享的数据结构处于不一致的状态，该模式可以安全可靠地停止线程。</li>
+<li>举例：</li>
+</ul>
+<h2 id="角色-10">角色</h2>
+<ul>
+<li>TerminationRequester：负责向Terminator发出终止请求。</li>
+<li>Terminator：负责接收终止请求，并实际执行终止处理。它提供了表示终止请求的shutdownRequest方法，该方法不需要使用Single Threaded Execution模式。</li>
+</ul>
+<h2 id="特点-10">特点</h2>
+<ul>
+<li>三个要点：
+<ul>
+<li>安全性：安全地终止线程。</li>
+<li>生存性：必定会进行终止处理。</li>
+<li>响应性：发出终止请求后尽快进行终止处理。</li>
+</ul>
+</li>
+<li>不能使用Thread类的stop方法，因为它无法保证实例的安全性。</li>
+<li>在shutdownRequest标志设为true后也需要调用interrupt方法，防止线程正在sleep从而不会开始终止处理。</li>
+<li>但也不能只使用interrupt方法，因为程序可能会存在忽略InterruptedException的代码片段。</li>
+</ul>
+<h1 id="thread-specific-storage模式">Thread-Specific Storage模式</h1>
+<ul>
+<li>含义：即使只有一个入口，也会在内部为每个线程分配特有的存储空间。</li>
+<li>使用场景：</li>
+<li>举例：Per-Thread Attibute/Thread-Specific Data/Thread-Specific Field/Thread-Local Storage</li>
+</ul>
+<h2 id="角色-11">角色</h2>
+<ul>
+<li>Client：将处理委托给TSObjectProxy，一个TSObjectProxy会被多个Client使用。</li>
+<li>TSObjectProxy：会执行多个Client委托给它的代理。</li>
+<li>TSObjectCollection：有一张Client与TSObject的对应表。当getTSObject方法被调用后，它会去查看对应表，返回Client对应的TSObject。当setTSObject方法被调用时，它会将Client与TSObject的键值对应关系设置到对应表中。</li>
+<li>TSObject：保存着线程特有的信息。由TSObjectCollection管理。它的方法只会被单线程调用。</li>
+</ul>
+<h2 id="特点-11">特点</h2>
+<ul>
+<li>以线程作为键，让每个线程只能访问它特有的对象。</li>
+<li>不用考虑互斥处理，但每次通过TSObjectProxy调用方法时，使用TSObjectCollection来获取TSObject都会产生额外的性能开销，所以吞吐量不一定会比Single Threaded Execution高。</li>
+<li>可复用性：
+<ul>
+<li>不改变结构即可实现程序。</li>
+<li>没有显式地执行互斥处理，所以编程时犯错的可能性较小。</li>
+</ul>
+</li>
+<li>TSObjectCollection会自动判断当前的线程，这说明在程序中引入了上下文。啥下文可以减少传递参数的数量，但是也让开发人员难以清楚地掌握处理中到底使用了哪些信息。</li>
+</ul>
+<h1 id="active-object模式">Active Object模式</h1>
+<ul>
+<li>含义：有自己特有的线程，可以从外部接收和处理异步消息并根据需要返回处理结果。</li>
+<li>使用场景：实现异步消息。</li>
+</ul>
+<h2 id="角色-12">角色</h2>
+<figure data-type="image" tabindex="2"><img src="https://usuichi.github.io/post-images/1595773580121.png" alt="" loading="lazy"></figure>
+<ul>
+<li>Client：调用ActiveObject的方法来委托处理，调用这些方法后，若ActivationQueue未满，程序控制权会立即返回。
+<ul>
+<li>虽然Client只知道ActiveObject，但它实际调用的是Proxy。</li>
+<li>在获取处理结果时，会调用VirtualResult的getResultValue方法，使用了Future模式。</li>
+</ul>
+</li>
+<li>ActiveObject：定义了主动对象向Client提供的接口。</li>
+<li>Proxy：负责将方法调用转换为MethodRequest的对象，转换后的MethodRequest会被传递给Scheduler。
+<ul>
+<li>实现了ActiveObject向Client提供的接口，由Client实际调用。</li>
+<li>将方法调用转换为MethodRequest对象并传递给Scheduler的过程都在Client所在线程中进行。</li>
+</ul>
+</li>
+<li>Scheduler：负责将Proxy传递来的MethodRequest传递给ActivationQueue，以及从ActivationQueue中取出并执行MethodRequest这两项工作。
+<ul>
+<li>需要判断下次执行哪个请求，可以在这里实现调度的判断逻辑。</li>
+</ul>
+</li>
+<li>MethodRequest：定义了负责执行处理的Servant以及负责设置返回值的future和负责执行请求的方法(execute)。是主动对象API的对象表象形式。</li>
+<li>ConcreteMethodRequest：使MethodRequest与具体的方法相对应。其各个字段分别与方法的参数相对应。</li>
+<li>Servant：负责实际处理请求。
+<ul>
+<li>实现了ActiveObject定义的接口，由Scheduler调用。</li>
+</ul>
+</li>
+<li>ActivationQueue：保存MethodRequest。这里使用了Producer-Consumer模式。</li>
+<li>VirtualResult：与Future、RealResult共同构成了Future模式。
+<ul>
+<li>Client在获取处理结果时会调用VirtualResult的getResultValue方法。</li>
+</ul>
+</li>
+<li>Future：Client在获取处理结果时实际调用。它会使用Guarded Suspension模式让client的线程等待结果出来。</li>
+<li>RealResult：表示处理结果。
+<ul>
+<li>Servant会创建一个RealResult作为处理结果，然后调用Future的setRealResult方法将其设置到future中。</li>
+</ul>
+</li>
+</ul>
+<h2 id="特点-12">特点</h2>
+<ul>
+<li>综合了Producer-Consumer模式、Thread-Per Message模式、Future模式等各种模式。</li>
+<li>只有Client和Scheduler会启动新线程。</li>
+<li>是一个非常庞大的模式，需要注意问题的粒度。</li>
+<li>并发性：
+<ul>
+<li>Proxy被多个线程调用也没有问题。</li>
+<li>Servant只能被一个线程调用。</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/jlgdxRyWI/" class="tag">
+                    multithreading
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/NettyInActionPart2/">
+                  <h3 class="post-title">
+                    《Netty实战》阅读笔记 Part2:编解码器
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595696428282">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595775138734">
 <link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
 
 
@@ -35,7 +35,7 @@ Repla..." />
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://usuichi.github.io">
-        <img src="https://usuichi.github.io/images/avatar.png?v=1595696428282" class="site-logo">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1595775138734" class="site-logo">
         <h1 class="site-title">wzl&#39;s blog</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -185,6 +185,23 @@ Repla..." />
 <h1 id="空闲连接和超时">空闲连接和超时</h1>
 <figure data-type="image" tabindex="5"><img src="https://usuichi.github.io/post-images/1595695807827.png" alt="" loading="lazy"></figure>
 <h1 id="解码协议">解码协议</h1>
+<h2 id="粘包与拆包">粘包与拆包</h2>
+<ul>
+<li>产生原因：
+<ul>
+<li>应用程序write写入的字节大小大于套接口发送缓冲区的大小。</li>
+<li>进行MSS（最大报文长度）大小的TCP分段、以太网帧的payload大于MTU进行IP分片等。</li>
+</ul>
+</li>
+<li>主流解决方案：
+<ol>
+<li>消息定长，不够长的部分补位。</li>
+<li>在包尾增加特殊字符进行切割。</li>
+<li>消息分为消息头和消息体，在消息头中包含表示信息总长度的字段，然后进行业务处理。</li>
+</ol>
+</li>
+</ul>
+<h2 id="netty实现">Netty实现</h2>
 <ul>
 <li>基于分隔符的协议：使用定义的字符来标记的消息或者消息段（通常被称为帧）的开头或者结尾。</li>
 <li>基于长度的协议：通过将它的长度编码到帧的头部来定义帧。</li>
