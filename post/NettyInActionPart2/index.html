@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595775138734">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595933951921">
 <link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
 
 
@@ -18,14 +18,18 @@
 
 
 
-    <meta name="description" content="解码器
-
-定义：将网络格式转换为应用程序的数据的组件。
-用法：每当需要为ChannelPipeline中的下一个ChannelInboundHandler转换入站数据时会用到。
+    <meta name="description" content="
+解码器
 
 ByteToMessageDecoder抽象类
+ReplayingDecoder抽象类
+MessageToMessageDecoder抽象类
+TooLongFrameException类
 
-Repla..." />
+
+编码器
+
+MessageToByte..." />
     <meta name="keywords" content="Netty" />
   </head>
   <body>
@@ -35,7 +39,7 @@ Repla..." />
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://usuichi.github.io">
-        <img src="https://usuichi.github.io/images/avatar.png?v=1595775138734" class="site-logo">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1595933951921" class="site-logo">
         <h1 class="site-title">wzl&#39;s blog</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -104,7 +108,49 @@ Repla..." />
               </div>
             
             <div class="post-content" v-pre>
-              <h1 id="解码器">解码器</h1>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E8%A7%A3%E7%A0%81%E5%99%A8">解码器</a>
+<ul>
+<li><a href="#bytetomessagedecoder%E6%8A%BD%E8%B1%A1%E7%B1%BB">ByteToMessageDecoder抽象类</a></li>
+<li><a href="#replayingdecoder%E6%8A%BD%E8%B1%A1%E7%B1%BB">ReplayingDecoder抽象类</a></li>
+<li><a href="#messagetomessagedecoder%E6%8A%BD%E8%B1%A1%E7%B1%BB">MessageToMessageDecoder抽象类</a></li>
+<li><a href="#toolongframeexception%E7%B1%BB">TooLongFrameException类</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BC%96%E7%A0%81%E5%99%A8">编码器</a>
+<ul>
+<li><a href="#messagetobyteencoder%E6%8A%BD%E8%B1%A1%E7%B1%BB">MessageToByteEncoder抽象类</a></li>
+<li><a href="#messagetomessageencoder%E6%8A%BD%E8%B1%A1%E7%B1%BB">MessageToMessageEncoder抽象类</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BC%96%E8%A7%A3%E7%A0%81%E5%99%A8">编解码器</a>
+<ul>
+<li><a href="#bytetomessagecodec%E6%8A%BD%E8%B1%A1%E7%B1%BB">ByteToMessageCodec抽象类</a></li>
+<li><a href="#messagetomessagecodec%E6%8A%BD%E8%B1%A1%E7%B1%BB">MessageToMessageCodec抽象类</a></li>
+<li><a href="#combinedchannelduplexhandler%E7%B1%BB">CombinedChannelDuplexHandler类</a></li>
+</ul>
+</li>
+<li><a href="#ssltls">SSL/TLS</a></li>
+<li><a href="#httphttps">HTTP/HTTPS</a>
+<ul>
+<li><a href="#%E8%81%9A%E5%90%88%E6%B6%88%E6%81%AF">聚合消息</a></li>
+<li><a href="#%E5%8E%8B%E7%BC%A9">压缩</a></li>
+<li><a href="#https">HTTPS</a></li>
+<li><a href="#websocket">WebSocket</a></li>
+</ul>
+</li>
+<li><a href="#%E7%A9%BA%E9%97%B2%E8%BF%9E%E6%8E%A5%E5%92%8C%E8%B6%85%E6%97%B6">空闲连接和超时</a></li>
+<li><a href="#%E8%A7%A3%E7%A0%81%E5%8D%8F%E8%AE%AE">解码协议</a>
+<ul>
+<li><a href="#%E7%B2%98%E5%8C%85%E4%B8%8E%E6%8B%86%E5%8C%85">粘包与拆包</a></li>
+<li><a href="#netty%E5%AE%9E%E7%8E%B0">Netty实现</a></li>
+</ul>
+</li>
+<li><a href="#%E5%86%99%E5%A4%A7%E5%9E%8B%E6%95%B0%E6%8D%AE">写大型数据</a></li>
+<li><a href="#protocol-buffers%E5%BA%8F%E5%88%97%E5%8C%96">Protocol Buffers序列化</a></li>
+</ul>
+</p>
+<h1 id="解码器">解码器</h1>
 <ul>
 <li>定义：将网络格式转换为应用程序的数据的组件。</li>
 <li>用法：每当需要为ChannelPipeline中的下一个ChannelInboundHandler转换入站数据时会用到。</li>
@@ -258,6 +304,11 @@ var app = new Vue({
 
 </script>
 
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
 
 
 

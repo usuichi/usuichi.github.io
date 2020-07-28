@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Spring Boot源码学习（1）：Spring Boot启动 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595933951921">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+Spring Boot启动流程
+SpringApplication初始化
+
+启动入口
+
+@SpringBootApplication
+
+@SpringBootConfiguration
+@EnableAutoConfiguration
+
+..." />
+    <meta name="keywords" content="Spring Boot" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1595933951921" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Spring Boot源码学习（1）：Spring Boot启动</h2>
+            <div class="post-date">2020-07-27</div>
+            
+              <div class="feature-container" style="background-image: url('https://usuichi.github.io/post-images/SpringBootSourceCode1.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#spring-boot%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B">Spring Boot启动流程</a></li>
+<li><a href="#springapplication%E5%88%9D%E5%A7%8B%E5%8C%96">SpringApplication初始化</a>
+<ul>
+<li><a href="#%E5%90%AF%E5%8A%A8%E5%85%A5%E5%8F%A3">启动入口</a>
+<ul>
+<li><a href="#springbootapplication">@SpringBootApplication</a>
+<ul>
+<li><a href="#springbootconfiguration">@SpringBootConfiguration</a></li>
+<li><a href="#enableautoconfiguration">@EnableAutoConfiguration</a>
+<ul>
+<li><a href="#autoconfigurationimportselectorclass">AutoConfigurationImportSelector.class</a></li>
+</ul>
+</li>
+<li><a href="#componentscan">@ComponentScan</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#springapplicationrun">SpringApplication.run()</a>
+<ul>
+<li><a href="#springapplication%E5%87%86%E5%A4%87%E9%98%B6%E6%AE%B5">SpringApplication准备阶段</a></li>
+<li><a href="#application%E5%90%AF%E5%8A%A8%E9%98%B6%E6%AE%B5">Application启动阶段</a></li>
+<li><a href="#applicationcontext%E5%90%AF%E5%8A%A8%E5%90%8E%E9%98%B6%E6%AE%B5">ApplicationContext启动后阶段</a></li>
+</ul>
+</li>
+<li><a href="#%E8%87%AA%E5%8A%A8%E5%8C%96%E8%A3%85%E9%85%8D">自动化装配</a></li>
+</ul>
+</p>
+<h1 id="spring-boot启动流程">Spring Boot启动流程</h1>
+<ol>
+<li>SpringApplication初始化</li>
+<li>SpringApplication.run()</li>
+<li>开始服务</li>
+</ol>
+<h1 id="springapplication初始化">SpringApplication初始化</h1>
+<ul>
+<li>初始化流程：
+<ol>
+<li>配置resourceLoader</li>
+<li>配置primarySources</li>
+<li>配置webApplicationType</li>
+<li>配置ApplicationContextInitialzer</li>
+<li>配置ApplicationListener</li>
+<li>配置mainApplicationClass</li>
+</ol>
+</li>
+</ul>
+<pre><code class="language-java">// Resource是Spring对物理资源的访问抽象
+// ResourceLoader中只定义了一个用于获取Resource的getResource(String location)方法
+public SpringApplication(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources) {
+    // 设置在实例化SpringApplication时自定义的resourceLoader
+    this.resourceLoader = resourceLoader;
+    Assert.notNull(primarySources, &quot;PrimarySources must not be null&quot;);
+    // primarySources 为 run 方法传入自定义的启动引导类（可以一次启动多个）
+    this.primarySources = new LinkedHashSet&lt;&gt;(Arrays.asList(primarySources));
+    // 推断web应用类
+    /*
+        根据 classpath下是否存在某个特征类来决定是否应该创建一个为Web应用使用的ApplicationContext类型。
+        1. 如果仅存在Reactive的包，则为WebApplicationType.REACTIVE类型；
+        2. 如果Servlet和Reactive的包都不存在，则为WebApplicationType.NONE类型；
+        3. 其他情况都为WebApplicationType.SERVLET类型。
+    */
+    this.webApplicationType = deduceWebApplicationType();
+    // 初始化 initializers 属性
+    /*
+        1. 通过SpringFactoriesLoader.loadFactoryNames(type, classLoader)方法，在 META-INF/spring.factories文件下查找ApplicationContextInitializer类型对应的资源名称。
+        2. 实例化上面的资源信息（初始化器）。
+        3. 对初始化器根据Ordered接口或者@Order注解进行排序
+    */
+    setInitializers((Collection) getSpringFactoriesInstances(
+            ApplicationContextInitializer.class));
+    // 初始化监听器，与初始化initializers属性类似
+    setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+    // 推断应用引导类，调用栈中main方法所在的类作为引导类。
+    this.mainApplicationClass = deduceMainApplicationClass();
+}
+</code></pre>
+<h2 id="启动入口">启动入口</h2>
+<ul>
+<li>包含两个核心组件：@SpringBootApplication注解和SpringApplication.run()静态方法。</li>
+</ul>
+<pre><code class="language-java">@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+</code></pre>
+<h3 id="springbootapplication">@SpringBootApplication</h3>
+<ul>
+<li>该注解是一个复合注解。它并没有定义新的属性，而是复用和组合其他已有注解，可以开启自动配置、自动扫描的功能。</li>
+<li>包含三个核心注解：@Configuration、@ComponentScan、@EnableAutoConfiguration。</li>
+</ul>
+<pre><code class="language-java">// Java中有四类元注解，@Target,@Retention,@Documented,@Inherited
+// 注解的作用目标为接口、类、枚举
+@Target(ElementType.TYPE)
+// 注解的保留位置，会在class字节码文件中存在，在运行时可以通过反射获取到
+@Retention(RetentionPolicy.RUNTIME)
+// 该注解将被包含在javadoc中
+@Documented
+// 子类可以继承父类中的该注解
+@Inherited
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan(excludeFilters = {
+		@Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
+		@Filter(type = FilterType.CUSTOM,
+				classes = AutoConfigurationExcludeFilter.class) })
+public @interface SpringBootApplication {
+    /* 
+        @AliasFor声明实现同一功能的不同属性，这些属性互为别名。
+        通过@AliasFor，即使用户使用的是@SpringBootApplication，
+        Spring还是可以通过AnnotationUtils#getAnnotation，           
+        AnnotatedElementUtils#getMergedAnnotation等方法
+        解析到@SpringBootConfiguration，@EnableAutoConfiguration， 
+        @ComponentScan等注解，并取得对应属性。
+    */
+    @AliasFor(annotation = EnableAutoConfiguration.class)
+	Class&lt;?&gt;[] exclude() default {};
+	@AliasFor(annotation = EnableAutoConfiguration.class)
+	String[] excludeName() default {};
+    // 根据包路径扫描
+	@AliasFor(annotation = ComponentScan.class, attribute = &quot;basePackages&quot;)
+	String[] scanBasePackages() default {};
+    // 直接根据class类扫描
+	@AliasFor(annotation = ComponentScan.class, attribute = &quot;basePackageClasses&quot;)
+	Class&lt;?&gt;[] scanBasePackageClasses() default {};
+}
+</code></pre>
+<h4 id="springbootconfiguration">@SpringBootConfiguration</h4>
+<ul>
+<li>该注解继承自@Configuration，作用也相同，都是用来声明当前类是一个配置类。会将当前类内声明的一个或多个以@Bean注解标记的方法的实例纳入到Spring容器中，且实例名就是方法名。</li>
+</ul>
+<pre><code class="language-java">@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Configuration
+public @interface SpringBootConfiguration {
+	@AliasFor(annotation = Configuration.class)
+	boolean proxyBeanMethods() default true;
+}
+</code></pre>
+<h4 id="enableautoconfiguration">@EnableAutoConfiguration</h4>
+<ul>
+<li>该注解实现自动化配置，借助@Import的帮助，将所有符合自动配置条件的bean定义加载到IoC容器。</li>
+<li>作用是从classpath中搜索所有META-INF/spring.factories配置文件，将其中org.springframework.boot.autoconfigure.EnableAutoConfiguration key对应的配置项加载到spring容器，只有spring.boot.enableautoconfiguration为true（默认为true）时，才启用自动配置。也可以根据class来排除（exclude），或根据class name（excludeName）来排除。</li>
+</ul>
+<pre><code class="language-java">@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@AutoConfigurationPackage
+// @Import通过快速导入的方式实现把实例加入spring的IOC容器中
+// ImportSelector接口的方法的返回值都会被纳入到spring容器管理中
+@Import(AutoConfigurationImportSelector.class)
+public @interface EnableAutoConfiguration {
+    String ENABLED_OVERRIDE_PROPERTY = &quot;spring.boot.enableautoconfiguration&quot;;
+    Class&lt;?&gt;[] exclude() default {};
+    String[] excludeName() default {};
+}
+</code></pre>
+<h5 id="autoconfigurationimportselectorclass">AutoConfigurationImportSelector.class</h5>
+<pre><code class="language-java">@Override
+public String[] selectImports(AnnotationMetadata annotationMetadata) {
+    // AnnotationMetadata可以获取当前类上注解的元数据，如注解名字，以及元注解信息等。从而判断是否开启了自动装配。
+    if (!isEnabled(annotationMetadata)) {
+        return NO_IMPORTS;
+    }
+    try {
+        // 找到所有自动装配元数据属性文件，将所有配置信息加载到一个Properties对象中，AutoConfigurationMetadata可基于Properties实现。
+        AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader.loadMetadata(this.beanClassLoader);
+        // 获取注解的所有属性
+        AnnotationAttributes attributes = getAttributes(annotationMetadata);
+        // 利用SpringFactoriesLoader到classpath下的读取META-INF/spring.factories文件的配置，并返回一个字符串数组。
+        List&lt;String&gt; configurations = getCandidateConfigurations(annotationMetadata, attributes);
+        // 去重
+        configurations = removeDuplicates(configurations);
+        // 排序
+        configurations = sort(configurations, autoConfigurationMetadata);
+        // 排除
+        Set&lt;String&gt; exclusions = getExclusions(annotationMetadata, attributes);
+        checkExcludedClasses(configurations, exclusions);
+        configurations.removeAll(exclusions);
+        // 匹配过滤
+        configurations = filter(configurations, autoConfigurationMetadata);
+        fireAutoConfigurationImportEvents(configurations, exclusions);
+        // 返回值是实际上要导入到容器中的组件全类名
+        return configurations.toArray(new String[configurations.size()]);
+    }
+    catch (IOException ex) {
+        throw new IllegalStateException(ex);
+    }
+}
+</code></pre>
+<h4 id="componentscan">@ComponentScan</h4>
+<ul>
+<li>该注解用于自动扫描被@Service/@Repository/@Component/@Controller注解标识的类，最终生成IoC容器的Bean。</li>
+<li>可以通过设置basePackages，includeFilters，excludeFilters属性来动态确定自动扫描范围，类型以及不扫描的类型。默认情况扫描所有类型。</li>
+<li>使用@SpringBootApplication注解，就使用了@ComponentScan的默认配置。</li>
+</ul>
+<pre><code class="language-java">@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+@Documented
+//在一个类中可重复定义
+@Repeatable(ComponentScans.class)
+public @interface ComponentScan {
+    //定义扫描的包
+    @AliasFor(&quot;basePackages&quot;)
+    String[] value() default {};
+    //定义扫描的包
+    @AliasFor(&quot;value&quot;)
+    String[] basePackages() default {};
+    //定义扫描的类
+    Class&lt;?&gt;[] basePackageClasses() default {};
+    //Bean name生成器
+    Class&lt;? extends BeanNameGenerator&gt; nameGenerator() default BeanNameGenerator.class;
+    //作用域解析器
+    Class&lt;? extends ScopeMetadataResolver&gt; scopeResolver() default AnnotationScopeMetadataResolver.class;
+    //作用域代理模式
+    ScopedProxyMode scopedProxy() default ScopedProxyMode.DEFAULT;
+    //资源匹配模式
+    String resourcePattern() default &quot;**/*.class&quot;;
+    //是否启动默认的过滤器
+    boolean useDefaultFilters() default true;
+    //当满足过滤条件时扫描
+    ComponentScan.Filter[] includeFilters() default {};
+    //当不满足过滤条件时扫描
+    ComponentScan.Filter[] excludeFilters() default {};
+    //是否延迟初始化
+    boolean lazyInit() default false;
+    //自定义过滤器
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({})
+    public @interface Filter {
+        //过滤器类型，可以按注解类型或者正则式等过滤
+        FilterType type() default FilterType.ANNOTATION;
+        //定义过滤的类
+        @AliasFor(&quot;classes&quot;)
+        Class&lt;?&gt;[] value() default {};
+        //定义过滤的类
+        @AliasFor(&quot;value&quot;)
+        Class&lt;?&gt;[] classes() default {};
+        //匹配方式
+        String[] pattern() default {};
+    }
+}
+</code></pre>
+<h1 id="springapplicationrun">SpringApplication.run()</h1>
+<ul>
+<li>是SpringApplication的运行阶段，该阶段在初始化阶段完成的状态上，进一步完善运行时所需要准备的资源，随后启动Spring应用上下文，且在此期间伴随着SpringBoot和Spring事件的触发，形成SpringApplication完整的生命周期。</li>
+<li>运行流程：
+<ol>
+<li>计时器开始计时</li>
+<li>Headless模式复制</li>
+<li>发送ApplicationStartingEvent</li>
+<li>配置环境模块</li>
+<li>发送ApplicationEnvironmentPreparedEvent</li>
+<li>打印banner</li>
+<li>创建应用上下文对象
+<ol>
+<li>初始化失败分析器</li>
+<li>关联SpringBoot组件与应用上下文对象</li>
+<li>发送ApplicationContextInitializedEvent</li>
+<li>加载sources到context</li>
+<li>发送ApplicationPreparedEvent</li>
+</ol>
+</li>
+<li>刷新上下文
+<ol>
+<li>获取beanFactory</li>
+<li>准备beanFactory</li>
+<li>调用BeanFactoryPostProcessors</li>
+<li>注册BeanPostProcessors</li>
+<li>初始化MessageSource</li>
+<li>注册listener beans</li>
+<li>实例化单例bean</li>
+<li>发布对应事件</li>
+<li>清除缓存</li>
+<li>注册钩子方法</li>
+</ol>
+</li>
+<li>计时器停止计时</li>
+<li>发送ApplicationStartedEvent</li>
+<li>调用框架启动扩展类</li>
+<li>发送ApplicationReadyEvent</li>
+</ol>
+</li>
+</ul>
+<h2 id="springapplication准备阶段">SpringApplication准备阶段</h2>
+<ul>
+<li>属于ApplicationContext启动前的阶段，范围从run()方法调用开始，到refreshContext()方法调用前。</li>
+</ul>
+<pre><code class="language-java">public ConfigurableApplicationContext run(String... args) {
+        //记录程序运行时间
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        //Spring 应用的上下文
+        ConfigurableApplicationContext context = null;
+        Collection&lt;SpringBootExceptionReporter&gt; exceptionReporters = new ArrayList&lt;&gt;();
+        // 设置headless模式，是在缺少显示设备、键盘或鼠标的系统配置。
+        configureHeadlessProperty();
+        // 通过getSpringFactoriesInstances获取 META-INF/spring.factories 文件下SpringApplicationRunListener对应的资源
+        SpringApplicationRunListeners listeners = getRunListeners(args);
+        listeners.starting();
+        try {
+            // 创建 ApplicationArguments 对象
+            ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+            // 加载属性配置
+            /*
+            1. 创建ConfigurableEnvironment对象。
+            2. 配置environment变量。
+            3. 发布ApplicationEnvironmentPreparedEvent事件。
+其对应的监听器为ConfigFileApplicationListener,当接收到上面的事件时，加载并实例化 “META-INF/spring.factories” 文件中EnvironmentPostProcessor类型的实现类，遍历并执行其postProcessEnvironment方法。
+            */
+            ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
+            // 处理需要忽略的Bean
+            configureIgnoreBeanInfo(environment);
+            // 打印 banner
+            Banner printedBanner = printBanner(environment);
+            // 根据webApplicationType的类型，创建不同的Spring应用上下文
+            context = createApplicationContext();
+            // 实例化 SpringBootExceptionReporter，用来报告关于启动过程中的错误
+            exceptionReporters = getSpringFactoriesInstances(
+                    SpringBootExceptionReporter.class,
+                    new Class[] { ConfigurableApplicationContext.class }, context);
+            // 应用上下文的准备阶段
+            /*
+            1. 给context的属性做赋值，如设置环境变量，调用初始化器来初始化context。
+            2. 获取所有配置源信息，包括 Configuration Class、类名、包名及Spring XML 配置资源路径信息。
+            3. 加载 Spring 应用上下文配置源。将BeanDefinition加载到context中。
+            4. 发布上下文已准备事件ApplicationPreparedEvent。
+            */
+            prepareContext(context, environment, listeners, applicationArguments, printedBanner);
+            // 刷新应用上下文（自动装配，初始化 IOC 容器）
+            refreshContext(context);
+            ...
+        }
+  }
+</code></pre>
+<h2 id="application启动阶段">Application启动阶段</h2>
+<ul>
+<li>本阶段的执行由refreshContext(ConfigurableApplicationContext)完成，其核心方法是AbstractApplicationContext#refresh。</li>
+<li>随着该方法的执行，Spring Boot 核心特性也随之启动，如组件自动装配、嵌入式容器启动。</li>
+</ul>
+<pre><code class="language-java">public void refresh() throws BeansException, IllegalStateException {
+    synchronized (this.startupShutdownMonitor) {
+        // 准备刷新
+        prepareRefresh();
+        // 通知子类刷新内部bean工厂
+        ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+        // 准备bean工厂以便在此上下文中使用
+        prepareBeanFactory(beanFactory);
+        try {
+            // 允许上下文子类中对bean工厂进行后处理
+            postProcessBeanFactory(beanFactory);
+            // 在bean创建之前调用BeanFactoryPostProcessors后置处理方法
+            invokeBeanFactoryPostProcessors(beanFactory);
+            // 注册BeanPostProcessor
+            registerBeanPostProcessors(beanFactory);
+            // 注册DelegatingMessageSource
+            initMessageSource();
+            // 注册multicaster
+            initApplicationEventMulticaster();
+            // 创建内置的Servlet容器
+            onRefresh();
+            // 注册Listener
+            registerListeners();
+            // 完成BeanFactory初始化，初始化剩余单例bean
+            finishBeanFactoryInitialization(beanFactory);
+            // 发布对应事件
+            finishRefresh();
+        }
+        catch (BeansException ex) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(&quot;Exception encountered during context initialization - &quot; +&quot;cancelling refresh attempt: &quot; + ex);
+            }
+            // 销毁已经创建的单例，以避免悬空资源。
+            destroyBeans();
+            // 重置'active'标志
+            cancelRefresh(ex);
+            // 将异常传播给调用者。
+            throw ex;
+        }
+        finally {
+            // 在Spring的核心中重置常见的自省缓存，因为我们可能不再需要单例bean的元数据了
+            resetCommonCaches();
+        }
+    }
+}
+</code></pre>
+<h2 id="applicationcontext启动后阶段">ApplicationContext启动后阶段</h2>
+<pre><code class="language-java">public ConfigurableApplicationContext run(String... args) {
+        ……
+        // 该方法方法并未给 Spring 应用上下文启动后阶段提供实现，而是将其交给开发人员自行扩展
+        afterRefresh(context, applicationArguments);、
+        // 停止计时器
+        stopWatch.stop();
+        if (this.logStartupInfo) {
+            new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
+        }
+        // 发布 Spring 应用上下文已启动ApplicationStartedEvent事件
+        listeners.started(context);
+        // 调用实现了CommandLineRunner或者ApplicationRunner接口的类的 run 方法，得以满足需要在 Spring 应用上下文完全准备完毕后，执行一些操作的场景。
+        callRunners(context, applicationArguments);
+    }
+    catch (Throwable ex) {
+        handleRunFailure(context, ex, exceptionReporters, listeners);
+        throw new IllegalStateException(ex);
+    }
+    try {
+        listeners.running(context);
+    }
+    catch (Throwable ex) {
+        handleRunFailure(context, ex, exceptionReporters, null);
+        throw new IllegalStateException(ex);
+    }
+    return context;
+}
+</code></pre>
+<h1 id="自动化装配">自动化装配</h1>
+<ol>
+<li>通过各种注解实现了类与类之间的依赖关系，容器在启动的时候Application.run，会调用EnableAutoConfigurationImportSelector.class的selectImports方法。</li>
+<li>selectImports方法最终会调用SpringFactoriesLoader.loadFactoryNames方法来获取一个全面的常用BeanConfiguration列表。</li>
+<li>loadFactoryNames方法会读取FACTORIES_RESOURCE_LOCATION（也就是spring-boot-autoconfigure.jar 下面的spring.factories），获取到所有的Spring相关的Bean的全限定名ClassName。</li>
+<li>selectImports方法继续调用filter(configurations, autoConfigurationMetadata);这个时候会根据这些BeanConfiguration里面的条件，来一一筛选，最关键的是<br>
+@ConditionalOnClass，这个条件注解会去classpath下查找，jar包里面是否有这个条件依赖类，所以必须有了相应的jar包，才有这些依赖类，才会生成IOC环境需要的一些默认配置Bean。</li>
+<li>最后把符合条件的BeanConfiguration注入默认的EnableConfigurationPropertie类里面的属性值，并且注入到IoC环境当中。</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/rkYiX-qGb/" class="tag">
+                    Spring Boot
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/javamultithreadingpatterns/">
+                  <h3 class="post-title">
+                    《图解Java多线程设计模式》阅读笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>

@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595775138734">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595933951921">
 <link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
 
 
@@ -21,9 +21,29 @@
     <meta name="description" content="
 Single Threaded Execution模式
 
-含义：同一时间内只能让一个线程执行处理。有时也称为临界区(Critical section)。
-使用场景：多个线程访问状态可能发生变化的共享资源，且需要确保共享资源安全性时使用。
-..." />
+角色
+特点
+
+
+Immutable模式
+
+角色
+特点
+
+
+Guarded Suspension模式
+
+角色
+特点
+
+
+Balking模式
+
+角色
+特点
+
+
+Producer-Con..." />
     <meta name="keywords" content="multithreading" />
   </head>
   <body>
@@ -33,7 +53,7 @@ Single Threaded Execution模式
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://usuichi.github.io">
-        <img src="https://usuichi.github.io/images/avatar.png?v=1595775138734" class="site-logo">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1595933951921" class="site-logo">
         <h1 class="site-title">wzl&#39;s blog</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -99,7 +119,82 @@ Single Threaded Execution模式
             <div class="post-date">2020-07-26</div>
             
             <div class="post-content" v-pre>
-              <figure data-type="image" tabindex="1"><img src="https://usuichi.github.io/post-images/1595775029428.png" alt="" loading="lazy"></figure>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#single-threaded-execution%E6%A8%A1%E5%BC%8F">Single Threaded Execution模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9">特点</a></li>
+</ul>
+</li>
+<li><a href="#immutable%E6%A8%A1%E5%BC%8F">Immutable模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-2">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-2">特点</a></li>
+</ul>
+</li>
+<li><a href="#guarded-suspension%E6%A8%A1%E5%BC%8F">Guarded Suspension模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-3">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-3">特点</a></li>
+</ul>
+</li>
+<li><a href="#balking%E6%A8%A1%E5%BC%8F">Balking模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-4">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-4">特点</a></li>
+</ul>
+</li>
+<li><a href="#producer-consumer%E6%A8%A1%E5%BC%8F">Producer-Consumer模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-5">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-5">特点</a></li>
+</ul>
+</li>
+<li><a href="#read-write-lock%E6%A8%A1%E5%BC%8F">Read-Write Lock模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-6">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-6">特点</a></li>
+</ul>
+</li>
+<li><a href="#thread-per-message%E6%A8%A1%E5%BC%8F">Thread-Per-Message模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-7">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-7">特点</a></li>
+</ul>
+</li>
+<li><a href="#worker-thread%E6%A8%A1%E5%BC%8F">Worker Thread模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-8">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-8">特点</a></li>
+</ul>
+</li>
+<li><a href="#future%E6%A8%A1%E5%BC%8F">Future模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-9">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-9">特点</a></li>
+</ul>
+</li>
+<li><a href="#two-phase-termination%E6%A8%A1%E5%BC%8F">Two-Phase Termination模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-10">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-10">特点</a></li>
+</ul>
+</li>
+<li><a href="#thread-specific-storage%E6%A8%A1%E5%BC%8F">Thread-Specific Storage模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-11">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-11">特点</a></li>
+</ul>
+</li>
+<li><a href="#active-object%E6%A8%A1%E5%BC%8F">Active Object模式</a>
+<ul>
+<li><a href="#%E8%A7%92%E8%89%B2-12">角色</a></li>
+<li><a href="#%E7%89%B9%E7%82%B9-12">特点</a></li>
+</ul>
+</li>
+</ul>
+<br>
+<img src="https://usuichi.github.io/post-images/1595775029428.png" alt="" loading="lazy"></p>
 <h1 id="single-threaded-execution模式">Single Threaded Execution模式</h1>
 <ul>
 <li>含义：同一时间内只能让一个线程执行处理。有时也称为临界区(Critical section)。</li>
@@ -371,7 +466,7 @@ Single Threaded Execution模式
 <li>使用场景：实现异步消息。</li>
 </ul>
 <h2 id="角色-12">角色</h2>
-<figure data-type="image" tabindex="2"><img src="https://usuichi.github.io/post-images/1595773580121.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="1"><img src="https://usuichi.github.io/post-images/1595773580121.png" alt="" loading="lazy"></figure>
 <ul>
 <li>Client：调用ActiveObject的方法来委托处理，调用这些方法后，若ActivationQueue未满，程序控制权会立即返回。
 <ul>
@@ -467,6 +562,11 @@ var app = new Vue({
 
 </script>
 
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
 
 
 

@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595775138734">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1595933951921">
 <link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
 
 
@@ -19,12 +19,23 @@
 
 
     <meta name="description" content="
-Netty是一个异步的、事件驱动的、基于NIO(Non-blocking I/O)的开源框架，用于快速开发高性能、高可靠性的网络服务器和客户端程序。
-
 基本概念
+Netty组件
+
+Channel
+
+EmbeddedChannel单元测试
 
 
-Channel：是入站或出站数据的载体。它可以被打开或关闭，连接或断开。..." />
+ChannalFuture
+ChannelHandler
+
+ChannelHandlerAdapter
+
+
+ChannelPipeline
+
+Cha..." />
     <meta name="keywords" content="Netty" />
   </head>
   <body>
@@ -34,7 +45,7 @@ Channel：是入站或出站数据的载体。它可以被打开或关闭，连�
   <div class="top-container" data-aos="fade-right">
     <div class="top-header-container">
       <a class="site-title-container" href="https://usuichi.github.io">
-        <img src="https://usuichi.github.io/images/avatar.png?v=1595775138734" class="site-logo">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1595933951921" class="site-logo">
         <h1 class="site-title">wzl&#39;s blog</h1>
       </a>
       <div class="menu-btn" @click="menuVisible = !menuVisible">
@@ -103,7 +114,57 @@ Channel：是入站或出站数据的载体。它可以被打开或关闭，连�
               </div>
             
             <div class="post-content" v-pre>
-              <ul>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5">基本概念</a></li>
+<li><a href="#netty%E7%BB%84%E4%BB%B6">Netty组件</a>
+<ul>
+<li><a href="#channel">Channel</a>
+<ul>
+<li><a href="#embeddedchannel%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95">EmbeddedChannel单元测试</a></li>
+</ul>
+</li>
+<li><a href="#channalfuture">ChannalFuture</a></li>
+<li><a href="#channelhandler">ChannelHandler</a>
+<ul>
+<li><a href="#channelhandleradapter">ChannelHandlerAdapter</a></li>
+</ul>
+</li>
+<li><a href="#channelpipeline">ChannelPipeline</a>
+<ul>
+<li><a href="#channelhandlercontext">ChannelHandlerContext</a></li>
+</ul>
+</li>
+<li><a href="#eventloop">EventLoop</a></li>
+<li><a href="#%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B">线程模型</a></li>
+<li><a href="#eventloop%E6%8E%A5%E5%8F%A3">EventLoop接口</a></li>
+</ul>
+</li>
+<li><a href="#bytebuf">ByteBuf</a>
+<ul>
+<li><a href="#%E6%8A%BD%E8%B1%A1%E7%B1%BBbytebuf">抽象类ByteBuf</a></li>
+<li><a href="#%E6%8E%A5%E5%8F%A3bytebufholder">接口ByteBufHolder</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BC%96%E7%A0%81%E5%99%A8%E4%B8%8E%E8%A7%A3%E7%A0%81%E5%99%A8">编码器与解码器</a></li>
+<li><a href="#%E5%BC%95%E5%AF%BC-%E6%9C%8D%E5%8A%A1%E5%99%A8-%E5%AE%A2%E6%88%B7%E7%AB%AF">引导、服务器、客户端</a>
+<ul>
+<li><a href="#bootstrap%E7%B1%BB">Bootstrap类</a></li>
+<li><a href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8E%E5%AE%A2%E6%88%B7%E7%AB%AF">服务器与客户端</a>
+<ul>
+<li><a href="#%E5%BC%95%E5%AF%BC%E6%9C%8D%E5%8A%A1%E5%99%A8">引导服务器</a></li>
+<li><a href="#%E5%BC%95%E5%AF%BC%E5%AE%A2%E6%88%B7%E7%AB%AF">引导客户端</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BB%8Echannel%E5%BC%95%E5%AF%BC%E5%AE%A2%E6%88%B7%E7%AB%AF">从Channel引导客户端</a></li>
+<li><a href="#%E5%9C%A8%E5%BC%95%E5%AF%BC%E8%BF%87%E7%A8%8B%E4%B8%AD%E6%B7%BB%E5%8A%A0%E5%A4%9A%E4%B8%AAchannelhandler">在引导过程中添加多个ChannelHandler</a></li>
+<li><a href="#channeloption%E5%B1%9E%E6%80%A7">ChannelOption属性</a></li>
+</ul>
+</li>
+<li><a href="#%E5%86%85%E7%BD%AE%E7%9A%84%E4%BC%A0%E8%BE%93">内置的传输</a></li>
+<li><a href="#%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86">异常处理</a></li>
+</ul>
+</p>
+<ul>
 <li>Netty是一个异步的、事件驱动的、基于NIO(Non-blocking I/O)的开源框架，用于快速开发高性能、高可靠性的网络服务器和客户端程序。</li>
 </ul>
 <h1 id="基本概念">基本概念</h1>
@@ -586,6 +647,11 @@ var app = new Vue({
 
 </script>
 
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
 
 
 
