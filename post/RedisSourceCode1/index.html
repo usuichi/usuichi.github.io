@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Redis源码学习（1）：数据结构（简单动态字符串、跳跃表） | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1596035442119">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="
+概述
+
+Redis的特点
+代码结构
+
+
+简单动态字符串(Simple Dynamic Strings，SDS)
+
+基本定义
+基本操作
+创建字符串
+
+sdsnewlen()
+
+
+释放字符串
+
+sdsfree()
+sdsclear()
+
+
+拼..." />
+    <meta name="keywords" content="Redis" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1596035442119" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Redis源码学习（1）：数据结构（简单动态字符串、跳跃表）</h2>
+            <div class="post-date">2020-07-29</div>
+            
+              <div class="feature-container" style="background-image: url('https://usuichi.github.io/post-images/RedisSourceCode1.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E6%A6%82%E8%BF%B0">概述</a>
+<ul>
+<li><a href="#redis%E7%9A%84%E7%89%B9%E7%82%B9">Redis的特点</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84">代码结构</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AE%80%E5%8D%95%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2simple-dynamic-stringssds">简单动态字符串(Simple Dynamic Strings，SDS)</a>
+<ul>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E5%AE%9A%E4%B9%89">基本定义</a></li>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C">基本操作</a></li>
+<li><a href="#%E5%88%9B%E5%BB%BA%E5%AD%97%E7%AC%A6%E4%B8%B2">创建字符串</a>
+<ul>
+<li><a href="#sdsnewlen">sdsnewlen()</a></li>
+</ul>
+</li>
+<li><a href="#%E9%87%8A%E6%94%BE%E5%AD%97%E7%AC%A6%E4%B8%B2">释放字符串</a>
+<ul>
+<li><a href="#sdsfree">sdsfree()</a></li>
+<li><a href="#sdsclear">sdsclear()</a></li>
+</ul>
+</li>
+<li><a href="#%E6%8B%BC%E6%8E%A5%E5%AD%97%E7%AC%A6%E4%B8%B2">拼接字符串</a>
+<ul>
+<li><a href="#sdscatsds">sdscatsds()</a></li>
+<li><a href="#sdscatlen">sdscatlen()</a></li>
+<li><a href="#sdsmakeroomfor">sdsMakeRoomFor()</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%B6%E4%BB%96api">其他API</a></li>
+</ul>
+</li>
+<li><a href="#%E8%B7%B3%E8%B7%83%E8%A1%A8">跳跃表</a>
+<ul>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E5%AE%9A%E4%B9%89-2">基本定义</a>
+<ul>
+<li><a href="#zskiplistnode">zskiplistNode</a></li>
+<li><a href="#zskiplist">zskiplist</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C-2">基本操作</a>
+<ul>
+<li><a href="#%E5%88%9B%E5%BB%BA%E8%B7%B3%E8%B7%83%E8%A1%A8">创建跳跃表</a>
+<ul>
+<li><a href="#zslrandomlevel">zslRandomLevel()</a></li>
+<li><a href="#zslcreatenode">zslCreateNode()</a></li>
+<li><a href="#zslcreate">zslCreate()</a></li>
+</ul>
+</li>
+<li><a href="#%E6%8F%92%E5%85%A5%E8%8A%82%E7%82%B9">插入节点</a>
+<ul>
+<li><a href="#zslinsert">zslInsert()</a></li>
+</ul>
+</li>
+<li><a href="#%E5%88%A0%E9%99%A4%E8%8A%82%E7%82%B9">删除节点</a>
+<ul>
+<li><a href="#zsldelete">zslDelete()</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</p>
+<h1 id="概述">概述</h1>
+<h2 id="redis的特点">Redis的特点</h2>
+<ol>
+<li>基于内存进行存储，且绝大部分命令处理是纯粹的内存操作。</li>
+<li>单进程线程服务，避免了不必要的上下文切换，不存在同步操作。
+<ul>
+<li>Redis6.0版本在处理网络数据的读写和协议解析时使用多线程I/O操作。</li>
+</ul>
+</li>
+<li>使用多路I/O复用模型，如select/poll/epoll等。</li>
+<li>专用数据结构，增删改查简单。</li>
+<li><a href="https://zhuanlan.zhihu.com/p/139079822">Redis6.0新特性</a></li>
+</ol>
+<h2 id="代码结构">代码结构</h2>
+<ul>
+<li>基本数据结构
+<ul>
+<li>sds.c：简单动态字符串</li>
+<li>intset.c：整数集合</li>
+<li>ziplist.c：压缩列表</li>
+<li>quicklist.c：快速链表</li>
+<li>dict.c：字典</li>
+<li>listpack.c&amp;rax.c：Streams的底层实现结构</li>
+</ul>
+</li>
+<li>数据类型底层实现
+<ul>
+<li>object.c：对象</li>
+<li>t_string.c：字符串</li>
+<li>t_list.c：列表</li>
+<li>t_hash.c：字典</li>
+<li>t_set.c&amp;t_zset.c：集合及有序集合</li>
+<li>t_stream.c：数据流</li>
+</ul>
+</li>
+<li>数据库底层实现
+<ul>
+<li>db.c：数据库的底层实现</li>
+<li>rdb.c&amp;aof.c：持久化</li>
+</ul>
+</li>
+<li>客户端服务器实现
+<ul>
+<li>ae.c&amp;ae_epoll.c：事件驱动</li>
+<li>anet.c&amp;networking.c：网络连接</li>
+<li>server.c：服务端程序</li>
+<li>redis-cli.c：客户端程序</li>
+</ul>
+</li>
+<li>其他实现
+<ul>
+<li>replication.c：主从复制</li>
+<li>sentinel.c：哨兵</li>
+<li>cluster.c：集群</li>
+<li>其他数据结构，如hyperloglog.c、geo.c等</li>
+<li>其他功能，如pub/sub、Lua脚本</li>
+</ul>
+</li>
+</ul>
+<h1 id="简单动态字符串simple-dynamic-stringssds">简单动态字符串(Simple Dynamic Strings，SDS)</h1>
+<h2 id="基本定义">基本定义</h2>
+<ul>
+<li>文件：sds.h/sds.c</li>
+<li>用途：存储字符串和整型数据。</li>
+<li>它兼容C语言标准字符串处理函数，且在此基础上保证了二进制安全。
+<ul>
+<li>二进制安全：二进制安全函数是指，在一个二进制文件上所执行的不更改文件内容的功能或者操作，其本质上将操作输入作为原始的、无任何特殊格式意义的数据流。<br>
+<img src="https://usuichi.github.io/post-images/1595988224914.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+<li>SDS是一种TLV(Tag/Length/Value)格式的数据结构，其主要字段如下：
+<ul>
+<li>flags ：相当于Tag。标识当前结构体的类型，低3位用作标识位，除了sdshdr5以外高5位预留。</li>
+<li>len ：相当于Length。表示buf中已占用字节数，根据flags的标识，长度有小于1字节、1字节、2字节、4字节、8字节五种。
+<ul>
+<li>该字段保证了二进制安全。</li>
+</ul>
+</li>
+<li>alloc ：表示buf分配的字节数总长度，sdshdr5中没有此字段，长度和len相同。</li>
+<li>buf ：相当于Value。是一个柔性数组，真正存储字符串的数据空间。
+<ul>
+<li>柔性数组：无需指定大小，通过malloc函数在堆上动态分配内存，只能被放在结构体的末尾。</li>
+<li>因为柔性数组的地址和结构体是连续的，可以通过柔性数组的首地址偏移得到结构体首地址，进而能方便地获取其余变量。</li>
+<li>对上层直接暴露指向柔性数组的指针而不是指向SDS的指针，从而上层可像读取C字符串一样读取SDS的内容。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-C">#define SDS_TYPE_5 0
+#define SDS_TYPE_8 1
+#define SDS_TYPE_16 2
+#define SDS_TYPE_32 3
+#define SDS_TYPE_64 4
+// __attribute__ ((__packed__))关键字可以取消字节对齐，让结构体按照紧凑排列的方式占用内存。
+struct __attribute__ ((__packed__))sdshdr5 {
+    // 在Redis6.0源码中，sdshdr5不被使用，但保留结构的定义。
+    unsigned char flags; /* 低3位存储类型, 高5位存储长度 */
+    char buf[];/*柔性数组，存放实际内容*/
+};
+struct __attribute__((__packed__))sdshdr8 {
+    uint8_t len; /* 已使用长度，用1字节存储 */
+    uint8_t alloc; /* 总长度，用1字节存储*/
+    unsigned char flags; /* 低3位存储类型, 高5位预留 */
+    char buf[];/*柔性数组，存放实际内容*/
+};
+struct __attribute__((__packed__))sdshdr16 {
+    uint16_t len; /*已使用长度，用2字节存储*/
+    uint16_t alloc; /* 总长度，用2字节存储*/
+    unsigned char flags; /* 低3位存储类型, 高5位预留 */
+    char buf[];/*柔性数组，存放实际内容*/
+};
+struct __attribute__((__packed__))sdshdr32 {
+    uint32_t len; /*已使用长度，用4字节存储*/
+    uint32_t alloc; /* 总长度，用4字节存储*/
+    unsigned char flags;/* 低3位存储类型, 高5位预留 */
+    char buf[];/*柔性数组，存放实际内容*/
+};
+struct __attribute__((__packed__))sdshdr64 {
+    uint64_t len; /*已使用长度，用8字节存储*/
+    uint64_t alloc; /* 总长度，用8字节存储*/
+    unsigned char flags; /* 低3位存储类型, 高5位预留 */
+    char buf[];/*柔性数组，存放实际内容*/
+};
+</code></pre>
+<h2 id="基本操作">基本操作</h2>
+<h2 id="创建字符串">创建字符串</h2>
+<h3 id="sdsnewlen">sdsnewlen()</h3>
+<ul>
+<li>sdsnewlen()：根据字符串长度选择合适的类型，初始化统计值，返回指向字符串内容的指针。</li>
+</ul>
+<pre><code class="language-C">// *init：指向字符串内容的指针；initlen：字符串长度
+sds sdsnewlen(const void *init, size_t initlen) {
+    // 空指针，用于后续为SDS分配内存地址
+    void *sh;
+    // 用于返回值，指向buf的指针，其类型定义为typedef char *sds;
+    sds s;
+    // 根据字符串长度选择不同的类型
+    char type = sdsReqType(initlen);
+     // 空字符串通常在创建后会被添加，因此在试图创建sdshdr5的空字符串时会强制转为sdshdr8，以避免频繁的更新引发的扩容。
+    if (type == SDS_TYPE_5 &amp;&amp; initlen == 0) type = SDS_TYPE_8;
+    // 计算不同类型的头部所需长度
+    int hdrlen = sdsHdrSize(type);
+    // 指向Flag字段的指针
+    unsigned char *fp; 
+    // 分配内存，+1是为了保存结束符'\0'
+    sh = s_malloc(hdrlen+initlen+1);
+    // 未能分配内存
+    if (sh == NULL) return NULL;
+    // 如果使用了SDS_NOINIT，则buf不进行初始化
+    if (init==SDS_NOINIT)
+        init = NULL;
+    else if (!init)
+        // 清空所分配的内存区间
+        memset(sh, 0, hdrlen+initlen+1);
+    // 将s指向buf的起始点
+    s = (char*)sh+hdrlen;
+    // 将fp指向flags。s是柔性数组buf的指针，-1即指向flags
+    fp = ((unsigned char*)s)-1;
+    // 根据不同的类型进行初始化len/alloc/type字段
+    switch(type) {
+        case SDS_TYPE_5: {
+            *fp = type | (initlen &lt;&lt; SDS_TYPE_BITS);
+            break;
+        }
+        case SDS_TYPE_8: {
+            SDS_HDR_VAR(8,s);
+            sh-&gt;len = initlen;
+            sh-&gt;alloc = initlen;
+            *fp = type;
+            break;
+        }
+        case SDS_TYPE_16: {
+            SDS_HDR_VAR(16,s);
+            sh-&gt;len = initlen;
+            sh-&gt;alloc = initlen;
+            *fp = type;
+            break;
+        }
+        case SDS_TYPE_32: {
+            SDS_HDR_VAR(32,s);
+            sh-&gt;len = initlen;
+            sh-&gt;alloc = initlen;
+            *fp = type;
+            break;
+        }
+        case SDS_TYPE_64: {
+            SDS_HDR_VAR(64,s);
+            sh-&gt;len = initlen;
+            sh-&gt;alloc = initlen;
+            *fp = type;
+            break;
+        }
+    }
+    // 初始化buf字段
+    if (initlen &amp;&amp; init)
+        memcpy(s, init, initlen);
+    s[initlen] = '\0';
+    // 返回指向buf的指针
+    return s;
+}
+</code></pre>
+<h2 id="释放字符串">释放字符串</h2>
+<h3 id="sdsfree">sdsfree()</h3>
+<ul>
+<li>sdsfree()：该方法通过对s的偏移，可定位到SDS结构体的首部，然后调用s_free释放内存。</li>
+</ul>
+<pre><code class="language-C">void sdsfree(sds s) {
+    if (s == NULL) return;
+    // 直接释放内存
+    s_free((char*)s-sdsHdrSize(s[-1]));
+}
+</code></pre>
+<h3 id="sdsclear">sdsclear()</h3>
+<ul>
+<li>sdsclear()：该方法仅将SDS的len归零，此处已存在的buf并没有真正被清除，新的数据可以覆盖写，而不用重新申请内存，从而减少申请内存的开销。</li>
+</ul>
+<pre><code class="language-C">void sdsclear(sds s) {
+    sdssetlen(s, 0); //统计值len归零
+    s[0] = '\0';//清空buf
+}
+</code></pre>
+<h2 id="拼接字符串">拼接字符串</h2>
+<h3 id="sdscatsds">sdscatsds()</h3>
+<ul>
+<li>sdscatsds()：上层API，调用sdscatlen()实现字符串拼接。</li>
+</ul>
+<pre><code class="language-C">sds sdscatsds(sds s, const sds t) {
+    return sdscatlen(s, t, sdslen(t));
+}
+</code></pre>
+<h3 id="sdscatlen">sdscatlen()</h3>
+<ul>
+<li>sdscatlen()：调用sdsMakeRoomFor()对带拼接的字符串s容量做检查，并按需扩容。</li>
+</ul>
+<pre><code class="language-C">// 将指针t的内容和指针s的内容拼接在一起，该操作是二进制安全的
+sds sdscatlen(sds s, const void *t, size_t len) {
+    size_t curlen = sdslen(s);
+    s = sdsMakeRoomFor(s,len);
+    if (s == NULL) return NULL;
+    memcpy(s+curlen, t, len);//直接拼接，保证了二进制安全
+    sdssetlen(s, curlen+len);
+    s[curlen+len] = '\0';//加上结束符
+    return s;
+}
+</code></pre>
+<h3 id="sdsmakeroomfor">sdsMakeRoomFor()</h3>
+<ul>
+<li>sdsMakeRoomFor()：实现了扩容策略。<br>
+<img src="https://usuichi.github.io/post-images/1595998178152.png" alt="实现过程" loading="lazy">
+<ol>
+<li>若sds中剩余空闲长度avail大于新增内容的长度addlen，直接在柔性数组buf末尾追加即可，无须扩容。</li>
+<li>若sds中剩余空闲长度avail小于或等于新增内容的长度addlen，则分情况讨论：新增后总长度len+addlen小于1MB的，按新长度的2倍扩容；新增后总长度len+addlen大于1MB的，按新长度加上1MB扩容。</li>
+<li>根据新长度重新选取存储类型，并分配空间。此处若无须更改类型，通过realloc扩大柔性数组即可；否则需要重新开辟内存，并将原字符串的buf内容移动到新位置。</li>
+</ol>
+</li>
+</ul>
+<pre><code class="language-C">sds sdsMakeRoomFor(sds s, size_t addlen) {
+    void *sh, *newsh;
+    size_t avail = sdsavail(s);
+    size_t len, newlen;
+    // s[-1]即flags
+    char type, oldtype = s[-1] &amp; SDS_TYPE_MASK;
+    int hdrlen;
+    // 无须扩容，直接返回
+    if (avail &gt;= addlen) return s;
+
+    len = sdslen(s);
+    sh = (char*)s-sdsHdrSize(oldtype);
+    newlen = (len+addlen);
+    // SDS__MAX_PREALLOC这个宏的值是1MB
+    if (newlen &lt; SDS_MAX_PREALLOC)
+        newlen *= 2;
+    else
+        newlen += SDS_MAX_PREALLOC;
+
+    type = sdsReqType(newlen);
+
+    // type5的结构不支持扩容，所以这里需要强制转成type8
+    if (type == SDS_TYPE_5) type = SDS_TYPE_8;
+
+    hdrlen = sdsHdrSize(type);
+    if (oldtype==type) {
+    // 无须更改类型，通过realloc扩大柔性数组即可，注意这里指向buf的指针s被更新了
+        newsh = s_realloc(sh, hdrlen+newlen+1);
+        if (newsh == NULL) return NULL;
+        s = (char*)newsh+hdrlen;
+    } else {
+        // 扩容后数据类型和头部长度发生了变化，此时不再进行realloc操作，而是直接按新长度重新开辟内存
+        newsh = s_malloc(hdrlen+newlen+1);
+        if (newsh == NULL) return NULL;
+        // 将原buf内容移动到新位置
+        memcpy((char*)newsh+hdrlen, s, len+1);
+        // 释放旧指针
+        s_free(sh);
+        // 偏移sds结构的起始地址，得到字符串起始地址
+        s = (char*)newsh+hdrlen;
+        // 为falgs赋值
+        s[-1] = type;
+        // 为len属性赋值
+        sdssetlen(s, len);
+    }
+    // 为alloc属性赋值
+    sdssetalloc(s, newlen);
+    return s;
+}
+</code></pre>
+<h2 id="其他api">其他API</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">函数名称</th>
+<th style="text-align:center">作用</th>
+<th style="text-align:center">复杂度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">sdsempty</td>
+<td style="text-align:center">创建一个只包含空字符串””的sds</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdsnew</td>
+<td style="text-align:center">根据给定的C字符串，创建一个相应的sds</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdsnewlen</td>
+<td style="text-align:center">创建一个指定长度的sds，接受一个指定的C字符串作为初始化值</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdsdup</td>
+<td style="text-align:center">复制给定的sds</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdsfree</td>
+<td style="text-align:center">释放给定的sds</td>
+<td style="text-align:center">O(1)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdsupdatelen</td>
+<td style="text-align:center">更新给定sds所对应的sdshdr的free与len值</td>
+<td style="text-align:center">O(1)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdsMakeRoomFor</td>
+<td style="text-align:center">对给定sds对应sdshdr的buf进行扩展</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdscatlen</td>
+<td style="text-align:center">将一个C字符串追加到给定的sds对应sdshdr的buf</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdscpylen</td>
+<td style="text-align:center">将一个C字符串复制到sds中，需要依据sds的总长度来判断是否需要扩展</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdscatprintf</td>
+<td style="text-align:center">通过格式化输出形式，来追加到给定的sds</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdstrim</td>
+<td style="text-align:center">对给定sds，删除前端/后端在给定的C字符串中的字符</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdsrange</td>
+<td style="text-align:center">截取给定sds，[start,end]字符串</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdscmp</td>
+<td style="text-align:center">比较两个sds的大小</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+<tr>
+<td style="text-align:center">sdssplitlen</td>
+<td style="text-align:center">对给定的字符串s按照给定的sep分隔字符串来进行切割</td>
+<td style="text-align:center">O(N)</td>
+</tr>
+</tbody>
+</table>
+<h1 id="跳跃表">跳跃表</h1>
+<h2 id="基本定义-2">基本定义</h2>
+<ul>
+<li>文件：t_zset.c</li>
+<li>概念：是一种能确保对动态集合search，insert以及delete等操作的时间复杂度在O(lgn)的前提下，实现比较简单，还能比较方便的进行范围查询的数据结构。</li>
+<li>用途：应用于有序集合的底层实现（Redis中另一种实现方式为压缩列表）
+<ul>
+<li>zset插入第一个元素时，会判断下面两种条件，满足任一条件Redis就会采用跳跃表作为底层实现，否则采用压缩列表作为底层实现方式。
+<ol>
+<li>zset-max-ziplist-entries的值是否等于0；</li>
+<li>zset-max-ziplist-value小于要插入元素的字符串长度。<br>
+<img src="https://usuichi.github.io/post-images/1596001119992.png" alt="" loading="lazy"></li>
+</ol>
+</li>
+</ul>
+</li>
+<li>性质：
+<ol>
+<li>由很多层构成。</li>
+<li>有一个头节点，头节点中有一个32层的结构，每层的结构包含指向本层的下个节点的指针，指向本层下个节点中间所跨越的节点个数为本层的跨度（span）。</li>
+<li>除头节点外，层数最多的节点的层高为跳跃表的高度（level）。</li>
+<li>每层都是一个有序链表，数据递增。</li>
+<li>除头节点外，一个元素在上层有序链表中出现，则它一定会在下层有序链表中出现。</li>
+<li>跳跃表每层最后一个节点指向NULL，表示本层有序链表的结束。</li>
+<li>跳跃表拥有一个tail指针，指向跳跃表最后一个节点。</li>
+<li>最底层的有序链表包含所有节点，最底层的节点个数为跳跃表的长度（length）（不包括头节点）。</li>
+<li>每个节点包含一个后退指针，头节点和第一个节点指向NULL；其他节点指向最底层的前一个节点。</li>
+</ol>
+</li>
+<li>实现：Redis的跳跃表由zskiplistNode和zskiplist两个结构定义，其中zskiplistNode结构用于表示跳跃表节点，而zskiplist结构则用于保存跳跃表节点的相关信息，比如节点的数量、指向表头节点和表尾节点的指针等。</li>
+</ul>
+<h3 id="zskiplistnode">zskiplistNode</h3>
+<pre><code class="language-C">typedef struct zskiplistNode {
+    // 用于存储字符串类型的数据。
+    sds ele;
+    // 用于存储排序的分值。所有节点的分值是按从小到大的方式排序的，当有序集合的成员分值相同时，节点会按ele的字典序进行排序。
+    double score;
+    // 后退指针，指向当前节点最底层的前一个节点，在程序从表尾向表头遍历时使用，每次只能后退一个节点。
+    struct zskiplistNode *backward;
+    // 结构体的柔性数组。每个节点的数组长度不一样，在生成跳跃表节点时，随机生成一个1～32的值，值越大出现的概率越低。
+    struct zskiplistLevel {
+        // 指向本层下一个节点，尾节点的forward指向NULL。
+        struct zskiplistNode *forward;
+        // forward指向的节点与本节点之间的元素个数。span值越大，跳过的节点个数越多。
+        unsigned int span;
+    } level[];
+} zskiplistNode;
+</code></pre>
+<h3 id="zskiplist">zskiplist</h3>
+<pre><code class="language-C">typedef struct zskiplist {
+    // header：指向跳跃表头节点。
+    // tail：指向跳跃表尾节点。
+    struct zskiplistNode *header, *tail;
+    // length：跳跃表长度，表示除头节点之外的节点总数。
+    unsigned long length;
+    // level：跳跃表的高度。
+    int level;
+} zskiplist;
+</code></pre>
+<h2 id="基本操作-2">基本操作</h2>
+<h3 id="创建跳跃表">创建跳跃表</h3>
+<h4 id="zslrandomlevel">zslRandomLevel()</h4>
+<ul>
+<li>节点层高：节点层高的最小值为1，最大值是ZSKIPLIST_MAXLEVEL，Redis6中为32。</li>
+</ul>
+<pre><code class="language-C">// server.h
+#define ZSKIPLIST_MAXLEVEL 32 /* Should be enough for 2^64 elements */
+#define ZSKIPLIST_P 0.25      /* Skiplist P = 1/4 */
+
+// t_zset.c
+int zslRandomLevel(void) {
+    int level = 1;
+    while ((random()&amp;0xFFFF) &lt; (ZSKIPLIST_P * 0xFFFF))
+        level += 1;
+    return (level&lt;ZSKIPLIST_MAXLEVEL) ? level : ZSKIPLIST_MAXLEVEL;
+}
+</code></pre>
+<ul>
+<li>节点的期望层高：当p=0.25时约为1.33。</li>
+</ul>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mtable><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><mi>E</mi></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><mn>1</mn><mo>×</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo><mo>+</mo><mn>2</mn><mo>×</mo><mi>p</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo><mo>+</mo><mn>3</mn><mo>×</mo><msup><mi>p</mi><mn>2</mn></msup><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo><mo>+</mo><mo>…</mo></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mrow><mo>+</mo><mi mathvariant="normal">∞</mi></mrow></munderover><mi>i</mi><msup><mi>p</mi><mrow><mi>i</mi><mo>−</mo><mn>1</mn></mrow></msup></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mi>p</mi></mrow></mfrac></mrow></mstyle></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{aligned}
+E &amp;= 1 \times (1-p) + 2 \times p(1-p) +3 \times p^2(1-p) +… \\
+&amp;= (1-p) \sum^{+\infty}_{i=1}ip^{i-1} \\
+&amp;=\frac{1}{1-p}
+\end{aligned}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:7.361993em;vertical-align:-3.4309965em;"></span><span class="mord"><span class="mtable"><span class="col-align-r"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:3.9309965em;"><span style="top:-6.825224500000001em;"><span class="pstrut" style="height:3.7583360000000003em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span></span><span style="top:-4.4068885em;"><span class="pstrut" style="height:3.7583360000000003em;"></span><span class="mord"></span></span><span style="top:-1.5077795000000005em;"><span class="pstrut" style="height:3.7583360000000003em;"></span><span class="mord"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:3.4309965em;"><span></span></span></span></span></span><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:3.9309965em;"><span style="top:-6.825224500000001em;"><span class="pstrut" style="height:3.7583360000000003em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault">p</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault">p</span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault">p</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">3</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord"><span class="mord mathdefault">p</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641079999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault">p</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="minner">…</span></span></span><span style="top:-4.4068885em;"><span class="pstrut" style="height:3.7583360000000003em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault">p</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.7583360000000003em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.300005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">+</span><span class="mord mtight">∞</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.277669em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathdefault">i</span><span class="mord"><span class="mord mathdefault">p</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.874664em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span></span></span><span style="top:-1.5077795000000005em;"><span class="pstrut" style="height:3.7583360000000003em;"></span><span class="mord"><span class="mord"></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.32144em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathdefault">p</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8804400000000001em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:3.4309965em;"><span></span></span></span></span></span></span></span></span></span></span></span></p>
+<h4 id="zslcreatenode">zslCreateNode()</h4>
+<ul>
+<li>在创建跳跃表节点时，待创建节点的层高、分值、member等都已确定，需要申请内存来建立节点。</li>
+<li>一个节点占用的内存大小为zskiplistNode的内存大小与level个zskiplistLevel的内存大小之和。</li>
+</ul>
+<pre><code class="language-C">zskiplistNode *zslCreateNode(int level, double score, sds ele) {
+    zskiplistNode *zn =
+        zmalloc(sizeof(*zn)+level*sizeof(struct zskiplistLevel));
+    zn-&gt;score = score;
+    zn-&gt;ele = ele;
+    return zn;
+}
+</code></pre>
+<h4 id="zslcreate">zslCreate()</h4>
+<ul>
+<li>创建跳跃表：</li>
+</ul>
+<pre><code class="language-C">zskiplist *zslCreate(void) {
+    int j;
+    // 创建跳跃表结构体对象zsl
+    zskiplist *zsl;
+    zsl = zmalloc(sizeof(*zsl));
+    // 跳跃表层高初始化为1，长度初始化为0
+    zsl-&gt;level = 1;
+    zsl-&gt;length = 0;
+    // 将zsl的头节点指针指向新创建的头节点
+    zsl-&gt;header = zslCreateNode(ZSKIPLIST_MAXLEVEL,0,NULL);
+    // 创建头结点，头节点是第一个插入的节点，不存储有序集合的member信息。其level数组的每项forward都为NULL，span值都为0。
+    for (j = 0; j &lt; ZSKIPLIST_MAXLEVEL; j++) {
+        zsl-&gt;header-&gt;level[j].forward = NULL;
+        zsl-&gt;header-&gt;level[j].span = 0;
+    }
+    zsl-&gt;header-&gt;backward = NULL;
+    // 跳跃表尾节点指向NULL。
+    zsl-&gt;tail = NULL;
+    return zsl;
+}
+</code></pre>
+<h3 id="插入节点">插入节点</h3>
+<ul>
+<li>插入节点的步骤：
+<ol>
+<li>查找要插入的位置</li>
+<li>调整跳跃表高度</li>
+<li>插入节点</li>
+<li>调整backward</li>
+</ol>
+</li>
+</ul>
+<h4 id="zslinsert">zslInsert()</h4>
+<pre><code class="language-C">/** 将新的节点插入到zskiplist中。在调用该函数之前，由调用者确保该成员在zskiplist中不存在 **/
+zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
+    /* update数组保存了新节点在插入之后各个level的紧邻的前边的节点 */
+    zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
+    /* rank数组保存在新节点插入之后所在位置的各个level的前面紧邻节点在整个跳跃表中的排位，用于更新各个level的前面紧邻节点的跨度和新节点到后面紧邻节点的跨度 */
+    unsigned int rank[ZSKIPLIST_MAXLEVEL];
+    int i, level;
+
+    /** 如果!isnan(score)为0,那么将记录相关的错误信息，exit(1)退出程序 **/
+    serverAssert(!isnan(score));
+    // x为跳跃表的头节点
+    x = zsl-&gt;header;
+
+    /** 下面的for循环是为了确定新的zskiplistNode节点应该插入的位置的前面的节点 x **/
+    /** 按照在跳跃表中查找给定节点的顺序，应该是按照forward和down的顺序进行查找。首先是从最高层开始向后进行查找,如果当前节点的forward指针指向的节点的score小于给定的score或者说forward指向的节点的score等于给定的score但是forward指向的节点的ele的字典序小于给定的ele，应该继续向后进行查找，否则应该向下进行查找，对应于redis中的实现，zskiplist实现中，应该将层级减 1。在跳跃表中，在较高的层出现的zskiplistNode在较低的层肯定会出现；反之却不一定 **/
+    /** 注意这里的 i 是从zsl-&gt;level-1开始的，而不是从最大的ZSKIPLIST_MAXLEVEL开始的 **/
+    for (i = zsl-&gt;level-1; i &gt;= 0; i--) {
+        /** 初始化每一层的rank。如果是最高的一层，则初始化为0；如果不是最大的level，则证明是由上一层级down下来的,应该初始化为上一层的rank **/
+        rank[i] = i == (zsl-&gt;level-1) ? 0 : rank[i+1];
+        /** x代表在第 i 层要插入的节点的backward指针指向的节点；每层或者都不一样或者也有可能是相同的 **/
+        while (x-&gt;level[i].forward &amp;&amp;
+                (x-&gt;level[i].forward-&gt;score &lt; score ||
+                    (x-&gt;level[i].forward-&gt;score == score &amp;&amp;
+                    sdscmp(x-&gt;level[i].forward-&gt;ele,ele) &lt; 0)))
+        {
+            rank[i] += x-&gt;level[i].span;
+            x = x-&gt;level[i].forward;
+        }
+        /** update保存了新插入的节点位置在第 i 层的前向节点 **/
+        update[i] = x;
+    }
+    level = zslRandomLevel();
+    /** 如果随机产生的新的层级大于当前的zsl中保存的level(当前zsl的最大层级)，那么新的层级的backward节点全部指向zsl-&gt;header；此时当然在update&gt;  中保存的也是update[i](i &gt; zsl)应该是zsl-&gt;header; **/
+    if (level &gt; zsl-&gt;level) {
+        for (i = zsl-&gt;level; i &lt; level; i++) {
+            rank[i] = 0;
+            update[i] = zsl-&gt;header;
+            /** 只是暂时的一个初始化，后面会进行相应的修改 **/
+            update[i]-&gt;level[i].span = zsl-&gt;length;
+        }
+        /** 新插入的zskiplistNode的层大于现有的zsl-&gt;level，更改现有的zsk-&gt;level **/
+        zsl-&gt;level = level;
+    }
+
+    x = zslCreateNode(level,score,ele);
+    for (i = 0; i &lt; level; i++) {
+        /* 更新新插入的节点在每层的forward节点指向的节点 */
+        x-&gt;level[i].forward = update[i]-&gt;level[i].forward;
+        /* 更新新插入的节点所在位置前面紧邻节点的forward指向新插入的节点 */
+        update[i]-&gt;level[i].forward = x;
+
+        /* 改变由于插入新的zskiplistNode导致的跨度的变化 */
+        /** rank[0] 代表了要插入的 zskiplistNode 在实际的链表中的排位，rank[i]代表了在相应的层级的排位 **/
+        /** 跨度如果不好明白的话，可以画图理解 **/
+        x-&gt;level[i].span = update[i]-&gt;level[i].span - (rank[0] - rank[i]);
+        update[i]-&gt;level[i].span = (rank[0] - rank[i]) + 1;
+    }
+
+    /* 如果新插入的节点的level小于原来的zsl-&gt;level，那么那些大于新插入节点level的level并没有指针指向新插入的节点，此时只需简单的将其跨度增加   1 即可 */
+    for (i = level; i &lt; zsl-&gt;level; i++) {
+        update[i]-&gt;level[i].span++;
+    }
+
+    /** header 节点的forward节点的backward节点不再指向header，而是指向NULL **/
+    x-&gt;backward = (update[0] == zsl-&gt;header) ? NULL : update[0];
+    /** 考虑到将新的zskiplistNode节点添加到最后一个节点的情况 **/
+    if (x-&gt;level[0].forward)
+        x-&gt;level[0].forward-&gt;backward = x;
+    else
+        zsl-&gt;tail = x;
+    zsl-&gt;length++;
+    return x;
+}
+</code></pre>
+<h3 id="删除节点">删除节点</h3>
+<ul>
+<li>删除节点的步骤：
+<ol>
+<li>查找需要更新的节点</li>
+<li>设置span和forward。</li>
+</ol>
+</li>
+</ul>
+<h4 id="zsldelete">zslDelete()</h4>
+<pre><code class="language-C">/* node 指向要删除的节点的指针的指针；如果不需要返回被删除的节点，那么直接将该参数置为NULL即可，如果希望返回被删除的节点，那么该参数不能为空
+*/
+int zslDelete(zskiplist *zsl, double score, sds ele, zskiplistNode **node) {
+    zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
+    int i;
+
+    /* 确定要删除的节点在每一层的前面的紧邻节点 */
+    x = zsl-&gt;header;
+    for (i = zsl-&gt;level-1; i &gt;= 0; i--) {
+        while (x-&gt;level[i].forward &amp;&amp;
+                (x-&gt;level[i].forward-&gt;score &lt; score ||
+                    (x-&gt;level[i].forward-&gt;score == score &amp;&amp; 
+                    sdscmp(x-&gt;level[i].forward-&gt;ele,ele) &lt; 0)))
+        {   
+            x = x-&gt;level[i].forward;
+        }
+        /** update保存在该节点在每一层级的前向节点 **/
+        update[i] = x;
+    }
+    /* We may have multiple elements with the same score, what we need
+    * is to find the element with both the right score and object. */
+    x = x-&gt;level[0].forward;
+    if (x &amp;&amp; score == x-&gt;score &amp;&amp; sdscmp(x-&gt;ele,ele) == 0) {
+        /* unlink from current zskiplist */
+        zslDeleteNode(zsl, x, update);
+        /* free the node dirctely */
+        if (!node)
+            zslFreeNode(x);
+        else
+            *node = x;
+        return 1;
+    }
+    return 0; /* not found */
+}
+/* node 指向要删除的节点的指针的指针；如果不需要返回被删除的节点，那么直接将该参数置为NULL即可，如果希望返回被删除的节点，那么该参数不能为空
+*/
+int zslDelete(zskiplist *zsl, double score, sds ele, zskiplistNode **node) {
+    zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
+    int i;
+
+    /* 确定要删除的节点在每一层的前面的紧邻节点 */
+    x = zsl-&gt;header;
+    for (i = zsl-&gt;level-1; i &gt;= 0; i--) {
+        while (x-&gt;level[i].forward &amp;&amp;
+                (x-&gt;level[i].forward-&gt;score &lt; score ||
+                    (x-&gt;level[i].forward-&gt;score == score &amp;&amp; 
+                    sdscmp(x-&gt;level[i].forward-&gt;ele,ele) &lt; 0)))
+        {   
+            x = x-&gt;level[i].forward;
+        }
+        /** update保存在该节点在每一层级的前向节点 **/
+        update[i] = x;
+    }
+    /* We may have multiple elements with the same score, what we need
+    * is to find the element with both the right score and object. */
+    x = x-&gt;level[0].forward;
+    if (x &amp;&amp; score == x-&gt;score &amp;&amp; sdscmp(x-&gt;ele,ele) == 0) {
+        /* unlink from current zskiplist */
+        zslDeleteNode(zsl, x, update);
+        /* free the node dirctely */
+        if (!node)
+            zslFreeNode(x);
+        else
+            *node = x;
+        return 1;
+    }
+    return 0; /* not found */
+}
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/NLKtKoofD/" class="tag">
+                    Redis
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/SpringBootSourceCode1/">
+                  <h3 class="post-title">
+                    Spring Boot源码学习（1）：Spring Boot启动
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>
