@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>SpringBoot源码学习（2）：ApplicationContextInitializer初始化器 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1596182407490">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+概述
+
+实现方式
+
+
+SpringFactoriesLoader
+
+成员变量
+loadFactories()
+loadFactoryNames()
+loadSpringFactories()
+instantiateFactory()
+
+
+..." />
+    <meta name="keywords" content="Spring Boot" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1596182407490" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">SpringBoot源码学习（2）：ApplicationContextInitializer初始化器</h2>
+            <div class="post-date">2020-07-30</div>
+            
+              <div class="feature-container" style="background-image: url('https://usuichi.github.io/post-images/SpringBootSourceCode2.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E6%A6%82%E8%BF%B0">概述</a>
+<ul>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F">实现方式</a></li>
+</ul>
+</li>
+<li><a href="#springfactoriesloader">SpringFactoriesLoader</a>
+<ul>
+<li><a href="#%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F">成员变量</a></li>
+<li><a href="#loadfactories">loadFactories()</a></li>
+<li><a href="#loadfactorynames">loadFactoryNames()</a></li>
+<li><a href="#loadspringfactories">loadSpringFactories()</a></li>
+<li><a href="#instantiatefactory">instantiateFactory()</a></li>
+</ul>
+</li>
+<li><a href="#%E7%B3%BB%E7%BB%9F%E5%88%9D%E5%A7%8B%E5%8C%96%E5%99%A8">系统初始化器</a>
+<ul>
+<li><a href="#applyinitializers">applyInitializers()</a></li>
+<li><a href="#getinitializerclass">getInitializerClass()</a></li>
+</ul>
+</li>
+</ul>
+</p>
+<h1 id="概述">概述</h1>
+<ul>
+<li>类名：ApplicationContextInitializer</li>
+<li>介绍：Spring容器刷新之前执行的一个回调函数</li>
+<li>作用：向SpringBoot容器中注册属性</li>
+<li>使用：继承接口自定义实现</li>
+</ul>
+<pre><code class="language-java">// 可以指定@Order(XX)
+public class MyInitializer implements ApplicationContextInitializer&lt;ConfigurableApplicationContext&gt; {
+    @Override
+    public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+        // TODO：初始化逻辑实现
+    }
+}
+</code></pre>
+<h2 id="实现方式">实现方式</h2>
+<ul>
+<li>都要实现ApplicationContextInitializer接口；@Order值越小越先执行；application.properties中定义的优先于其它方式。</li>
+<li>实现方式一：
+<ul>
+<li>实现ApplicationContextInitializer接口。</li>
+<li>SpringApplication类初始化后设置进去。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-java">@SpringBootApplication
+public class MyApplication {
+    public static void main(String[] args) {
+         SpringApplication application = new SpringApplication(MyApplication.class);
+         application.addInitializers(new MyInitializer());
+         application.run(args);
+    }
+}
+</code></pre>
+<ul>
+<li>实现方式二：（推荐）
+<ul>
+<li>实现ApplicationContextInitializer接口。</li>
+<li>spring.factories内填写接口实现。</li>
+<li>key值为org.springframework.contet.ApplicationContextInitializer。</li>
+</ul>
+</li>
+</ul>
+<pre><code>org.springframework.context.ApplicationContextInitializer=com.wzl.springboot.initializer.MyInitializer
+</code></pre>
+<ul>
+<li>实现方式三：
+<ul>
+<li>实现ApplicationContextInitializer接口。</li>
+<li>application.properties内填写接口实现。</li>
+<li>key值为context.initializer.classes</li>
+</ul>
+</li>
+</ul>
+<pre><code>context.initializer.classes=com.wzl.springboot.initializer.MyInitializer
+</code></pre>
+<h1 id="springfactoriesloader">SpringFactoriesLoader</h1>
+<ul>
+<li>用途：SpringFactoriesLoader类的主要作用是通过类路径下的META-INF/spring.factories文件获取工厂类接口的实现类，初始化并保存在缓存中，以供Springboot启动过程中各个阶段的调用。</li>
+<li>要点：
+<ol>
+<li>框架内部使用通用工厂加载机制</li>
+<li>从classpath下多个jar包特定的位置读取文件并初始化类</li>
+<li>文件内容必须是kv形式，即properties类型</li>
+<li>key是全限定名（抽象类|接口）、value是实现，多个实现用逗号分隔</li>
+</ol>
+</li>
+<li>作用：
+<ol>
+<li>从类路径jar包中读取特定文件实现扩展类的载入</li>
+<li>loadFactories流程：
+<ol>
+<li>查找缓存</li>
+<li>读取指定资源文件</li>
+<li>构造properties对象</li>
+<li>获取指定key对应的value值</li>
+<li>逗号分割value</li>
+<li>保存结果到缓存</li>
+<li>依次实例化结果对象</li>
+<li>对结果对象排序</li>
+<li>返回结果<br>
+<img src="https://usuichi.github.io/post-images/1596176449719.png" alt="loadFactories流程" loading="lazy"></li>
+</ol>
+</li>
+</ol>
+</li>
+<li>spring.factories：设置目的是帮助spring-boot项目包以外的bean（即在pom文件中添加依赖中的bean）注册到spring-boot项目的spring容器中。由于@ComponentScan注解只能扫描spring-boot项目包内的bean并注册到spring容器中，因此需要@EnableAutoConfiguration注解来注册项目包外的bean。而spring.factories文件，则是用来记录项目包外需要注册的bean类名。</li>
+</ul>
+<h2 id="成员变量">成员变量</h2>
+<pre><code class="language-java">// 指定spring.factories的文件路径
+public static final String FACTORIES_RESOURCE_LOCATION = &quot;META-INF/spring.factories&quot;;
+//  使用基于common-logging的运行方式记录日志
+private static final Log logger = LogFactory.getLog(SpringFactoriesLoader.class);
+// MultiValueMap&lt;String, String&gt;&gt; 表示这个ClassLoader加载器加载的类的集合
+private static final Map&lt;ClassLoader, MultiValueMap&lt;String, String&gt;&gt; cache = new ConcurrentReferenceHashMap&lt;&gt;();
+</code></pre>
+<h2 id="loadfactories">loadFactories()</h2>
+<ul>
+<li>用途：使用给定的类加载器，从FACTORIES_RESOURCE_LOCATION加载并实例化给定类型的工厂实现。
+<ul>
+<li>在返回工厂之前，都会通过AnnotationAwareOrderComparator这个类来进行排序。</li>
+<li>如果需要自定义实例化策略，要使用loadFactoryNames()去获取所有注册的工厂名称。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-java">// factoryType代表工厂的接口或抽象类，classLoader是默认为空的类加载器
+public static &lt;T&gt; List&lt;T&gt; loadFactories(Class&lt;T&gt; factoryType, @Nullable ClassLoader classLoader) {
+    Assert.notNull(factoryType, &quot;'factoryType' must not be null&quot;);
+    // 类加载器
+    ClassLoader classLoaderToUse = classLoader;
+    if (classLoaderToUse == null) {
+        // 如果为空则用系统默认类加载器
+        classLoaderToUse = SpringFactoriesLoader.class.getClassLoader();
+    }
+    // 获取所有工厂实现类的名称集合
+    List&lt;String&gt; factoryImplementationNames = loadFactoryNames(factoryType, classLoaderToUse);
+    if (logger.isTraceEnabled()) {
+        logger.trace(&quot;Loaded [&quot; + factoryType.getName() + &quot;] names: &quot; + factoryImplementationNames);
+    }
+    List&lt;T&gt; result = new ArrayList&lt;&gt;(factoryImplementationNames.size());
+    for (String factoryImplementationName : factoryImplementationNames) {
+        // 实例化工厂实现类，然后添加进result集合中
+        result.add(instantiateFactory(factoryImplementationName, factoryType, classLoaderToUse));
+    }
+    // 通过AnnotationAwareOrderComparator#sort方法对工厂名称进行排序
+    AnnotationAwareOrderComparator.sort(result);
+    return result;
+}
+</code></pre>
+<h2 id="loadfactorynames">loadFactoryNames()</h2>
+<pre><code class="language-java">public static List&lt;String&gt; loadFactoryNames(Class&lt;?&gt; factoryType, @Nullable ClassLoader classLoader) {
+    // 获取到factoryType工厂类型
+    String factoryTypeName = factoryType.getName();
+    // 加载SpringFactories，如果没有则返回一个空集合
+    return loadSpringFactories(classLoader).getOrDefault(factoryTypeName, Collections.emptyList());
+}
+</code></pre>
+<h2 id="loadspringfactories">loadSpringFactories()</h2>
+<pre><code class="language-java">private static Map&lt;String, List&lt;String&gt;&gt; loadSpringFactories(@Nullable ClassLoader classLoader) {
+    // 从缓存中获取已经加载过的SpringFactories
+    MultiValueMap&lt;String, String&gt; result = cache.get(classLoader);
+    if (result != null) {
+        return result;
+    }
+    try {
+        // / 通过类加载器读取类路径下的spring.factories文件，然后封装成URL存储于Enumeration中
+        Enumeration&lt;URL&gt; urls = (classLoader != null ?
+                classLoader.getResources(FACTORIES_RESOURCE_LOCATION) :
+                ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));
+        result = new LinkedMultiValueMap&lt;&gt;();
+        // 遍历urls，再将url封装成UrlResource对象
+        while (urls.hasMoreElements()) {
+            URL url = urls.nextElement();
+            UrlResource resource = new UrlResource(url);
+            /**
+                *  通过PropertiesLoaderUtils属性加载器去加载spring.factories中的value值。
+                *  这里的Properties是继承了HashTable的一个属性，key和value就对应着spring.factories文件里的key和value。
+                *  在PropertiesLoaderUtils中，底层是通过IO流读取的文件数据，这里就不细说了。
+                */ 
+            Properties properties = PropertiesLoaderUtils.loadProperties(resource);
+            for (Map.Entry&lt;?, ?&gt; entry : properties.entrySet()) {
+                String factoryTypeName = ((String) entry.getKey()).trim();
+                // 遍历获取工厂实现类名称
+                for (String factoryImplementationName : StringUtils.commaDelimitedListToStringArray((String) entry.getValue())) {
+                    result.add(factoryTypeName, factoryImplementationName.trim());
+                }
+            }
+        }
+        // 将获取结果存入缓存中
+        cache.put(classLoader, result);
+        return result;
+    }
+    catch (IOException ex) {
+        throw new IllegalArgumentException(&quot;Unable to load factories from location [&quot; + FACTORIES_RESOURCE_LOCATION + &quot;]&quot;, ex);
+    }
+}
+
+</code></pre>
+<h2 id="instantiatefactory">instantiateFactory()</h2>
+<pre><code class="language-java">// factoryImplementationName是工厂实现类的名称
+private static &lt;T&gt; T instantiateFactory(String factoryImplementationName, Class&lt;T&gt; factoryType, ClassLoader classLoader) {
+    try {
+        // 通过classUtils工具类获取工厂实现类的Class对象
+        Class&lt;?&gt; factoryImplementationClass = ClassUtils.forName(factoryImplementationName, classLoader);
+        // 异常处理
+        if (!factoryType.isAssignableFrom(factoryImplementationClass)) {
+            throw new IllegalArgumentException(
+                    &quot;Class [&quot; + factoryImplementationName + &quot;] is not assignable to factory type [&quot; + factoryType.getName() + &quot;]&quot;);
+        }
+        // 通过反射工具创建工厂类实例对象
+        return (T) ReflectionUtils.accessibleConstructor(factoryImplementationClass).newInstance();
+    }
+    // 异常处理
+    catch (Throwable ex) {
+        throw new IllegalArgumentException(
+            &quot;Unable to instantiate factory class [&quot; + factoryImplementationName + &quot;] for factory type [&quot; + factoryType.getName() + &quot;]&quot;,ex);
+    }
+}
+</code></pre>
+<h1 id="系统初始化器">系统初始化器</h1>
+<ul>
+<li>作用：
+<ol>
+<li>上下文刷新即refresh方法前调用。</li>
+<li>用来编码设置一些属性变量，通常用在web环境中。</li>
+<li>可以通过order接口进行排序</li>
+</ol>
+</li>
+</ul>
+<h2 id="applyinitializers">applyInitializers()</h2>
+<pre><code class="language-java">// 注册初始化器
+protected void applyInitializers(ConfigurableApplicationContext context) {
+    // 遍历并获得初始化器
+    for (ApplicationContextInitializer initializer : getInitializers()) {
+        // 判断初始化器的泛型是否为ConfigurableApplicationContext
+        Class&lt;?&gt; requiredType = GenericTypeResolver.resolveTypeArgument(initializer.getClass(), ApplicationContextInitializer.class);
+        Assert.isInstanceOf(requiredType, context, &quot;Unable to call initializer.&quot;);
+        // 调用初始化器的initialize方法
+        initializer.initialize(context);
+    }
+}
+</code></pre>
+<h2 id="getinitializerclass">getInitializerClass()</h2>
+<ul>
+<li>SpringBoot在加载系统初始化器时会先加载 DelegatingApplicationContextInitializer类，因为它的order是0。而它所做的事情就是去加载context.initializer.classes下面的实现类。
+<ul>
+<li>因此application.properties中定义的优先于其它方式。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-java">private List&lt;Class&lt;?&gt;&gt; getInitializerClasses(ConfigurableEnvironment env) {
+String classNames = env.getProperty(&quot;context.initializer.classes&quot;);
+List&lt;Class&lt;?&gt;&gt; classes = new ArrayList();
+if (StringUtils.hasLength(classNames)) {
+    String[] var4 = StringUtils.tokenizeToStringArray(classNames, &quot;,&quot;);
+    int var5 = var4.length;
+    for(int var6 = 0; var6 &lt; var5; ++var6) {
+    String className = var4[var6];
+    classes.add(this.getInitializerClass(className));
+    }
+}
+return classes;
+}
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/rkYiX-qGb/" class="tag">
+                    Spring Boot
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/RedisSourceCode1/">
+                  <h3 class="post-title">
+                    Redis源码学习（1）：数据结构（简单动态字符串、跳跃表）
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>
