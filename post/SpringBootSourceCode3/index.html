@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>SpringBoot源码学习（3）：监听器 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1597050005489">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+基本概念
+系统事件
+
+ApplicationFailedEvent
+ApplicationStartingEvent
+ApplicationEnvironmentPreparedEvent
+ApplicationContextInitia..." />
+    <meta name="keywords" content="Spring Boot" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1597050005489" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">SpringBoot源码学习（3）：监听器</h2>
+            <div class="post-date">2020-08-04</div>
+            
+              <div class="feature-container" style="background-image: url('https://usuichi.github.io/post-images/SpringBootSourceCode3.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5">基本概念</a></li>
+<li><a href="#%E7%B3%BB%E7%BB%9F%E4%BA%8B%E4%BB%B6">系统事件</a>
+<ul>
+<li><a href="#applicationfailedevent">ApplicationFailedEvent</a></li>
+<li><a href="#applicationstartingevent">ApplicationStartingEvent</a></li>
+<li><a href="#applicationenvironmentpreparedevent">ApplicationEnvironmentPreparedEvent</a></li>
+<li><a href="#applicationcontextinitializedevent">ApplicationContextInitializedEvent</a></li>
+<li><a href="#applicationpreparedevent">ApplicationPreparedEvent</a></li>
+<li><a href="#applicationstartedevent">ApplicationStartedEvent</a></li>
+<li><a href="#applicationreadyevent">ApplicationReadyEvent</a></li>
+</ul>
+</li>
+<li><a href="#%E8%A7%A6%E5%8F%91%E6%9C%BA%E5%88%B6">触发机制</a>
+<ul>
+<li><a href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90">源码分析</a></li>
+</ul>
+</li>
+</ul>
+</p>
+<h1 id="基本概念">基本概念</h1>
+<figure data-type="image" tabindex="1"><img src="https://usuichi.github.io/post-images/1596533409177.png" alt="监听器模型" loading="lazy"></figure>
+<ul>
+<li>监听器模型四要素：
+<ul>
+<li>事件</li>
+<li>监听器</li>
+<li>广播器</li>
+<li>触发机制</li>
+</ul>
+</li>
+</ul>
+<h1 id="系统事件">系统事件</h1>
+<ul>
+<li>核心类图：<br>
+<img src="https://usuichi.github.io/post-images/1596537739621.png" alt="系统事件类图" loading="lazy"></li>
+</ul>
+<h2 id="applicationfailedevent">ApplicationFailedEvent</h2>
+<ul>
+<li>可以通过ApplicationFailedEvent 获取Throwable实例对象获取异常信息并处理。</li>
+</ul>
+<pre><code class="language-java">public class ShareniuApplicationFailedEventListener implements ApplicationListener&lt;ApplicationFailedEvent&gt; {
+    @Override
+    public void onApplicationEvent(ApplicationFailedEvent event) {
+        System.out.println(&quot;--------------:ShareniuApplicationFailedEventListener&quot;);
+        Throwable exception = event.getException();
+        System.out.println(exception);
+    }
+}
+</code></pre>
+<h2 id="applicationstartingevent">ApplicationStartingEvent</h2>
+<ul>
+<li>通知框架启动</li>
+</ul>
+<pre><code class="language-java">public ApplicationStartingEvent(SpringApplication application, String[] args) {
+    super(application, args);
+}
+</code></pre>
+<h2 id="applicationenvironmentpreparedevent">ApplicationEnvironmentPreparedEvent</h2>
+<ul>
+<li>在启动流程的run()方法中调用prepareEnvironment()方法构建环境environment，将构建好的environment传递给enviromnmentPrepared()方法从而发布ApplicationEnvironmentPreparedEvent事件，代表环境已构建完毕。</li>
+<li>Environment：表示当前应用程序正在其中运行的环境，核心功能是提供profile和properties给应用查询，Profile就是Spring Boot可以对不同环境或者指令来读取不同的配置文件，properties包括  properties files, JVM system properties, system environment variables, JNDI, servlet context parameters, ad-hoc Properties objects,Maps等。</li>
+</ul>
+<pre><code class="language-java">private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
+		ApplicationArguments applicationArguments) {
+	    //创建环境，这里是根据web应用类型返回的，得到的是一个标准基于servlet的web环境
+	ConfigurableEnvironment environment = getOrCreateEnvironment();
+        //配置环境（属性源、配置文件），参数是上一步创建的environment和原始args参数
+	configureEnvironment(environment, applicationArguments.getSourceArgs());
+        //发布事件ApplicationEnvironmentPreparedEvent
+	listeners.environmentPrepared(environment);
+        //将spring.main配置绑定到SpringApplication
+	bindToSpringApplication(environment);
+        //isCustomEnvironment默认为false，如果你通过SpringApplication对象的setEnvironment()方法设置了环境，该值变为true，直接跳过这里
+        //转换为标准环境
+	if (!this.isCustomEnvironment) {
+		environment = new EnvironmentConverter(getClassLoader())
+				.convertEnvironmentIfNecessary(environment, deduceEnvironmentClass());
+	}
+	ConfigurationPropertySources.attach(environment);
+	return environment;
+}
+</code></pre>
+<ul>
+<li>ApplicationEnvironmentPreparedEvent事件中包含已经设置好的环境，其主要目的是加载配置文件，初始化日志系统等。</li>
+</ul>
+<pre><code class="language-java">public class ApplicationEnvironmentPreparedEvent extends SpringApplicationEvent {
+	private final ConfigurableEnvironment environment;
+	public ApplicationEnvironmentPreparedEvent(SpringApplication application,
+			String[] args, ConfigurableEnvironment environment) {
+		super(application, args);
+		this.environment = environment;
+	}
+	public ConfigurableEnvironment getEnvironment() {
+		return this.environment;
+	}
+}
+</code></pre>
+<h2 id="applicationcontextinitializedevent">ApplicationContextInitializedEvent</h2>
+<ul>
+<li>通知创建上下文完毕，可以进行后续配置。context是spring的上下文，主要是Spring的一些配置信息，Bean、Resource等。</li>
+</ul>
+<pre><code class="language-java">public ApplicationContextInitializedEvent(SpringApplication application, String[] args,
+        ConfigurableApplicationContext context) {
+    super(application, args);
+    this.context = context;
+}
+</code></pre>
+<h2 id="applicationpreparedevent">ApplicationPreparedEvent</h2>
+<ul>
+<li>通知上下文加载完毕。</li>
+</ul>
+<pre><code class="language-java">public ApplicationPreparedEvent(SpringApplication application, String[] args,
+        ConfigurableApplicationContext context) {
+    super(application, args);
+    this.context = context;
+}
+</code></pre>
+<h2 id="applicationstartedevent">ApplicationStartedEvent</h2>
+<ul>
+<li>通知上下文已可以使用，即将启动，可以在启动前进行一些设置。</li>
+</ul>
+<pre><code class="language-java">public ApplicationStartedEvent(SpringApplication application, String[] args,
+        ConfigurableApplicationContext context) {
+    super(application, args);
+    this.context = context;
+}
+</code></pre>
+<h2 id="applicationreadyevent">ApplicationReadyEvent</h2>
+<ul>
+<li>通知上下文已经准备完毕并正在运行。</li>
+</ul>
+<pre><code class="language-java">public ApplicationReadyEvent(SpringApplication application, String[] args, ConfigurableApplicationContext context) {
+    super(application, args);
+    this.context = context;
+}
+</code></pre>
+<h1 id="触发机制">触发机制</h1>
+<ul>
+<li>事件发送顺序
+<ol>
+<li>failed：框架启动失败，发出ApplicationFailedEvent</li>
+<li>starting：框架开始启动，发出ApplicationStartingEvent</li>
+<li>environmentPrepared：环境准备完成，发出ApplicationEnvironmentPreparedEvent</li>
+<li>contextInitialized：上下文创建完成，发出ApplicationContextInitializedEvent</li>
+<li>prepared：上下文加载完成，发出ApplicationPreparedEvent</li>
+<li>started：上下文可以使用，即将运行，发出ApplicationStartedEvent</li>
+<li>ready：框架正在运行，发出ApplicationReadyEvent</li>
+</ol>
+</li>
+<li>获取监听器列表
+<ol>
+<li>start</li>
+<li>getApplicationListeners</li>
+<li>是否有缓存，是则读取缓存并返回，否则继续</li>
+<li>retrieveApplicationListeners</li>
+<li>遍历监听器</li>
+<li>supportsEvent(start)
+<ol>
+<li>supportsEventType</li>
+<li>是否SmartApplicationListener类型
+<ol>
+<li>否-&gt;实现接口类型变量是否事件同类或子类-&gt;是</li>
+<li>是-&gt;实现类是否supportEventType-&gt;是</li>
+</ol>
+</li>
+<li>supportsSourceType</li>
+<li>是否SmartApplicationListener类型
+<ol>
+<li>否-&gt;true</li>
+<li>是-&gt;实现类是否supportsSourceType-&gt;是-&gt;true</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>加入符合条件监听器列表</li>
+<li>end</li>
+</ol>
+</li>
+</ul>
+<h2 id="源码分析">源码分析</h2>
+<ul>
+<li>在SpringApplication构造函数中通过以下代码从spring.factories中加载出ApplicationListener事件监听接口的SPI扩展实现类然后添加到SpringApplication对象的listeners集合中，用于后续监听SpringBoot启动过程中的事件，来执行一些初始化逻辑工作。
+<ul>
+<li>服务提供者接口(Service Provider Interface，SPI)，它提供为某个接口寻找服务实现的机制。当服务的提供者提供了服务接口的一种实现之后，在jar包的META-INF/services/目录里同时创建一个以服务接口命名的文件。该文件里就是实现该服务接口的具体实现类。而当外部程序装配这个模块的时候，就能通过该jar包META-INF/services/里的配置文件找到具体的实现类名，并装载实例化，完成模块的注入。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-java">setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+</code></pre>
+<ul>
+<li>在SpringBoot的启动过程（run()方法）中首先会先新建一个SpringApplicationRunListeners对象用于发射SpringBoot启动过程中的生命周期事件。</li>
+</ul>
+<pre><code class="language-java">SpringApplicationRunListeners listeners = getRunListeners(args);
+-----------------------------------------------------------------------
+private SpringApplicationRunListeners getRunListeners(String[] args) {
+    // 构造一个由SpringApplication.class和String[].class组成的types
+    Class&lt;?&gt;[] types = new Class&lt;?&gt;[] { SpringApplication.class, String[].class };
+    // 1) 根据SpringApplicationRunListener接口去spring.factories配置文件中加载其SPI扩展实现类
+    // 2) 构建一个SpringApplicationRunListeners对象并返回
+    return new SpringApplicationRunListeners(logger, getSpringFactoriesInstances(
+            SpringApplicationRunListener.class, types, this, args));
+}
+</code></pre>
+<ul>
+<li>上面的代码会在getSpringFactoriesInstances中加载SpringApplicationRunListener唯一一个SPI实现类EventPublishingRunListener。由它在SpringBoot启动过程的不同阶段发射不同的SpringBoot的生命周期事件，即SpringApplicationRunListeners对象没有承担广播事件的职责，而是委托EventPublishingRunListener来广播事件的。</li>
+</ul>
+<pre><code class="language-java">public class EventPublishingRunListener implements SpringApplicationRunListener, Ordered {
+
+    private final SpringApplication application;
+
+    private final String[] args;
+    // 拥有一个SimpleApplicationEventMulticaster事件广播器来广播事件
+    private final SimpleApplicationEventMulticaster initialMulticaster;
+
+    public EventPublishingRunListener(SpringApplication application, String[] args) {
+        this.application = application;
+        this.args = args;
+        // 新建一个事件广播器SimpleApplicationEventMulticaster对象
+        this.initialMulticaster = new SimpleApplicationEventMulticaster();
+        // 遍历在构造SpringApplication对象时从spring.factories配置文件中获取的事件监听器
+        for (ApplicationListener&lt;?&gt; listener : application.getListeners()) {
+            // 将从spring.factories配置文件中获取的事件监听器们添加到事件广播器initialMulticaster对象的相关集合中
+            this.initialMulticaster.addApplicationListener(listener);
+        }
+    }
+
+    @Override
+    public int getOrder() {
+        return 0;
+    }
+    // 发射ApplicationStartingEvent事件
+    @Override
+    public void starting() {
+        this.initialMulticaster.multicastEvent(
+                new ApplicationStartingEvent(this.application, this.args));
+    }
+    // 发射ApplicationEnvironmentPreparedEvent事件
+    @Override
+    public void environmentPrepared(ConfigurableEnvironment environment) {
+        this.initialMulticaster.multicastEvent(new ApplicationEnvironmentPreparedEvent(
+                this.application, this.args, environment));
+    }
+    // 发射ApplicationContextInitializedEvent事件
+    @Override
+    public void contextPrepared(ConfigurableApplicationContext context) {
+        this.initialMulticaster.multicastEvent(new ApplicationContextInitializedEvent(
+                this.application, this.args, context));
+    }
+    // 发射ApplicationPreparedEvent事件
+    @Override
+    public void contextLoaded(ConfigurableApplicationContext context) {
+        for (ApplicationListener&lt;?&gt; listener : this.application.getListeners()) {
+            if (listener instanceof ApplicationContextAware) {
+                ((ApplicationContextAware) listener).setApplicationContext(context);
+            }
+            context.addApplicationListener(listener);
+        }
+        this.initialMulticaster.multicastEvent(
+                new ApplicationPreparedEvent(this.application, this.args, context));
+    }
+    // 发射ApplicationStartedEvent事件
+    @Override
+    public void started(ConfigurableApplicationContext context) {
+        context.publishEvent(
+                new ApplicationStartedEvent(this.application, this.args, context));
+    }
+    // 发射ApplicationReadyEvent事件
+    @Override
+    public void running(ConfigurableApplicationContext context) {
+        context.publishEvent(
+                new ApplicationReadyEvent(this.application, this.args, context));
+    }
+    // 发射ApplicationFailedEvent事件
+    @Override
+    public void failed(ConfigurableApplicationContext context, Throwable exception) {
+        ApplicationFailedEvent event = new ApplicationFailedEvent(this.application,
+                this.args, context, exception);
+        if (context != null &amp;&amp; context.isActive()) {
+            // Listeners have been registered to the application context so we should
+            // use it at this point if we can
+            context.publishEvent(event);
+        }
+        else {
+            // An inactive context may not have a multicaster so we use our multicaster to
+            // call all of the context's listeners instead
+            if (context instanceof AbstractApplicationContext) {
+                for (ApplicationListener&lt;?&gt; listener : ((AbstractApplicationContext) context)
+                        .getApplicationListeners()) {
+                    this.initialMulticaster.addApplicationListener(listener);
+                }
+            }
+            this.initialMulticaster.setErrorHandler(new LoggingErrorHandler());
+            this.initialMulticaster.multicastEvent(event);
+        }
+    }
+    
+    // ...省略非关键代码
+}
+</code></pre>
+<ul>
+<li>EventPublishingRunListener类有一个SimpleApplicationEventMulticaster的属性，即EventPublishingRunListener对象没有承担广播事件的职责，而是委托SimpleApplicationEventMulticaster来广播事件的。它通过multicastEvent来广播事件。<br>
+<img src="https://usuichi.github.io/post-images/1596606332093.png" alt="广播器类图" loading="lazy"></li>
+</ul>
+<pre><code class="language-java">@Override
+public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
+    ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
+    Executor executor = getTaskExecutor();
+    for (ApplicationListener&lt;?&gt; listener : getApplicationListeners(event, type)) {
+        if (executor != null) {
+            executor.execute(() -&gt; invokeListener(listener, event));
+        }
+        else {
+            invokeListener(listener, event);
+        }
+    }
+}
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/rkYiX-qGb/" class="tag">
+                    Spring Boot
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/SpringBootSourceCode2/">
+                  <h3 class="post-title">
+                    SpringBoot源码学习（2）：初始化器
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>

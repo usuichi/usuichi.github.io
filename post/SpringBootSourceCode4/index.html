@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>SpringBoot源码学习（4）：Bean | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1597050005489">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+Bean的创建方式
+
+XML配置
+
+源码分析
+
+
+@Component注解
+@Bean注解
+FactoryBean接口
+BeanDefinitionRegistryPostProcessor接口
+ImportBeanDefinitionR..." />
+    <meta name="keywords" content="Spring Boot" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1597050005489" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">SpringBoot源码学习（4）：Bean</h2>
+            <div class="post-date">2020-08-05</div>
+            
+              <div class="feature-container" style="background-image: url('https://usuichi.github.io/post-images/SpringBootSourceCode4.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#bean%E7%9A%84%E5%88%9B%E5%BB%BA%E6%96%B9%E5%BC%8F">Bean的创建方式</a>
+<ul>
+<li><a href="#xml%E9%85%8D%E7%BD%AE">XML配置</a>
+<ul>
+<li><a href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90">源码分析</a></li>
+</ul>
+</li>
+<li><a href="#component%E6%B3%A8%E8%A7%A3">@Component注解</a></li>
+<li><a href="#bean%E6%B3%A8%E8%A7%A3">@Bean注解</a></li>
+<li><a href="#factorybean%E6%8E%A5%E5%8F%A3">FactoryBean接口</a></li>
+<li><a href="#beandefinitionregistrypostprocessor%E6%8E%A5%E5%8F%A3">BeanDefinitionRegistryPostProcessor接口</a></li>
+<li><a href="#importbeandefinitionregistrar%E6%8E%A5%E5%8F%A3">ImportBeanDefinitionRegistrar接口</a></li>
+</ul>
+</li>
+<li><a href="#refresh">refresh()</a></li>
+<li><a href="#beandefinition">BeanDefinition</a>
+<ul>
+<li><a href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-2">源码分析</a>
+<ul>
+<li><a href="#%E5%AD%97%E6%AE%B5%E5%88%86%E6%9E%90">字段分析</a></li>
+<li><a href="#%E5%AD%90%E6%8E%A5%E5%8F%A3">子接口</a></li>
+</ul>
+</li>
+<li><a href="#%E6%89%8B%E5%8A%A8%E6%B3%A8%E5%86%8Cbeandefinition">手动注册BeanDefinition</a>
+<ul>
+<li><a href="#genericbeandefinition">GenericBeanDefinition</a></li>
+<li><a href="#rootbeandefinition">RootBeanDefinition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%AE%9E%E4%BE%8B%E5%8C%96bean">实例化Bean</a></li>
+</ul>
+</p>
+<h1 id="bean的创建方式">Bean的创建方式</h1>
+<ul>
+<li>BeanFactory：会在bean的生命周期的各个阶段中对bean进行管理，并且将这些阶段通过各种接口暴露给程序员，让我们可以对bean进行各种处理，我们只要让bean实现对应的接口，那么框架就会在bean的生命周期调用我们实现的接口来处理该bean。</li>
+<li>在Bean容器的启动阶段，先读取到所有BeanDefinition对象，然后通过BeanDefinitionRegistry将这些bean注册到beanFactory中。（DefaultListableBeanFactory将所有BeanDefinition保存在它的一个ConcurrentHashMap中），之后我们通过实现BeanFactoryPostProcessor接口在此处来插入我们定义的代码。</li>
+<li>实例化阶段主要是通过反射或者CGLIB对bean进行实例化。通过实现Aware接口（如BeanFactoryAware、MessageSourceAware、ApplicationContextAware）可以注入到对应的实例（对应BeanFactory、MessageSource、ApplicationContext），postProcessBeforeInitialization方法在InitializingBean接口的afterPropertiesSet方法之前执行，而postProcessAfterInitialization方法在InitializingBean接口的afterPropertiesSet方法之后执行（InitializingBean接口和DisposableBean接口对应于<code>&lt;bean /&gt;</code>的init-method和destory-method属性）</li>
+<li><strong>与FactoryBean区分</strong>：实现了FactoryBean接口的bean是一类叫做factory的bean。其特点是，spring会在使用getBean()调用获得该bean时，会自动调用该bean的getObject()方法，所以返回的不是factory这个bean，而是这个bean.getOjbect()方法的返回值。</li>
+</ul>
+<h2 id="xml配置">XML配置</h2>
+<ul>
+<li>在XML中配置Bean使用了XML解析技术和Java反射机制。其包括四种配置方法：
+<ul>
+<li>无参构造</li>
+<li>有参构造</li>
+<li>静态工厂方法</li>
+<li>实例工厂方法</li>
+</ul>
+</li>
+<li>反射机制可以通过名称来得到对象（类、属性、方法），其具有的功能包括：
+<ol>
+<li>在运行时判断任意一个对象所属的类</li>
+<li>在运行时构造任意一个类的对象</li>
+<li>在运行时判断任意一个类具有的成员标量和方法</li>
+<li>在运行时调用任意一个对象的方法</li>
+</ol>
+</li>
+<li>读取XML文件：
+<ol>
+<li>在ClassPathXmlApplicationContext中设置xml文件的路径。</li>
+<li>refresh内部的beanFactory，此时BeanFactory都还未创建，会先创DefaultListableBeanFactory。</li>
+<li>ClassPathXmlApplicationContext调用其loadBeanDefinitions，将新建DefaultListableBeanFactory作为参数传入。</li>
+<li>ClassPathXmlApplicationContext内部会持有一个XmlBeanDefinitionReader，且XmlBeanDefinitionReader内部是持有之前创建的DefaultListableBeanFactory。XmlBeanDefinitionReader负责读取xml，将bean definition解析出来，丢给DefaultListableBeanFactory，此时，XmlBeanDefinitionReader的全部任务都已完成。</li>
+<li>此时DefaultListableBeanFactory中一个业务bean都没有，只有一堆的bean definition，后面ClassPathXmlApplicationContext直接去实例化那些需要在启动过程中实例化的bean。</li>
+<li>在上面5步中间还涉及到使用beanDefinitionPostProcessor和beanPostProcessor对beanFactory进行处理。</li>
+</ol>
+</li>
+</ul>
+<h3 id="源码分析">源码分析</h3>
+<figure data-type="image" tabindex="1"><img src="https://usuichi.github.io/post-images/1596701285731.png" alt="类图" loading="lazy"></figure>
+<pre><code class="language-java">protected void loadBeanDefinitions(DefaultListableBeanFactory beanFactory) {
+    // 创建一个从xml读取beanDefinition的读取器
+    XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(beanFactory);
+    // 配置环境
+    beanDefinitionReader.setEnvironment(this.getEnvironment());
+    // 配置资源loader，一般就是classpathx下去获取xml
+    beanDefinitionReader.setResourceLoader(this);
+    // xml解析的解析器（分为xsd、dtd两种）
+    beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(this));
+    // Allow a subclass to provide custom initialization of the reader,
+    // then proceed with actually loading the bean definitions.
+    initBeanDefinitionReader(beanDefinitionReader);
+    // 核心方法，使用beanDefinitionReader去解析xml，并将解析后的bean definition放到beanFactory
+    loadBeanDefinitions(beanDefinitionReader);
+}
+</code></pre>
+<h2 id="component注解">@Component注解</h2>
+<ul>
+<li>使用过程：
+<ol>
+<li>初始化时设置了Component类型过滤器；</li>
+<li>根据指定扫描包扫描.class文件，生成Resource对象；</li>
+<li>解析.class文件并注解归类，生成MetadataReader对象；</li>
+<li>使用第一步的注解过滤器过滤出有@Component的类；</li>
+<li>生成BeanDefinition对象；</li>
+<li>把BeanDefinition注册到Spring容器。</li>
+</ol>
+</li>
+<li>@Service、@Controller和@Repository上都有@Component修饰，所以原理是一样的。</li>
+</ul>
+<pre><code class="language-java">private Set&lt;BeanDefinition&gt; scanCandidateComponents(String basePackage) {
+   Set&lt;BeanDefinition&gt; candidates = new LinkedHashSet&lt;&gt;();
+   try {
+      // classpath*:basePackage/**/*.class
+      String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
+            resolveBasePackage(basePackage) + '/' + this.resourcePattern;
+      // 获取 basePackage 包下的 .class 文件资源
+      Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
+      for (Resource resource : resources) {
+         // 判断是否可读
+         if (resource.isReadable()) {
+            try {
+               // 获取.class文件类信息
+               MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+               if (isCandidateComponent(metadataReader)) {
+                  ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
+                  sbd.setResource(resource);
+                  sbd.setSource(resource);
+                  if (isCandidateComponent(sbd)) {
+                     candidates.add(sbd);
+                  }
+               }
+            } catch (Throwable ex) {
+               throw new BeanDefinitionStoreException(&quot;Failed to read candidate component class: &quot; + resource, ex);
+            }
+         }
+      }
+   }
+   catch (IOException ex) {
+      throw new BeanDefinitionStoreException(&quot;I/O failure during classpath scanning&quot;, ex);
+   }
+   return candidates;
+}
+</code></pre>
+<h2 id="bean注解">@Bean注解</h2>
+<ul>
+<li>CGLIB：是一个代码生成库，常用于AOP框架中，用以提供方法拦截操作。它主要通过对字节码的操作，为对象引入间接级别，以控制对象的访问。（JDK动态代理具有只能对接口进行代理的缺点）其底层使用了ASM（一个短小精悍的字节码操作框架）来操作字节码生成新的类。</li>
+<li>@Configuration与@Bean结合使用。@Configuration可理解为用spring的时候xml里面的<code>&lt;beans&gt;</code>标签，@Bean可理解为用spring的时候xml里面的<code>&lt;bean&gt;</code>标签。</li>
+<li>@Bean 有3个阶段：
+<ol>
+<li>增强 @Configuration 注解的类</li>
+</ol>
+</li>
+</ul>
+<pre><code>执行时序
+AbstractApplicationContext -&gt; AbstractApplicationContext: refresh()
+AbstractApplicationContext -&gt; AbstractApplicationContext: invokeBeanFactoryPostProcessors()
+AbstractApplicationContext -&gt; PostProcessorRegistrationDelegate: invokeBeanFactoryPostProcessors
+PostProcessorRegistrationDelegate -&gt; ConfigurationClassPostProcessor: enhanceConfigurationClasses
+ConfigurationClassPostProcessor -&gt; ConfigurationClassEnhancer: enhance
+ConfigurationClassEnhancer # enhance 执行完后，我们会得到 @Configuration 注解的类的一个增强类。这个增强类是基于 cglib 实现的原始类的子类。
+</code></pre>
+<pre><code>2. Spring 扫描得到所有 @Bean 方法：会通过扫描拿到所有Bean的元数据。但不会生成实例
+3. 生成 Spring bean 实例：ConfigurationClassEnhancer中生成cglib 增强类时使用了3个interceptor: BeanMethodInterceptor 、BeanFactoryAwareMethodInterceptor、NoOp.INSTANCE。Spring 是通过执行 @Bean 注解的方法生成 bean，而执行方法时，会经过 cglib interceptor 。interceptor 内部则是基于 BeanFactory 去生成bean。这种方法有两个特点：
+    1. 调用 @Bean 注解的方法时，得到的是单例。
+    2. @Configuration 注解的类内部，@Bean 方法直接互相调用，得到的也是单例，因为这里用的是方法级的 interceptor （Method Interceptor）。
+</code></pre>
+<h2 id="factorybean接口">FactoryBean接口</h2>
+<pre><code class="language-java">public interface FactoryBean&lt;T&gt; {  
+   // 获取实际要返回的bean对象。 
+   T getObject() throws Exception;   
+   // 获取返回的对象类型 
+   Class&lt;?&gt; getObjectType();   
+   // 是否单例 
+   boolean isSingleton();  
+}  
+</code></pre>
+<ul>
+<li>将实现该接口的工厂类注入到容器中成为一个Bean即可实例化新的Bean。</li>
+</ul>
+<h2 id="beandefinitionregistrypostprocessor接口">BeanDefinitionRegistryPostProcessor接口</h2>
+<ul>
+<li>在业务代码中，加上 @Component, @Service，@Repository, @Controller等注解就可以实现以<strong>静态</strong>的方式将bean注册到Spring中了。所谓静态，其特点是需要在Bean初始化之时，其依赖的对象必须初始化完毕。如果被注入的对象初始化晚于当前对象，则注入的对象将为null。</li>
+<li>动态注入是在程序运行期间，动态添加Bean进入到Spring容器。通过该接口可以实现动态注入。</li>
+</ul>
+<pre><code class="language-java">public interface BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor {
+    // 在标准初始化后修改context的内部bean定义注册表。所有常规bean定义都已被加载，但是还没有实例化bean。这允许在进入下一个post-processing阶段之前添加更多的bean定义。
+    // @param registry：应用程序context使用的bean定义注册表
+    void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException;
+    // 即实现postProcessBeanDefinitionRegistry方法，可以修改增加BeanDefinition。此特性可以用来动态生成bean，比如读取某个配置项，然后根据配置项动态生成bean。
+}
+</code></pre>
+<ul>
+<li>示例代码</li>
+</ul>
+<pre><code class="language-java">public class Datasoure {
+    private String name;
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+
+@Configuration
+public class DataConfig {
+    @Bean
+    public BeanDefinitionRegistryPostProcessor beanDefinitionRegistryPostProcessor(Environment env){
+        return new BeanDefinitionRegistryPostProcessor() {
+            @Override
+            public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+                BeanDefinition beanDe = BeanDefinitionBuilder.rootBeanDefinition(Datasoure.class)
+                        .addConstructorArgValue(&quot;datasoure1&quot;).getBeanDefinition();
+                registry.registerBeanDefinition(&quot;soure1&quot;, beanDe);
+            }
+            @Override
+            public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+            }
+        };
+    }
+}
+</code></pre>
+<h2 id="importbeandefinitionregistrar接口">ImportBeanDefinitionRegistrar接口</h2>
+<ul>
+<li>Spring官方就是用这种方式，实现了@Component注解的注入机制。定义一个ImportBeanDefinitionRegistrar的实现类，然后在有@Configuration注解的配置类上使用@Import导入。</li>
+<li>示例代码</li>
+</ul>
+<pre><code class="language-java"> 
+ // 配置类
+@Configuration
+@Import(ImportBeanDefinitionRegistrarTest.class) //导入
+public class ConfigurationTest {
+}
+
+// 进行Bean注册的实现类
+public class ImportBeanDefinitionRegistrarTest implements ImportBeanDefinitionRegistrar{
+	@Override
+	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+		BeanDefinition beanDefinition = new GenericBeanDefinition();
+		beanDefinition.setBeanClassName(TestBean.class.getName());
+		MutablePropertyValues values = beanDefinition.getPropertyValues();
+		values.addPropertyValue(&quot;name&quot;, &quot;ZhangSan&quot;);
+		//这里注册bean
+		registry.registerBeanDefinition(&quot;testBean&quot;, beanDefinition );
+	}
+}
+
+// 被注册的Bean
+public class TestBean {
+	private String name;
+	public String getName() {return name;}
+	public void setName(String name) {this.name = name;}
+}
+
+// 获取被注册的Bean
+@Resource
+private TestBean testBean;
+@Autowired
+private TestBean testBean;
+</code></pre>
+<h1 id="refresh">refresh()</h1>
+<ul>
+<li>文件：AbstractApplicationContext.java</li>
+</ul>
+<pre><code class="language-java">@Override
+public void refresh() throws BeansException, IllegalStateException {
+    synchronized (this.startupShutdownMonitor) {
+    // 准备，记录容器的启动时间startupDate, 标记容器为激活，初始化上下文环境如文件路径信息，验证必填属性是否填写 
+    prepareRefresh();
+    // 这步比较重要(解析)，告诉子类去刷新bean工厂，这步完成后配置文件就解析成一个个bean定义，注册到BeanFactory（但是未被初始化，仅将信息写到了beanDefination的map中）
+    ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+    // 设置beanFactory类加载器，添加多个beanPostProcesser
+    prepareBeanFactory(beanFactory);
+    try {
+        // 允许子类上下文中对beanFactory做后期处理
+        postProcessBeanFactory(beanFactory);
+        // 调用BeanFactoryPostProcessor各个实现类的方法
+        invokeBeanFactoryPostProcessors(beanFactory);
+        // 注册 BeanPostProcessor 的实现类，注意看和 BeanFactoryPostProcessor 的区别
+         // 此接口两个方法: postProcessBeforeInitialization 和 postProcessAfterInitialization
+         // 两个方法分别在 Bean 初始化之前和初始化之后得到执行。注意，到这里 Bean 还没初始化
+        registerBeanPostProcessors(beanFactory);
+        //初始化ApplicationContext的MessageSource
+        initMessageSource();
+        //初始化ApplicationContext事件广播器
+        initApplicationEventMulticaster();
+        // 初始化子类特殊bean（钩子方法）
+        onRefresh();
+        // 注册事件监听器
+        registerListeners();
+        // 初始化所有singleton bean  重点！！重点！！
+        finishBeanFactoryInitialization(beanFactory);
+        // 广播事件，ApplicationContext初始化完成
+        finishRefresh();
+} catch (BeansException ex) {
+....................
+}
+</code></pre>
+<ul>
+<li>方法步骤：</li>
+</ul>
+<ol>
+<li>prepareRefresh()：在刷新上下文之前进行准备
+<ol>
+<li>容器状态设置（开启活跃状态）</li>
+<li>初始化属性设置（属性源信息）</li>
+<li>检查必备属性是否存在</li>
+</ol>
+</li>
+<li>obtainFreshBeanFactory()：获取新的beanFactory，销毁原有beanFactory、为每个bean生成BeanDefinition等
+<ol>
+<li>设置beanFactory序列化id</li>
+<li>获取beanFactory</li>
+</ol>
+</li>
+<li>prepareBeanFactory()：配置beanFacotry的特性
+<ol>
+<li>设置beanFactory的一些属性</li>
+<li>添加后置处理器</li>
+<li>设置忽略的自动装配接口</li>
+<li>注册一些组件</li>
+</ol>
+</li>
+<li>postProcessBeanFactory()
+<ol>
+<li>子类重写以在BeanFactory完成创建后做进一步设置</li>
+</ol>
+</li>
+<li>invokeBeanFactoryPostProcessors()
+<ol>
+<li>调用BeanDefinitionRegistryPostProcessor实现向容器内添加bean的定义</li>
+<li>调用BeanFactoryPostProcessor实现向容器内bean的定义添加属性</li>
+<li>步骤：
+<ol>
+<li>遍历beanFactoryPostProcessors，判断其是否实现了BeanDefinitionRegistryPostProcessor
+<ol>
+<li>是：调用PostProcessBeanDefinitionRegistry方法，添加至registryProcessors中。</li>
+<li>否：添加至regularPostProcessors集合中。</li>
+</ol>
+</li>
+<li>遍历beanFactory中BeanDefinitionRegistryPostProcessor实现，判断其是否实现了PriorityOrdered接口
+<ol>
+<li>是：添加至currentRegistryProcessors集合中，添加至processedBeans集合中</li>
+<li>否：对集合currentRegistryProcessors进行排序，将上述结果添加至registryProcessors集合中，currentRegistryProcessors集合内对象依次调用postProcessBeanDefinitionRegistry方法，清空集合currentRegistryProcessors.</li>
+</ol>
+</li>
+<li>遍历beanFactory中BeanDefinitionRegistryPostProcessor实现，判断其是否未处理过且实现了Ordered接口
+<ol>
+<li>是：添加至currentRegistryProcessors集合中，添加至processedBeans集合中</li>
+<li>否：对集合currentRegistryProcessors进行排序，将上述结果添加至registryProcessors集合中，currentRegistryProcessors集合内对象依次调用postProcessBeanDefinitionRegistry方法，清空集合currentRegistryProcessors</li>
+</ol>
+</li>
+<li>循环遍历步骤3直至beanFactory中不存在未处理的BeanDefinitionRegistryPostProcessor实现
+<ol>
+<li>registryPocessors集合内对象依次调用postProcessBeanFactory方法</li>
+<li>regularPostProcessors集合内对象依次调用postProcessBeanFactory方法</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>registerBeanPostProcessors()
+<ol>
+<li>找到BeanPostProcessor的实现</li>
+<li>排序后注册进容器内</li>
+</ol>
+</li>
+<li>initMessageSource()：初始化国际化相关属性</li>
+<li>initApplicationEventMulticaster()：初始化事件广播器</li>
+<li>onRefresh()：创建web容器</li>
+<li>registerListeners()
+<ol>
+<li>添加容器内事件监听器至事件广播器中</li>
+<li>派发早期未处理事件</li>
+</ol>
+</li>
+<li><strong>finishBeanFactoryInitialization()</strong>：初始化所有剩余的单实例Bean</li>
+<li>finishRefresh()
+<ol>
+<li>初始化生命周期处理器</li>
+<li>调用生命周期处理器的onRefresh方法</li>
+<li>发布ContextRefreshedEvent事件</li>
+<li>JMX相关处理</li>
+</ol>
+</li>
+<li>resetCommonCaches()：清空上述步骤中产生的缓存</li>
+</ol>
+<h1 id="beandefinition">BeanDefinition</h1>
+<figure data-type="image" tabindex="2"><img src="https://usuichi.github.io/post-images/1596680078463.png" alt="类图" loading="lazy"></figure>
+<ul>
+<li>概念：BeanDefinition描述一个bean实例的各种属性，是一个最小化接口，主要目的是允许bean factory后置处理器，对bean property和其他元数据进行修改，以及通过操作BeanDefinition来完成Bean实例化和属性注入。</li>
+</ul>
+<h2 id="源码分析-2">源码分析</h2>
+<figure data-type="image" tabindex="3"><img src="https://usuichi.github.io/post-images/1596696357550.png" alt="类图" loading="lazy"></figure>
+<pre><code class="language-java">public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
+	// scope：单例，即容器中只会存在一个共享的bean实例。
+	String SCOPE_SINGLETON = ConfigurableBeanFactory.SCOPE_SINGLETON;
+	// scope：prototype，每一次请求都会产生一个新的bean实例，相当于一个new的操作。
+	String SCOPE_PROTOTYPE = ConfigurableBeanFactory.SCOPE_PROTOTYPE;
+	// 角色：属于应用程序的bean
+	int ROLE_APPLICATION = 0;
+	// 角色：兼容
+	int ROLE_SUPPORT = 1;
+	// 角色：属于框架自身的bean
+	int ROLE_INFRASTRUCTURE = 2;
+	// parent bean的名称
+	String getParentName();
+	void setParentName(String parentName);
+	// 当前bean的class名称。
+	String getBeanClassName();
+	void setBeanClassName(String beanClassName);
+	// 工厂bean的名称，getFactoryMethodName获取工厂方法的名称，配合使用生成当前bean的实例
+	String getFactoryBeanName();
+	void setFactoryBeanName(String factoryBeanName);
+    String getFactoryMethodName();
+	void setFactoryMethodName(String factoryMethodName);
+	//scope，当前bean是单例的，还是prototype的
+	String getScope();
+	void setScope(String scope);
+	// 默认情况下，都是容器启动时，初始化；如果设置了这个值，容器启动时不会初始化，首次getBean时才初始化
+	boolean isLazyInit();
+	void setLazyInit(boolean lazyInit);
+	// 在本bean初始化之前，需要先初始化的bean；但并非指bean的依赖关系
+	String[] getDependsOn();
+	void setDependsOn(String[] dependsOn);
+	// 是否可以成为自动注入的候选bean
+	boolean isAutowireCandidate();
+	void setAutowireCandidate(boolean autowireCandidate);
+	// 当作为依赖，要注入给某个bean时，当有多个候选bean时，本bean是否为首选
+	boolean isPrimary();
+	void setPrimary(boolean primary);
+  	// 通过xml &lt;bean&gt;方式定义bean时，通过&lt;constructor-arg&gt;来定义构造器的参数，这里即：获取构造器参数
+	ConstructorArgumentValues getConstructorArgumentValues();
+    // 通过xml &lt;bean&gt;方式定义bean时，通过 &lt;property name=&quot;testService&quot; ref=&quot;testService&quot;/&gt; 这种方式来注入依赖，这里即获取property注入的参数值
+	MutablePropertyValues getPropertyValues();
+	// 是否单例
+	boolean isSingleton();
+	// 是否prototype
+	boolean isPrototype();
+	// 是否指定为抽象bean。抽象Bean不会被创建实例，其意义在于定义通用模板（实现类、构造器参数、属性值等配置信息），被子Bean继承。
+	boolean isAbstract();
+	// 获取角色
+	int getRole();
+	// 获取bean描述
+	String getDescription();
+    // 获取资源描述
+	String getResourceDescription();
+	BeanDefinition getOriginatingBeanDefinition();
+}
+</code></pre>
+<h3 id="字段分析">字段分析</h3>
+<ul>
+<li>beanName：默认规则是beanClassName按驼峰转换后的名字。
+<ul>
+<li>如果需允许存在beanName相同的definition，需要添加如下配置</li>
+</ul>
+</li>
+</ul>
+<pre><code>spring:
+  main:
+    allow-bean-definition-overriding: true
+</code></pre>
+<ul>
+<li>scope：默认为singleton。如果设置为prototype，一般不会在启动时初始化。</li>
+<li>parentName：指定parentBean的名称，使用xml配置用的多。</li>
+<li>beanClassName：bean的实际class类型，而一般不是接口的名称，bean要以这个class的元数据来进行创建（一般通过反射）。</li>
+<li>factoryBeanName、factoryMethodName：如果本bean是通过其他工厂bean来创建，则这两个字段为对应的工厂bean的名称，和对应的工厂方法的名称</li>
+<li>lazyInit：取值为true、false、default。如果设了这个为true，则启动时不初始化；否则在启动时进行初始化。</li>
+<li>dependsOn：通过这个属性设置的bean，会保证先于本bean被初始化</li>
+<li>autowireCandidate：表示是否可以被其他的bean使用@autowired的方式来注入。</li>
+<li>primary：当有多个候选bean满足@autowired要求时，其中primary被设置为true的，会被注入；否则会报二义性错误。</li>
+</ul>
+<h3 id="子接口">子接口</h3>
+<ul>
+<li>AnnotatedBeanDefinition：能取到bean definition中对应bean class上标注的注解元数据</li>
+</ul>
+<pre><code class="language-java">public interface AnnotatedBeanDefinition extends BeanDefinition {
+	AnnotationMetadata getMetadata();
+}
+</code></pre>
+<h2 id="手动注册beandefinition">手动注册BeanDefinition</h2>
+<ul>
+<li>通过代码方式手动生成bean definition并注册到bean factory。</li>
+<li>先选择BeanDefinition的实现类：GenericBeanDefinition（推荐）、ChildBeanDefinition（弃用）、RootBeanDefinition（在@Configuration中常用）</li>
+</ul>
+<h3 id="genericbeandefinition">GenericBeanDefinition</h3>
+<ul>
+<li>直接通过new来实例化，再调用方法设置字段</li>
+<li>构造器注入步骤：（property注入方法在bean definition中环城property相关放法即可）
+<ol>
+<li>生成Beanfactory。</li>
+<li>构造BeanDefinition，并在bean definition中表达bean之间的依赖关系。</li>
+<li>注册bean definition</li>
+<li>获取bean</li>
+</ol>
+</li>
+</ul>
+<pre><code class="language-java">public class ManualRegisterBeanDefinitionDemoByConstructor {
+    public static void main(String[] args) {
+        wireDependencyByConstructor();
+    }
+    // 通过构造器的方式来注入依赖
+    private static void wireDependencyByConstructor() {
+        // 1：生成bean factory
+        DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+        // 2. 构造bean definition，并在bean definition中表达bean之间的依赖关系
+        GenericBeanDefinition iTestServiceBeanDefinition = (GenericBeanDefinition) BeanDefinitionBuilder
+                .genericBeanDefinition(TestService.class).getBeanDefinition();
+        GenericBeanDefinition iTestControllerBeanDefinition = (GenericBeanDefinition) BeanDefinitionBuilder
+                .genericBeanDefinition(TestControllerByConstructor.class)
+                // 表达依赖关系
+                .addConstructorArgReference(&quot;testService&quot;)
+                .addConstructorArgValue(&quot;wire by constructor&quot;)
+                .getBeanDefinition();
+         // 3. 注册bean definition
+        AnnotationBeanNameGenerator generator = new AnnotationBeanNameGenerator();
+        String beanNameForTestService = generator.generateBeanName(iTestServiceBeanDefinition, factory);
+        factory.registerBeanDefinition(beanNameForTestService, iTestServiceBeanDefinition);
+        String beanNameForTestController = generator.generateBeanName(iTestControllerBeanDefinition, factory);
+        factory.registerBeanDefinition(beanNameForTestController, TestControllerBeanDefinition);
+         // 4. 获取bean
+        TestControllerByConstructor bean = factory.getBean(TestControllerByConstructor.class);
+        ITestService testService = factory.getBean(ITestService.class);
+        Assert.isTrue(bean.getTestService() == testService);
+    }
+}
+</code></pre>
+<h3 id="rootbeandefinition">RootBeanDefinition</h3>
+<ul>
+<li>不支持使用父BeanDefinition，用途是避免Bean实例构建时递归的寻找父类配置，为了方便实例化操作，提供了大量的缓存字段，方便重复实例化时减少工作量。</li>
+<li>保存了以下信息：
+<ol>
+<li>定义了id、别名与Bean的对应关系（BeanDefinitionHolder）</li>
+<li>Bean的注解（AnnotatedElement）</li>
+<li>具体的工厂方法（Class类型），包括工厂方法的返回类型，工厂方法的Method对象</li>
+<li>构造函数、构造函数形参类型</li>
+<li>Bean的class对象</li>
+</ol>
+</li>
+</ul>
+<pre><code class="language-java">// BeanDefinitionHolder存储有Bean的名称、别名、BeanDefinition
+@Nullable
+private BeanDefinitionHolder decoratedDefinition;
+// 是java反射包的接口，通过它可以查看Bean的注解信息
+@Nullable
+private AnnotatedElement qualifiedElement;
+// 允许缓存
+boolean allowCaching = true;
+// 工厂方法是否唯一
+boolean isFactoryMethodUnique = false;
+// 封装了java.lang.reflect.Type,提供了泛型相关的操作，具体请查看：
+@Nullable
+volatile ResolvableType targetType;
+// 缓存class，表明RootBeanDefinition存储哪个类的信息
+@Nullable
+volatile Class&lt;?&gt; resolvedTargetType;
+// 缓存工厂方法的返回类型
+@Nullable
+volatile ResolvableType factoryMethodReturnType;
+// 缓存工厂方法
+@Nullable
+volatile Method factoryMethodToIntrospect;
+// 在读/写和创建实例的方法有关的字段、缓存字段时使用此锁。
+final Object constructorArgumentLock = new Object();
+// 缓存已经解析的构造函数或是工厂方法，Executable是Method、Constructor类型的父类
+@Nullable
+Executable resolvedConstructorOrFactoryMethod;
+// 表明构造函数参数是否解析完毕
+boolean constructorArgumentsResolved = false;
+// 缓存完全解析的构造函数参数
+@Nullable
+Object[] resolvedConstructorArguments;
+// 缓存待解析的构造函数参数，即还没有找到对应的实例，可以理解为还没有注入依赖的形参
+@Nullable
+Object[] preparedConstructorArguments;
+// 在读/写后处理器相关缓存字段时使用此锁
+final Object postProcessingLock = new Object();
+// 表明是否被MergedBeanDefinitionPostProcessor处理过
+boolean postProcessed = false;
+// 在生成代理的时候会使用，表明是否已经生成代理
+@Nullable
+volatile Boolean beforeInstantiationResolved;
+// 以下三个属性是外部管理的方法集合（配置、初始化、销毁），似乎可以缓存自动装配对象的值，实际缓存的类型是Constructor、Field、Method类型
+@Nullable
+private Set&lt;Member&gt; externallyManagedConfigMembers;
+@Nullable
+// InitializingBean中的init回调函数名——afterPropertiesSet会在这里记录，以便进行生命周期回调
+private Set&lt;String&gt; externallyManagedInitMethods;
+@Nullable
+// DisposableBean的destroy回调函数名——destroy会在这里记录，以便进行生命周期回调
+private Set&lt;String&gt; externallyManagedDestroyMethods;
+</code></pre>
+<h1 id="实例化bean">实例化Bean</h1>
+<ul>
+<li>自定义创建Bean：
+<ol>
+<li>createBean</li>
+<li>resolveBeforeInstantiation</li>
+<li>applyBeanPostProcessorsBeforeInstantiation</li>
+<li>自定义实现postProcessBeforeInstantiation</li>
+</ol>
+</li>
+<li>Bean实例化流程：
+<ol>
+<li>getBean()：项目启动或重启的时候refresh()会调用getBean()初始化所有的Bean。</li>
+<li>doGetBean()：不管是根据名称还是根据类型，getBean()最终都会调用doGetBean()，在doGetBean()方法中一开始就获取了名称beanName和实例sharedInstance。</li>
+<li>getSingleton()：调用结果保存在sharedInstance中，getSingleton(beanName)是从父类容器singletonObjects中取的这个Bean的实例。</li>
+<li>createBean</li>
+<li>resolveBeforeInstantiation</li>
+<li>doCreateBean</li>
+<li>createBeanInstance</li>
+<li>instantiateBean</li>
+<li>instantiate</li>
+<li>populateBean</li>
+<li>initializeBean</li>
+</ol>
+</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/rkYiX-qGb/" class="tag">
+                    Spring Boot
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/SpringBootSourceCode3/">
+                  <h3 class="post-title">
+                    SpringBoot源码学习（3）：监听器
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>

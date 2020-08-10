@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>SpringBoot源码学习（6）：计时器、启动加载器 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1597050005489">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+StopWatch计时器
+ApplicationRunner启动加载器
+
+源码分析
+
+
+
+
+StopWatch计时器
+
+概念：一个非线程安全的工具类，用来记录一个或一组任务的执行时间。
+
+public class StopWatch {
+..." />
+    <meta name="keywords" content="Spring Boot" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1597050005489" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">SpringBoot源码学习（6）：计时器、启动加载器</h2>
+            <div class="post-date">2020-08-09</div>
+            
+              <div class="feature-container" style="background-image: url('https://usuichi.github.io/post-images/SpringBootSourceCode6.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#stopwatch%E8%AE%A1%E6%97%B6%E5%99%A8">StopWatch计时器</a></li>
+<li><a href="#applicationrunner%E5%90%AF%E5%8A%A8%E5%8A%A0%E8%BD%BD%E5%99%A8">ApplicationRunner启动加载器</a>
+<ul>
+<li><a href="#%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90">源码分析</a></li>
+</ul>
+</li>
+</ul>
+</p>
+<h1 id="stopwatch计时器">StopWatch计时器</h1>
+<ul>
+<li>概念：一个非线程安全的工具类，用来记录一个或一组任务的执行时间。</li>
+</ul>
+<pre><code class="language-java">public class StopWatch {
+
+    // 相当于StopWatch的Primary key
+	private final String id;
+    // 是否开启多任务保存
+	private boolean keepTaskList = true;
+    // 任务列表
+	private final List&lt;TaskInfo&gt; taskList = new LinkedList&lt;&gt;();
+	// 开启时间
+	private long startTimeNanos;
+	// 任务名称
+	@Nullable
+	private String currentTaskName;
+    // 最后一个任务对象
+	@Nullable
+	private TaskInfo lastTaskInfo;
+    // 任务数量
+	private int taskCount;
+	// 总用时
+	private long totalTimeNanos;
+    // 构造函数
+	public StopWatch() {
+		this(&quot;&quot;);
+	}
+    //  指定id的构造函数
+	public StopWatch(String id) {
+		this.id = id;
+	}
+    // 获得id
+	public String getId() {
+		return this.id;
+	}
+    // 设置是否开启保存多任务
+	public void setKeepTaskList(boolean keepTaskList) {
+		this.keepTaskList = keepTaskList;
+	}
+     // 对一个未命名的任务开启计时
+	public void start() throws IllegalStateException {
+		start(&quot;&quot;);
+	}
+    // 对一个命名任务开启计时
+	public void start(String taskName) throws IllegalStateException {
+		if (this.currentTaskName != null) {
+			throw new IllegalStateException(&quot;Can't start StopWatch: it's already running&quot;);
+		}
+		this.currentTaskName = taskName;
+		this.startTimeNanos = System.nanoTime();
+	}
+    // 停止当前任务
+	public void stop() throws IllegalStateException {
+		if (this.currentTaskName == null) {
+			throw new IllegalStateException(&quot;Can't stop StopWatch: it's not running&quot;);
+		}
+		long lastTime = System.nanoTime() - this.startTimeNanos;
+		this.totalTimeNanos += lastTime;
+		this.lastTaskInfo = new TaskInfo(this.currentTaskName, lastTime);
+		if (this.keepTaskList) {
+			this.taskList.add(this.lastTaskInfo);
+		}
+		++this.taskCount;
+		this.currentTaskName = null;
+	}
+     // 判断当前计时器是否正在运行
+	public boolean isRunning() {
+		return (this.currentTaskName != null);
+	}
+     // 获得计时器当前任务名
+	@Nullable
+	public String currentTaskName() {
+		return this.currentTaskName;
+	}
+     // 获取最后任务的完成时间
+	public long getLastTaskTimeNanos() throws IllegalStateException {
+		if (this.lastTaskInfo == null) {
+			throw new IllegalStateException(&quot;No tasks run: can't get last task interval&quot;);
+		}
+		return this.lastTaskInfo.getTimeNanos();
+	}
+    // 获取最后任务的完成时间
+	public long getLastTaskTimeMillis() throws IllegalStateException {
+		if (this.lastTaskInfo == null) {
+			throw new IllegalStateException(&quot;No tasks run: can't get last task interval&quot;);
+		}
+		return this.lastTaskInfo.getTimeMillis();
+	}
+    // 获取最后任务的名称
+	public String getLastTaskName() throws IllegalStateException {
+		if (this.lastTaskInfo == null) {
+			throw new IllegalStateException(&quot;No tasks run: can't get last task name&quot;);
+		}
+		return this.lastTaskInfo.getTaskName();
+	}
+    // 获取最后一个任务对象
+	public TaskInfo getLastTaskInfo() throws IllegalStateException {
+		if (this.lastTaskInfo == null) {
+			throw new IllegalStateException(&quot;No tasks run: can't get last task info&quot;);
+		}
+		return this.lastTaskInfo;
+	}
+    // 获取总用时
+	public long getTotalTimeNanos() {
+		return this.totalTimeNanos;
+	}
+    // 获取总用时
+	public long getTotalTimeMillis() {
+		return nanosToMillis(this.totalTimeNanos);
+	}
+    // 获取总用时
+	public double getTotalTimeSeconds() {
+		return nanosToSeconds(this.totalTimeNanos);
+	}
+    // 获取总任务数
+	public int getTaskCount() {
+		return this.taskCount;
+	}
+    // 获取所有任务
+	public TaskInfo[] getTaskInfo() {
+		if (!this.keepTaskList) {
+			throw new UnsupportedOperationException(&quot;Task info is not being kept!&quot;);
+		}
+		return this.taskList.toArray(new TaskInfo[0]);
+	}
+	/**
+	 * Get a short description of the total running time.
+	 */
+	public String shortSummary() {
+		return &quot;StopWatch '&quot; + getId() + &quot;': running time = &quot; + getTotalTimeNanos() + &quot; ns&quot;;
+	}
+	/**
+	 * Generate a string with a table describing all tasks performed.
+	 * &lt;p&gt;For custom reporting, call {@link #getTaskInfo()} and use the task info
+	 * directly.
+	 */
+	public String prettyPrint() {
+		StringBuilder sb = new StringBuilder(shortSummary());
+		sb.append('\n');
+		if (!this.keepTaskList) {
+			sb.append(&quot;No task info kept&quot;);
+		}
+		else {
+			sb.append(&quot;---------------------------------------------\n&quot;);
+			sb.append(&quot;ns         %     Task name\n&quot;);
+			sb.append(&quot;---------------------------------------------\n&quot;);
+			NumberFormat nf = NumberFormat.getNumberInstance();
+			nf.setMinimumIntegerDigits(9);
+			nf.setGroupingUsed(false);
+			NumberFormat pf = NumberFormat.getPercentInstance();
+			pf.setMinimumIntegerDigits(3);
+			pf.setGroupingUsed(false);
+			for (TaskInfo task : getTaskInfo()) {
+				sb.append(nf.format(task.getTimeNanos())).append(&quot;  &quot;);
+				sb.append(pf.format((double) task.getTimeNanos() / getTotalTimeNanos())).append(&quot;  &quot;);
+				sb.append(task.getTaskName()).append(&quot;\n&quot;);
+			}
+		}
+		return sb.toString();
+	}
+	/**
+	 * Generate an informative string describing all tasks performed
+	 * &lt;p&gt;For custom reporting, call {@link #getTaskInfo()} and use the task info
+	 * directly.
+	 */
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(shortSummary());
+		if (this.keepTaskList) {
+			for (TaskInfo task : getTaskInfo()) {
+				sb.append(&quot;; [&quot;).append(task.getTaskName()).append(&quot;] took &quot;).append(task.getTimeNanos()).append(&quot; ns&quot;);
+				long percent = Math.round(100.0 * task.getTimeNanos() / getTotalTimeNanos());
+				sb.append(&quot; = &quot;).append(percent).append(&quot;%&quot;);
+			}
+		}
+		else {
+			sb.append(&quot;; no task info kept&quot;);
+		}
+		return sb.toString();
+	}
+	private static long nanosToMillis(long duration) {
+		return TimeUnit.NANOSECONDS.toMillis(duration);
+	}
+	private static double nanosToSeconds(long duration) {
+		return duration / 1_000_000_000.0;
+	}
+
+	/**
+	 * Nested class to hold data about one task executed within the {@code StopWatch}.
+	 */
+	public static final class TaskInfo {
+		private final String taskName;
+		private final long timeNanos;
+		TaskInfo(String taskName, long timeNanos) {
+			this.taskName = taskName;
+			this.timeNanos = timeNanos;
+		}
+		/**
+		 * Get the name of this task.
+		 */
+		public String getTaskName() {
+			return this.taskName;
+		}
+		/**
+		 * Get the time in nanoseconds this task took.
+		 * @since 5.2
+		 * @see #getTimeMillis()
+		 * @see #getTimeSeconds()
+		 */
+		public long getTimeNanos() {
+			return this.timeNanos;
+		}
+		/**
+		 * Get the time in milliseconds this task took.
+		 * @see #getTimeNanos()
+		 * @see #getTimeSeconds()
+		 */
+		public long getTimeMillis() {
+			return nanosToMillis(this.timeNanos);
+		}
+		/**
+		 * Get the time in seconds this task took.
+		 * @see #getTimeMillis()
+		 * @see #getTimeNanos()
+		 */
+		public double getTimeSeconds() {
+			return nanosToSeconds(this.timeNanos);
+		}
+	}
+}
+</code></pre>
+<ul>
+<li>使用步骤：</li>
+</ul>
+<ol>
+<li>创建StopWatch实例</li>
+<li>调用start()方法
+<ol>
+<li>执行业务校验</li>
+<li>保存任务名称</li>
+<li>记录当前系统时间</li>
+</ol>
+</li>
+<li>调用stop()方法
+<ol>
+<li>执行业务校验</li>
+<li>计算任务耗时</li>
+<li>将当前任务添加到任务列表中（keepTaskList = true时）</li>
+<li>任务执行数加一</li>
+<li>清空当前任务</li>
+</ol>
+</li>
+</ol>
+<h1 id="applicationrunner启动加载器">ApplicationRunner启动加载器</h1>
+<ul>
+<li>概念：开发中有可能需要实现在项目启动后执行的功能，如读取配置文件，数据库连接等。SpringBoot提供的一种简单的实现方案就是CommandLineRunner和ApplicationRunner接口，实现功能的代码放在实现的run方法中，它们执行的时机为容器启动完成的时候。</li>
+<li>实现方式：
+<ol>
+<li>实现CommandLineRunner接口，重写run方法，通过order排序。</li>
+<li>实现ApplicationRunner接口，重写run方法，通过order排序。（order值相同ApplicationRunner优先）</li>
+</ol>
+</li>
+</ul>
+<h2 id="源码分析">源码分析</h2>
+<ul>
+<li>以run()方法的callRunners()方法为入口。</li>
+</ul>
+<pre><code class="language-java">private void callRunners(ApplicationContext context, ApplicationArguments args) {
+    List&lt;Object&gt; runners = new ArrayList&lt;Object&gt;();
+    // 1.获取所有实现ApplicationRunner接口的类
+    runners.addAll(context.getBeansOfType(ApplicationRunner.class).values());
+    // 2.获取所有实现CommandLineRunner的类
+    runners.addAll(context.getBeansOfType(CommandLineRunner.class).values());
+    // 3.根据其@Order进行排序
+    AnnotationAwareOrderComparator.sort(runners);
+    for (Object runner : new LinkedHashSet&lt;Object&gt;(runners)) {
+        // 4.调用ApplicationRunner其run方法
+        if (runner instanceof ApplicationRunner) {
+            callRunner((ApplicationRunner) runner, args);
+        }
+        // 5.调用CommandLineRunner其run方法
+        if (runner instanceof CommandLineRunner) {
+            callRunner((CommandLineRunner) runner, args);
+        }
+    }
+}
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/rkYiX-qGb/" class="tag">
+                    Spring Boot
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/SpringBootSourceCode5/">
+                  <h3 class="post-title">
+                    SpringBoot源码学习（5）：Banner
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>
