@@ -1,0 +1,2346 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《JavaScript高级程序设计(第4版)》阅读笔记 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1600692521504">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+基础概念
+
+概述
+&lt;script&gt;标签
+文档模式
+
+
+基础语法
+
+Undefiend类型
+Null类型
+Boolean类型
+Number类型
+String类型
+Symbol类型
+Object类型
+语句
+
+
+基础机制
+
+变量
+上..." />
+    <meta name="keywords" content="JavaScript" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1600692521504" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《JavaScript高级程序设计(第4版)》阅读笔记</h2>
+            <div class="post-date">2020-09-11</div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5">基础概念</a>
+<ul>
+<li><a href="#%E6%A6%82%E8%BF%B0">概述</a></li>
+<li><a href="#script%E6%A0%87%E7%AD%BE"><code>&lt;script&gt;</code>标签</a></li>
+<li><a href="#%E6%96%87%E6%A1%A3%E6%A8%A1%E5%BC%8F">文档模式</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95">基础语法</a>
+<ul>
+<li><a href="#undefiend%E7%B1%BB%E5%9E%8B">Undefiend类型</a></li>
+<li><a href="#null%E7%B1%BB%E5%9E%8B">Null类型</a></li>
+<li><a href="#boolean%E7%B1%BB%E5%9E%8B">Boolean类型</a></li>
+<li><a href="#number%E7%B1%BB%E5%9E%8B">Number类型</a></li>
+<li><a href="#string%E7%B1%BB%E5%9E%8B">String类型</a></li>
+<li><a href="#symbol%E7%B1%BB%E5%9E%8B">Symbol类型</a></li>
+<li><a href="#object%E7%B1%BB%E5%9E%8B">Object类型</a></li>
+<li><a href="#%E8%AF%AD%E5%8F%A5">语句</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9F%BA%E7%A1%80%E6%9C%BA%E5%88%B6">基础机制</a>
+<ul>
+<li><a href="#%E5%8F%98%E9%87%8F">变量</a></li>
+<li><a href="#%E4%B8%8A%E4%B8%8B%E6%96%87">上下文</a></li>
+<li><a href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6">垃圾回收</a></li>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B">基本引用类型</a></li>
+<li><a href="#%E9%9B%86%E5%90%88%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B">集合引用类型</a></li>
+<li><a href="#%E8%BF%AD%E4%BB%A3%E5%99%A8%E4%B8%8E%E7%94%9F%E6%88%90%E5%99%A8">迭代器与生成器</a></li>
+</ul>
+</li>
+<li><a href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B">面向对象编程</a>
+<ul>
+<li><a href="#%E5%A2%9E%E5%BC%BA%E5%AF%B9%E8%B1%A1%E8%AF%AD%E6%B3%95">增强对象语法</a></li>
+<li><a href="#%E7%BB%A7%E6%89%BF">继承</a></li>
+<li><a href="#%E7%B1%BB">类</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BB%A3%E7%90%86%E4%B8%8E%E5%8F%8D%E5%B0%84">代理与反射</a>
+<ul>
+<li><a href="#%E4%BB%A3%E7%90%86%E6%8D%95%E8%8E%B7%E5%99%A8%E4%B8%8E%E5%8F%8D%E5%B0%84%E6%96%B9%E6%B3%95">代理捕获器与反射方法</a></li>
+</ul>
+</li>
+<li><a href="#%E5%87%BD%E6%95%B0">函数</a>
+<ul>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E5%87%BD%E6%95%B0">基本函数</a></li>
+<li><a href="#promise">Promise</a></li>
+<li><a href="#%E5%BC%82%E6%AD%A5%E5%87%BD%E6%95%B0">异步函数</a></li>
+</ul>
+</li>
+<li><a href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8Bbombrowser-object-model">浏览器对象模型（BOM，Browser Object Model）</a>
+<ul>
+<li><a href="#window%E5%AF%B9%E8%B1%A1">window对象</a>
+<ul>
+<li><a href="#location%E5%AF%B9%E8%B1%A1">location对象</a></li>
+<li><a href="#navigator%E5%AF%B9%E8%B1%A1">navigator对象</a></li>
+<li><a href="#screen%E5%AF%B9%E8%B1%A1">screen对象</a></li>
+<li><a href="#history%E5%AF%B9%E8%B1%A1">history对象</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%A3%80%E6%B5%8B">客户端检测</a></li>
+<li><a href="#%E6%96%87%E6%A1%A3%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8Bdom-document-object-model">文档对象模型（DOM, Document Object Model）</a>
+<ul>
+<li><a href="#%E8%8A%82%E7%82%B9%E5%B1%82%E7%BA%A7">节点层级</a>
+<ul>
+<li><a href="#node%E7%B1%BB%E5%9E%8B">Node类型</a></li>
+<li><a href="#document%E7%B1%BB%E5%9E%8B">Document类型</a></li>
+<li><a href="#element%E7%B1%BB%E5%9E%8B">Element类型</a></li>
+<li><a href="#text%E7%B1%BB%E5%9E%8B">Text类型</a></li>
+<li><a href="#comment%E7%B1%BB%E5%9E%8B">Comment类型</a></li>
+<li><a href="#cdatasection%E7%B1%BB%E5%9E%8B">CDATASection类型</a></li>
+<li><a href="#documenttype%E7%B1%BB%E5%9E%8B">DocumentType类型</a></li>
+<li><a href="#documentfragment%E7%B1%BB%E5%9E%8B">DocumentFragment类型</a></li>
+<li><a href="#attr%E7%B1%BB%E5%9E%8B">Attr类型</a></li>
+</ul>
+</li>
+<li><a href="#dom%E7%BC%96%E7%A8%8B">DOM编程</a></li>
+<li><a href="#dom%E6%89%A9%E5%B1%95">DOM扩展</a></li>
+<li><a href="#dom2dom3">DOM2/DOM3</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%8B%E4%BB%B6">事件</a>
+<ul>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5">基本概念</a></li>
+<li><a href="#%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E7%A8%8B%E5%BA%8F">事件处理程序</a></li>
+<li><a href="#%E4%BA%8B%E4%BB%B6%E5%AF%B9%E8%B1%A1">事件对象</a></li>
+<li><a href="#%E4%BA%8B%E4%BB%B6%E7%B1%BB%E5%9E%8B">事件类型</a></li>
+</ul>
+</li>
+<li><a href="#%E8%A1%A8%E5%8D%95%E8%84%9A%E6%9C%AC">表单脚本</a>
+<ul>
+<li><a href="#%E5%9F%BA%E7%A1%80">基础</a></li>
+<li><a href="#%E6%96%87%E6%9C%AC%E6%A1%86%E7%BC%96%E7%A8%8B">文本框编程</a></li>
+<li><a href="#%E9%80%89%E6%8B%A9%E6%A1%86%E7%BC%96%E7%A8%8B">选择框编程</a></li>
+</ul>
+</li>
+<li><a href="#javascript-api">JavaScript API</a></li>
+<li><a href="#json">JSON</a>
+<ul>
+<li><a href="#%E8%AF%AD%E6%B3%95">语法</a></li>
+<li><a href="#%E8%A7%A3%E6%9E%90%E4%B8%8E%E5%BA%8F%E5%88%97%E5%8C%96">解析与序列化</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E4%B8%8E%E8%BF%9C%E7%A8%8B%E8%B5%84%E6%BA%90">网络请求与远程资源</a>
+<ul>
+<li><a href="#xhr%E5%AF%B9%E8%B1%A1">XHR对象</a></li>
+<li><a href="#%E8%B7%A8%E6%BA%90%E8%B5%84%E6%BA%90%E5%85%B1%E4%BA%ABcross-origin-resource-sharing-cors">跨源资源共享(Cross-Origin Resource Sharing, CORS)</a></li>
+<li><a href="#fetch-api">Fetch API</a></li>
+<li><a href="#beacon-api">Beacon API</a></li>
+</ul>
+</li>
+<li><a href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%98%E5%82%A8">客户端存储</a>
+<ul>
+<li><a href="#cookie">cookie</a></li>
+<li><a href="#web-storage">Web Storage</a></li>
+<li><a href="#indexeddb">IndexedDB</a></li>
+</ul>
+</li>
+<li><a href="#%E6%A8%A1%E5%9D%97">模块</a>
+<ul>
+<li><a href="#%E6%A8%A1%E5%9D%97%E5%8A%A0%E8%BD%BD%E5%99%A8">模块加载器</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B7%A5%E4%BD%9C%E8%80%85%E7%BA%BF%E7%A8%8B">工作者线程</a>
+<ul>
+<li><a href="#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5-2">基础概念</a></li>
+<li><a href="#%E4%B8%93%E7%94%A8%E5%B7%A5%E4%BD%9C%E8%80%85%E7%BA%BF%E7%A8%8B">专用工作者线程</a></li>
+<li><a href="#%E5%85%B1%E4%BA%AB%E5%B7%A5%E4%BD%9C%E8%80%85%E7%BA%BF%E7%A8%8B">共享工作者线程</a></li>
+<li><a href="#%E6%9C%8D%E5%8A%A1%E5%B7%A5%E4%BD%9C%E8%80%85%E7%BA%BF%E7%A8%8B">服务工作者线程</a></li>
+</ul>
+</li>
+</ul>
+</p>
+<h1 id="基础概念">基础概念</h1>
+<h2 id="概述">概述</h2>
+<ul>
+<li>JavaScript是一门用来与网页交互的脚本语言，包含以下三个组成部分。
+<ol>
+<li>ECMAScript：由ECMA-262定义并提供核心功能。</li>
+<li>文档对象模型（DOM）：提供与网页内容交互的方法和接口。</li>
+<li>浏览器对象模型（BOM）：提供与浏览器交互的方法和接口。</li>
+</ol>
+</li>
+</ul>
+<h2 id="script标签"><code>&lt;script&gt;</code>标签</h2>
+<ul>
+<li>将JavaScript插入HTML的主要方法是使用<code>&lt;script&gt;</code>元素。它有两种使用方式：
+<ul>
+<li>直接在网页中嵌入JavaScript代码。（代码直接放在元素中）</li>
+<li>在网页中包含外部JavaScript文件。（使用src属性，会忽略行内代码）
+<ul>
+<li><strong>通常认为最佳实践是尽可能将JavaScript代码放在外部文件中。</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>在<code>&lt;script&gt;</code>元素中的代码被计算完成之前，页面会阻塞。</li>
+<li><code>&lt;script&gt;</code>标签有以下8种属性：
+<ul>
+<li>async：立即开始下载外部脚本，异步执行，不保证能按照它们出现的次序执行。</li>
+<li>charset：规定在外部脚本文件中使用的字符编码。</li>
+<li>crossorigin：配置相关请求的CORS（跨源资源共享）设置。</li>
+<li>defer：立即开始下载外部脚本，但在浏览器解析到结束的<code>&lt;/html&gt;</code>标签后才会执行，总是按照它们被列出的次序执行。</li>
+<li>integrity：比对接收到的资源和指定的加密签名，以验证子资源完整性（SRI，Subresource Intergrity）。</li>
+<li>language：废弃。规定脚本语言。</li>
+<li>src：表示包含要执行的代码的外部文件。</li>
+<li>type：代替language，表示代码块中脚本语言的MIME类型。</li>
+</ul>
+</li>
+<li>在处理JavaScript代码之前完全渲染页面：通常将所有JavaScript引用放在<code>&lt;body&gt;</code>元素中的页面内容之后。</li>
+<li>动态加载脚本：使用DOM API，通过向DOM中动态添加script元素同样可以加载指定的脚本。可以在文档他头部显式地声明动态加载脚本，让预加载器知道其存在，以避免对性能的影响。</li>
+<li><code>&lt;noscript&gt;</code>元素：用于给不支持JavaScript的浏览器提供替代内容。满足两者之一才会被渲染：
+<ul>
+<li>浏览器不支持脚本。</li>
+<li>浏览器对脚本的支持被关闭。</li>
+</ul>
+</li>
+</ul>
+<h2 id="文档模式">文档模式</h2>
+<ul>
+<li>使用doctype切换文档模式。
+<ul>
+<li>混杂模式：通过省略文档开头的doctype声明开启。让IE像IE5一样支持一些非标准的特性。</li>
+<li>标准模式：通过几种文档类型声明开启。让IE具有兼容标准的行为。</li>
+<li>准标准模式：通过过渡性文档类型（Transitional）和框架集文档类型（Frameset）开启。支持很多标准的特性，但是没有标准规定得那么严格。</li>
+</ul>
+</li>
+</ul>
+<h1 id="基础语法">基础语法</h1>
+<ul>
+<li>大小写：一切都区分大小写。</li>
+<li>标识符：变量、函数、属性或函数参数的名称。标识符可以由一或多个下列字符组成：
+<ul>
+<li>第一个字符必须是一个字母、下划线、美元符号。</li>
+<li>剩下的其他字符可以是字母、下划线、美元符号、数字。</li>
+<li>标识符使用驼峰大小写形式：第一个单词的首字母小写，后面每个单词的首字母大写。</li>
+</ul>
+</li>
+<li>注释：采用C语言风格的注释。</li>
+<li>严格模式：不允许使用未声明的变量。</li>
+</ul>
+<pre><code class="language-javascript">// 预处理指令，可以对全部开启或对某个函数开启
+&quot;use strict&quot;;
+</code></pre>
+<ul>
+<li>语句：以分号结尾。省略分号意味着由解析器确定语句在哪里结尾。</li>
+<li>变量：不使用<code>var</code>，优先使用<code>const</code>，<code>let</code>次之。
+<ul>
+<li><code>var</code>：
+<ul>
+<li>函数作用域：使用<code>var</code>操作符定义的变量会成为包含它的函数的局部变量。</li>
+<li>允许声明提升：把所有变量声明都拉到函数作用域的顶部。</li>
+<li>允许冗余声明：反复多次使用<code>var</code>声明同一个变量也没有问题。</li>
+<li>全局声明：会成为windows对象的属性。</li>
+</ul>
+</li>
+<li><code>let</code>：
+<ul>
+<li>块作用域：使用<code>let</code>操作符定义的变量会成为包含它的块的局部变量。</li>
+<li>不允许声明提升：在声明之前的引用会抛出ReferenceError。</li>
+<li>不允许冗余声明：不允许同一个块作用域中出现反复声明。</li>
+<li>全局声明：不会成为windows对象的属性。</li>
+<li>不能依赖条件声明模式。</li>
+<li>每次迭代声明一个独立变量实例。</li>
+</ul>
+</li>
+<li><code>const</code>：行为与<code>let</code>基本相同，区别是用它声明变量时必须同时初始化变量，且尝试修改<code>const</code>声明的变量会导致运行时错误。
+<ul>
+<li><code>const</code>声明的限制只适用于它指向的变量的引用，修改这个对象内部的属性是允许的。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>数据类型：有6种原始类型，使用typeof变量的数据类型，返回以下6种字符串。
+<ul>
+<li>&quot;undefined&quot;：值未定义(未初始化变量)。</li>
+<li>&quot;boolean&quot;：布尔值。</li>
+<li>&quot;string&quot;：字符串值。</li>
+<li>&quot;number&quot;：数值。</li>
+<li>&quot;object&quot;：值为对象(而不是函数)或null(空对象指针)。</li>
+<li>&quot;function&quot;：值为函数。</li>
+<li>&quot;symbol&quot;：值为符号。</li>
+</ul>
+</li>
+</ul>
+<h2 id="undefiend类型">Undefiend类型</h2>
+<ul>
+<li>值：Undefined类型只有一个值，即特殊值undefined。</li>
+<li>初始化：永远不必显式地将变量值设置为undefined。</li>
+<li>由于变量未声明和变量声明却未初始化时使用typeof都会返回undefined，因此建议在声明变量的同时进行初始化，以保证返回undefined时是变量未声明。</li>
+</ul>
+<h2 id="null类型">Null类型</h2>
+<ul>
+<li>值：Null类型只有一个值，即特殊值null。</li>
+<li>初始化：在定义将来要保存对象值的变量时，建议使用null来初始化。</li>
+<li>undefined值是由null值派生而来的，因此ECMA-262将它们定义为表面上相等。</li>
+</ul>
+<pre><code class="language-javascript">console.log(null == undefined);  // true
+</code></pre>
+<h2 id="boolean类型">Boolean类型</h2>
+<ul>
+<li>值：Boolean类型有两个值，即true和false。</li>
+<li>类型转换：Boolean()转型函数可以在任意类型的数据上调用，而且始终返回一个布尔值。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">转换为true</th>
+<th style="text-align:left">转换为false</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Boolean</td>
+<td style="text-align:left">true</td>
+<td style="text-align:left">false</td>
+</tr>
+<tr>
+<td style="text-align:left">String</td>
+<td style="text-align:left">非空字符串</td>
+<td style="text-align:left">&quot;&quot;</td>
+</tr>
+<tr>
+<td style="text-align:left">Number</td>
+<td style="text-align:left">非零数值</td>
+<td style="text-align:left">0、NaN</td>
+</tr>
+<tr>
+<td style="text-align:left">Object</td>
+<td style="text-align:left">任意对象</td>
+<td style="text-align:left">null</td>
+</tr>
+<tr>
+<td style="text-align:left">Undefined</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">undefined</td>
+</tr>
+</tbody>
+</table>
+<h2 id="number类型">Number类型</h2>
+<ul>
+<li>值：10进制整数、8进制整数（以0开头）、16进制整数（以0x开头）、浮点数（允许科学计数法）。
+<ul>
+<li>小于Number.MIN_VALUE或大于Number.MAX_VALUE的值将表示为正负Infinity。</li>
+<li>NaN用于表示本来要返回数值的操作失败了（而不是抛出错误）。</li>
+</ul>
+</li>
+<li>类型转换：Number()可用于任何数据类型；parseInt()和parseFloat()用于将字符串转换为数值。
+<ul>
+<li>Number()函数的转换规则：
+<ul>
+<li>布尔值：true为1，false为0。</li>
+<li>null：0。</li>
+<li>undefined：NaN。</li>
+<li>字符串：如果字符串包含数值字符，则转换为一个十进制数值；如果字符串包含有效的浮点值格式如，则会转换为相应的浮点；如果字符串包含有效的十六进制格式如&quot;0xf&quot;，则会转换为与该十六进制值对应的十进制整数值；如果是空字符串，则返回0；如果字符串包含除上述情况之外的其他字符，则返回NaN。</li>
+<li>对象，调用valueOf()方法，并按照上述规则转换返回的值。如果转换结果是NaN，则调用toString()方法，再按照转换字符串的规则转换。</li>
+</ul>
+</li>
+<li>parseInt()函数的转换规则：
+<ul>
+<li>字符串最前面的空格会被忽略，从第一个非空格字符开始转换。</li>
+<li>如果第一个字符不是数值字符、加号或减号，parseInt()立即返回NaN（包括空串）。</li>
+<li>如果第一个字符是数值字符、加号或减号，则继续依次检测每个字符，直到字符串末尾，或碰到非数值字符。</li>
+<li>能识别不同的整数格式，也可以接收第二个参数，用于指定进制。</li>
+</ul>
+</li>
+<li>parseFloat()函数的转换规则：和parseInt()函数类似，但始终忽略字符串开头的零，且只解析十进制数值。</li>
+</ul>
+</li>
+</ul>
+<h2 id="string类型">String类型</h2>
+<ul>
+<li>值：字符串可以使用双引号（&quot;）、单引号（'）或反引号（`）表示。字符串是不可变的。</li>
+<li>类型转换：toString()函数。</li>
+<li>模板字面量：反引号，保留换行字符，支持字符串插值（使用<code>${}</code>实现），支持定义标签函数，也可以使用String.raw标签函数直接获取原始字符串。</li>
+</ul>
+<h2 id="symbol类型">Symbol类型</h2>
+<ul>
+<li>概念：用来创建唯一记号，进而用作非字符串形式的对象属性。
+<ul>
+<li>凡是可以使用字符串或数值作为属性的地方，都可以使用符号。</li>
+</ul>
+</li>
+<li>值：使用Symbol()函数初始化，可以传入一个字符串参数作为对符号的描述。Symbol()函数不能用作构造函数，与new关键字一起使用。
+<ul>
+<li>全局符号注册表：如果需要共享和重用符号实例，可以调用Symbol.for()，用一个字符串作为键，在全局符号注册表中创建并重用符号。还可以使用Symbol.keyFor()来查询全局注册表。</li>
+</ul>
+</li>
+<li>常用内置符号：最重要的用途之一是重新定义它们，从而改变原生结构的行为。
+<ul>
+<li>Symbol.iterator：由for-of语句使用，实现迭代器。</li>
+<li>Symbol.asyncIterator：由for-await-of语句使用，实现异步迭代器。</li>
+<li>Symbol.hasInstance：由instanceof操作符使用，用来确定一个对象实例的原型链上是否有原型。</li>
+<li>Symbol.isConcatSpreadable：ES6中的Array.prototype.concat()方法会根据接收到的对象类型选择如何将一个类数组对象拼接成数组实例。覆盖Symbol.isConcatSpreadable的值可以修改这个行为。</li>
+<li>Symbol.match：String.prototype.match()方法会使用以Symbol.match为键的函数来对正则表达式求值。</li>
+<li>Symbol.replace：String.prototype.replace()方法会使用以Symbol.replace为键的函数来对正则表达式求值。</li>
+<li>Symbol.search：String.prototype.search()方法会使用以Symbol.search为键的函数来对正则表达式求值。</li>
+<li>Symbol.species：用Symbol.species定义静态的getter方法，可以覆盖新创建实例的原型定义。</li>
+<li>Symbol.split：String.prototype.split()方法会使用以Symbol.split为键的函数来对正则表达式求值。</li>
+<li>Symbol.toPrimitive：由ToPrimitive抽象操作使用，将对象转换为相应的原始值。</li>
+<li>Symbol.toStringTag：通过Object.prototype.toString()方法获取对象标识时，会检索由Symbol.toStringTag指定的实例标识符。</li>
+<li>Symbol.unscopables：设置这个符号并让其映射对应属性的键值为true，就可以阻止该属性出现在with环境绑定中。</li>
+</ul>
+</li>
+</ul>
+<h2 id="object类型">Object类型</h2>
+<ul>
+<li>概念：对象是一组数据（属性）和功能（方法）的集合。通过new操作符后跟对象类型的名称来创建。</li>
+<li>每个Object实例都有如下属性和方法：
+<ul>
+<li>constructor：构造函数，用于创建对象。</li>
+<li>hasOwnProperty(propertyName)：用于判断当前对象实例（不是原型）上是否存在给定的属性。</li>
+<li>isPrototypeof(object)：用于判断当前对象是否为另一个对象的原型。</li>
+<li>propertyIsEnumerable(propertyName)：用于判断给定的属性是否可以使用for-in语句枚举。</li>
+<li>toLocaleString()：返回对象的字符串表示，该字符串反映对象所在的本地化执行环境。</li>
+<li>toString()：返回对象的字符串表示。</li>
+<li>valueOf()：返回对象对应的字符串、数值或布尔值表示。</li>
+</ul>
+</li>
+</ul>
+<h2 id="语句">语句</h2>
+<pre><code class="language-javascript">// 1. if语句
+if (condition) {
+    statement1
+} else {
+    statement2
+}
+
+// 2. do-while语句
+do {
+  statement
+} while (expression);
+
+// 3. while语句
+while(expression){
+    statement
+}
+
+// 4. for语句
+for (initialization; expression; post-loop-expression){
+    statement
+}
+
+// 5. for-in语句，用于枚举对象中的非符号键属性。
+for (property in expression){
+    statement
+}
+
+// 6. for-of语句，用于遍历可迭代对象的元素。
+for (property of expression){
+    statement
+}
+
+// 7. 标签语句，可以通过break/continue引用。
+label: statement
+
+// 8. break/continue语句
+
+// 9. with语句，将代码作用域设置为特定的对象。
+// (由于with语句影响性能且难于调试其中的代码，通常不推荐在产品代码中使用with语句。)
+with (expression){
+    statement
+}
+
+// 10. switch语句
+switch (expression) {
+  case value1:
+    statement
+    break;
+  case value2:
+    statement
+    break;
+  default:
+    statement
+}
+
+// 11. 函数
+function functionName(arg0, arg1,...,argN) {
+  statements
+}
+</code></pre>
+<h1 id="基础机制">基础机制</h1>
+<h2 id="变量">变量</h2>
+<ul>
+<li>变量的类型：
+<ul>
+<li>原始值：简单数据，保存原始值的变量是按值访问的。
+<ul>
+<li>复制：将值复制到新变量处。</li>
+</ul>
+</li>
+<li>引用值：由多个值构成的对象，保存引用值的变量是按引用访问的。（是某个特定引用类型的实例）
+<ul>
+<li>动态属性：可以随时添加、修改和删除其属性和方法。</li>
+<li>复制：将指针指向同一块内存地址。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>传递参数：所有函数的参数都是按值传递的。（当在局部作用域中修改对象而变化反映到全局时，并不意味着参数是按引用传递的。）</li>
+</ul>
+<h2 id="上下文">上下文</h2>
+<ul>
+<li>上下文：变量或函数的上下文决定了它们可以访问哪些数据，以及它们的行为。
+<ul>
+<li>每个上下文都有一个关联的变量对象（variable object），而这个上下文中定义的所有变量和函数都存在于这个对象上。</li>
+<li>上下文在其所有代码都执行完毕后会被销毁，包括定义在它上面的所有变量和函数。</li>
+</ul>
+</li>
+<li>全局上下文：在浏览器中就是window对象。
+<ul>
+<li>全局上下文在应用程序退出前才会被销毁。</li>
+<li>全局上下文的变量对象始终是作用域链的最后一个变量对象。</li>
+</ul>
+</li>
+<li>作用域链：上下文中的代码在执行的时候，会创建变量对象的一个作用域链，它决定了各级上下文中的代码在访问变量和函数时的顺序。
+<ul>
+<li>代码正在执行的上下文的变量对象始终位于作用域链的最前端。</li>
+<li>作用域链增强：在作用域链前端临时添加一个上下文，这个上下文在代码执行后会被删除。
+<ul>
+<li>try/catch语句的catch块：创建一个新的变量对象，这个变量对象会包含要抛出的错误对象的声明。</li>
+<li>with语句：向作用域链前端添加指定的对象。</li>
+</ul>
+</li>
+<li>标识符查找：沿作用域链从前向后查找。</li>
+</ul>
+</li>
+<li>活动对象：函数上下文的变量对象。它最初只有一个定义变量：arguments。</li>
+</ul>
+<h2 id="垃圾回收">垃圾回收</h2>
+<ul>
+<li>基本思路：周期性地确定哪个变量不会再使用，然后释放它占用的内存。</li>
+<li>标记清理：最常用的垃圾回收策略。先标记内存中存储的所有变量，再将所有在上下文中的变量，以及被在上下文中的变量引用的变量的标记去掉。在此之后再被加上标记的变量就是待删除的了，原因是任何在上下文中的变量都访问不到它们了。随后垃圾回收程序做一次内存清理，销毁带标记的所有值并收回它们的内存。</li>
+<li>解除引用：如果数据不再必要，那么把它设置为null，从而释放其引用。（最适合全局变量和全局对象的属性）
+<ul>
+<li>局部变量在超出作用域后会被自动解除引用。</li>
+</ul>
+</li>
+<li>内存泄漏：意外声明全局变量；定时器；使用JavaScript闭包等都有可能造成内存泄漏。</li>
+<li>避免垃圾回收程序频繁运行：对象池；静态分配。</li>
+</ul>
+<h2 id="基本引用类型">基本引用类型</h2>
+<ul>
+<li>引用类型：描述了自己的对象应有的属性和方法。</li>
+<li>Date：日期类型</li>
+<li>RegExp：正则表达式类型</li>
+<li>Boolean、Number、String：原始值包装类型</li>
+<li>单例内置对象：已经实例化好的对象，不用显式地实例化。
+<ul>
+<li>Global：在全局作用域中定义的变量和函数都会变成Global对象的属性。浏览器将window对象实现为Global对象的代理。</li>
+<li>Math：提供了一些辅助计算的属性和方法。</li>
+</ul>
+</li>
+</ul>
+<h2 id="集合引用类型">集合引用类型</h2>
+<ul>
+<li>Object：有两种创建方式
+<ul>
+<li>使用new操作符和Object构造函数。</li>
+<li>使用对象字面量表示法。</li>
+</ul>
+</li>
+<li>Array：数组大小是动态的，其中每个槽位可以存储任意类型的数据。有三种创建方式
+<ul>
+<li>使用new操作符和Array构造函数。</li>
+<li>使用数组字面量表示法。</li>
+<li>静态方法：from()用于将类数组结构转换为数组实例；of()用于将一组参数转换为数组实例。</li>
+<li>数组空位：将逗号之间相应索引位置的值当成空位（将这些空位当成存在的元素，只不过值为undefined）。</li>
+<li>迭代器方法：keys()返回数组索引的迭代器，values()返回数组元素的迭代器，entries()返回索引/值对的迭代器。</li>
+<li>复制和填充方法：fill()方法可以向一个已有的数组中插入全部或部分相同的值；copyWithin()会按照指定范围浅复制数组中的部分内容，然后将它们插入到指定索引开始的位置。</li>
+<li>栈方法：提供了push()和pop()方法，以实现类似栈的行为。</li>
+<li>队列方法：使用shift()和push()，可以把数组当成队列来使用。</li>
+<li>排序方法：reverse()逆序，sort()正序。</li>
+<li>操作方法：concat()方法可以在现有数组全部元素基础上创建一个新数组；slice()用于创建一个包含原有数组中一个或多个元素的新数组；splice()的主要目的是在数组中间插入元素</li>
+<li>搜索和位置方法：严格相等indexOf()、lastIndexOf()、includes()；断言函数find()、findIndex()。</li>
+<li>迭代方法：
+<ul>
+<li>every()：对数组每一项都运行传入的函数，如果对每一项函数都返回true，则这个方法返回true。</li>
+<li>filter()：对数组每一项都运行传入的函数，函数返回true的项会组成数组之后返回。</li>
+<li>forEach()：对数组每一项都运行传入的函数，没有返回值。</li>
+<li>map()：对数组每一项都运行传入的函数，返回由每次函数调用的结果构成的数组。</li>
+<li>some()：对数组每一项都运行传入的函数，如果有一项函数返回true，则这个方法返回true。</li>
+</ul>
+</li>
+<li>归并方法：reduce()和reduceRight()。这两个方法都会迭代数组的所有项，并在此基础上构建一个最终返回值。reduce()方法从数组第一项开始遍历到最后一项。而reduceRight()从最后一项开始遍历至第一项。</li>
+</ul>
+</li>
+<li>定型数组（typed array）：设计定型数组的目的就是提高与原生库交换二进制数据的效率。
+<ul>
+<li>ArrayBuffer：是所有定型数组及视图引用的基本单位。
+<ul>
+<li>某种程度上类似于C++的malloc()。</li>
+<li>必须通过视图读取或写入ArrayBuffer。</li>
+<li>数组缓冲无法调整大小。</li>
+</ul>
+</li>
+<li>DataView：用于读写ArrayBuffer的视图。这个视图专为文件I/O和网络I/O设计，其API支持对缓冲数据的高度控制，但相比于其他类型的视图性能也差一些。
+<ul>
+<li>DataView对缓冲内容没有任何预设，也不能迭代。</li>
+</ul>
+</li>
+<li>定型数组：特定于一种ElementType且遵循系统原生的字节序。有适用面更广的API和更高的性能。</li>
+</ul>
+</li>
+<li>Map：键/值存储机制。Map的大多数特性都可以通过Object类型实现，但二者之间还是存在一些细微的差异。
+<ul>
+<li>与Object只能使用数值、字符串或符号作为键不同，Map可以使用任何JavaScript数据类型作为键。</li>
+<li>与Object类型的一个主要差异是，Map实例会维护键值对的插入顺序，因此可以根据插入顺序执行迭代操作。</li>
+<li>选择Object还是Map：
+<ul>
+<li>内存占用：给定固定大小的内存，Map大约可以比Object多存储50%的键/值对。</li>
+<li>插入性能：少量区别不大，如果涉及大量插入操作，那Map的性能更佳。</li>
+<li>查找速度：少量区别不大，如果涉及大量查找操作，那么Object性能更佳。</li>
+<li>删除性能：如果涉及大量删除操作，那么Map性能更佳。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>WeakMap：弱映射。“弱”描述的是垃圾回收程序对待“弱映射”中键的方式。
+<ul>
+<li>弱键：键不属于正式的引用，不会阻止垃圾回收。但值的引用是普通的，只要键存在，键/值对就会存在于映射中，并被当作对值的引用，因此就不会被当作垃圾回收。</li>
+<li>键只能是Object或者继承自Object的类型。值类型没有限制。</li>
+<li>因为WeakMap中的键/值对任何时候都可能被销毁，所以没必要提供迭代其键/值对的能力。</li>
+<li>用途：
+<ul>
+<li>保存私有变量：私有变量会存储在弱映射中，以对象实例为键，以私有成员的字典为值。</li>
+<li>保存DOM节点元数据：当节点从DOM树中被删除后，垃圾回收程序就可以立即释放其内存。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Set：集合。
+<ul>
+<li>会维护值插入时的顺序，因此支持按顺序迭代。</li>
+<li>从各方面来看，Set跟Map都很相似，只是API稍有调整。唯一需要强调的就是集合的API只支持自引用操作。</li>
+</ul>
+</li>
+<li>WeakSet：弱集合。“弱”描述的是垃圾回收程序对待“弱集合”中值的方式。
+<ul>
+<li>弱集合中的值只能是Object或者继承自Object的类型。</li>
+<li>WeakSet中的值任何时候都可能被销毁，所以没必要提供迭代其值的能力。</li>
+<li>用途：给对象打标签</li>
+</ul>
+</li>
+<li>迭代与扩展操作：有4种原生集合类型定义了默认迭代器
+<ul>
+<li>Array</li>
+<li>定型数组</li>
+<li>Map</li>
+<li>Set</li>
+</ul>
+</li>
+</ul>
+<h2 id="迭代器与生成器">迭代器与生成器</h2>
+<ul>
+<li>可迭代对象：数组、集合等具有类似数组行为的其他数据结构（实现Iterable接口），它们包含的元素都是有限的，而且都具有无歧义的遍历顺序。</li>
+<li>迭代器：是按需创建的一次性对象，每个迭代器都会关联一个可迭代对象，迭代器无须了解与其关联的可迭代对象的结构，只需要知道如何取得连续的值。任何可迭代对象都可以被迭代器“消费”（实现Iterator接口）。</li>
+<li>可迭代协议：实现Iterable接口（可迭代协议）要求同时具备两种能力
+<ul>
+<li>支持迭代的自我识别能力</li>
+<li>创建实现Iterator接口的对象的能力。</li>
+<li>实现方法：暴露一个使用Symbol.iterator作为键的属性作为“默认迭代器”，默认迭代器属性引用一个迭代器工厂函数，调用这个工厂函数返回一个新迭代器。</li>
+</ul>
+</li>
+<li>生成器：拥有在一个函数块内暂停和恢复代码执行的能力。
+<ul>
+<li>定义：函数名称前面加一个星号（*）表示它是一个生成器。（箭头函数不能用来定义生成器函数）</li>
+<li>通过yield中断执行：生成器函数在遇到yield关键字之前会正常执行。遇到这个关键字后，执行会停止，函数作用域的状态会被保留。停止执行的生成器函数只能通过在生成器对象上调用next()方法来恢复执行。</li>
+</ul>
+</li>
+</ul>
+<h1 id="面向对象编程">面向对象编程</h1>
+<ul>
+<li>对象：一组属性的无序集合。在ECMAScript中对象可以想象成一张散列表，其中的内容就是一组名/值对，值可以是数据或者函数。</li>
+<li>属性：分为以下两种
+<ul>
+<li>数据属性：包含一个保存（读写）数据值的位置。有4个描述其行为的特性
+<ul>
+<li><code>configurable</code>：属性是否可以通过delete删除并重新定义，是否可以修改它的特性，是否可以把它改为访问器属性。默认都为true。</li>
+<li><code>enumberable</code>：属性是否可以通过for-in循环返回。默认为true。</li>
+<li><code>writable</code>：属性的值是否可以被修改。默认为true。</li>
+<li><code>value</code>：包含属性实际的值。默认值为undefined。</li>
+<li>在调用Object.defineProperty()时，configurable、enumerable和writable的值如果不指定，则都默认为false。</li>
+</ul>
+</li>
+<li>访问器属性：不包含数据值。有4个描述其行为的特性
+<ul>
+<li><code>configurable</code>：属性是否可以通过delete删除并重新定义，是否可以修改它的特性，以及是否可以把它改为数据属性.默认都为true。</li>
+<li><code>enumerable</code>：属性是否可以通过for-in循环返回。默认都为true。</li>
+<li><code>get</code>：获取函数，在读取属性时调用。默认值为undefined。</li>
+<li><code>set</code>：设置函数，在写入属性时调用。默认值为undefined。</li>
+<li>访问器属性是不能直接定义的，必须使用Object.defineProperty()。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="增强对象语法">增强对象语法</h2>
+<ul>
+<li>属性值简写：只要使用变量名就会自动被解释为同名的属性键。如果没有找到同名变量，则会抛出ReferenceError。</li>
+<li>可计算属性：可以在对象字面量中完成动态属性赋值。中括号包围的对象属性键告诉运行时将其作为JavaScript表达式而不是字符串来求值。</li>
+<li>简写方法名：在给对象定义方法时不给函数表达式命名。</li>
+<li>创建对象：
+<ul>
+<li>工厂模式：</li>
+<li>构造函数模式：存在相同逻辑的函数重复定义的问题</li>
+<li>原型模式：prototype属性，这个属性是一个对象，包含应该由特定引用类型的实例共享的属性和方法。使用原型对象的好处是，在它上面定义的属性和方法可以被对象实例共享。
+<ul>
+<li>原型层级：只要给对象实例添加一个属性，这个属性就会遮蔽（shadow）原型对象上的同名属性，也就是虽然不会修改它，但会屏蔽对它的访问。</li>
+<li>对象迭代：Object.values()返回对象值的数组，Object.entries()返回键/值对的数组。</li>
+<li>原型模式的问题：它弱化了向构造函数传递初始化参数的能力，会导致所有实例默认都取得相同的属性值；原型中包含的引用值会在所有实例间共享（这也是为什么属性通常会在构造函数中定义而不会定义在原型上的原因）。</li>
+<li>实际开发中通常不单独使用原型模式。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>继承：通过原型链实现。</li>
+<li>原型链：通过原型继承多个引用类型的属性和方法。
+<ul>
+<li>构造函数、原型和实例的关系：每个构造函数都有一个原型对象，原型有一个属性指回构造函数，实例有一个内部指针指向原型。
+<ul>
+<li>如果原型是另一个类型的实例，那就意味着这个原型本身有一个内部指针指向另一个原型，相应地另一个原型也有一个指针指向另一个构造函数。这样就在实例和原型之间构造了一条原型链。</li>
+</ul>
+</li>
+<li>在读取实例上的属性时，首先会在实例上搜索这个属性。如果没找到，则会继承搜索实例的原型。在通过原型链实现继承之后，搜索就可以继承向上，搜索原型的原型。</li>
+</ul>
+</li>
+</ul>
+<h2 id="继承">继承</h2>
+<ul>
+<li>盗用构造函数：为了解决原型包含引用值导致的继承问题（引用值会在所有实例间共享）。基本思想是在子类构造函数中调用父类构造函数，使用apply()和call()方法以新创建的对象为上下文执行构造函数。
+<ul>
+<li>优点：可以在子类构造函数中向父类构造函数传参。</li>
+<li>缺点：必须在构造函数中定义方法，因此函数不能重用。子类也不能访问父类原型上定义的方法，因此所有类型只能使用构造函数模式。</li>
+<li>盗用构造函数基本上也不能单独使用。</li>
+</ul>
+</li>
+<li>组合继承：使用原型链继承原型上的属性和方法，而通过盗用构造函数继承实例属性。这样既可以把方法定义在原型上以实现重用，又可以让每个实例都有自己的属性。
+<ul>
+<li>效率问题：父类构造函数始终会被调用两次。一次在是创建子类原型时调用，另一次是在子类构造函数中调用。</li>
+</ul>
+</li>
+<li>原型式继承：没有使用严格的构造函数，必须有一个对象可以作为另一个对象的基础，将源对象传入Object.create()函数，再修改目标对象。</li>
+<li>寄生式继承：创建一个实现继承的函数，以某种方式增强对象，然后返回这个对象。</li>
+<li>寄生式组合继承：通过盗用构造函数继承属性，但使用混合式原型链继承方法。基本思路是使用寄生式继承来继承父类原型，然后将返回的新对象赋值给子类原型。（被认为是实现基于类型继承的最有效方式）</li>
+</ul>
+<h2 id="类">类</h2>
+<ul>
+<li>类定义：受块作用域限制，不能提升</li>
+<li>构造函数：方法名constructor会告诉解释器在使用new操作符创建类的新实例时，应该调用这个函数。</li>
+<li>类是一种特殊函数。</li>
+<li>实例成员：不会在原型上共享。</li>
+<li>原型方法与访问器：为了在实例间共享方法，类定义语法把在类块中定义的方法作为原型方法。</li>
+<li>静态类方法：使用static关键字作为前缀</li>
+<li>非函数原型和类成员：虽然类定义并不显式支持在原型或类上添加成员数据，但在类定义外部，可以手动添加。</li>
+<li>迭代器与生成器方法：支持在原型和类本身上定义生成器方法，可以通过添加一个默认的迭代器，把类实例变成可迭代对象。</li>
+<li>继承：类支持单继承，使用extends关键字，就可以继承任何拥有<code>construct</code>和原型的对象
+<ul>
+<li>派生类的类构造函数、实例方法和静态方法内部可以通过super关键字引用它们的原型。(相当于super.constructor())</li>
+<li>抽象基类：new.target保存通过new关键字调用的类或函数。通过在实例化时检测new.target是不是抽象基类，可以阻止对抽象基类的实例化。</li>
+</ul>
+</li>
+</ul>
+<h1 id="代理与反射">代理与反射</h1>
+<ul>
+<li>代理：使用Proxy构造函数创建。这个构造函数接收两个参数：目标对象和处理程序对象。使用代理的主要目的是可以定义捕获器。</li>
+<li>捕获器：是在处理程序对象中定义的“基本操作的拦截器”。
+<ul>
+<li>所有捕获器都可以访问相应的参数，基于这些参数可以重建被捕获方法的<em>原始行为</em>。</li>
+<li>所有可以捕获的方法都有对应的反射（Reflect）API方法。这些方法与捕获器拦截的方法具有相同的名称和函数签名，而且也具有与被拦截方法相同的行为。开发者通过调用全局Reflect对象上（封装了原始行为）的同名方法来轻松重建。</li>
+<li>捕获处理程序的行为必须遵循“捕获器不变式”，它因方法不同而异，但通常都会防止捕获器定义出现过于反常的行为。</li>
+<li>Proxy也暴露了revocable()方法，这个方法支持撤销代理对象与目标对象的关联。撤销代理的操作是不可逆的，也是幂等的。</li>
+</ul>
+</li>
+<li>反射API：
+<ul>
+<li>反射API并不限于捕获处理程序。</li>
+<li>大多数反射API方法在Object类型上有对应的方法。（通常，Object上的方法适用于通用程序，而反射方法适用于细粒度的对象控制与操作。）</li>
+<li>状态标记：很多反射方法返回称作“状态标记”的布尔值，表示意图执行的操作是否成功。</li>
+<li>替代操作符：
+<ul>
+<li>Reflect.get()：可以替代对象属性访问操作符。</li>
+<li>Reflect.set()：可以替代=赋值操作符。</li>
+<li>Reflect.has()：可以替代in操作符或with()。</li>
+<li>Reflect.deleteProperty()：可以替代delete操作符。</li>
+<li>Reflect.construct()：可以替代new操作符。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>代理的问题与不足：
+<ul>
+<li>this问题：目标对象依赖于对象标识时，需要代理类而非实例对象。</li>
+<li>内部槽位：方法的执行依赖this值上的内部槽位时，代理对象上不存在这个内部槽位，也不能通过普通的get()和set()操作访问到，就会报错。</li>
+</ul>
+</li>
+</ul>
+<h2 id="代理捕获器与反射方法">代理捕获器与反射方法</h2>
+<ul>
+<li>代理可以捕获13种不同的基本操作。这些操作有各自不同的反射API方法、参数、关联ECMAScript操作和不变式。</li>
+<li>get()：获取属性值</li>
+<li>set()：设置属性值</li>
+<li>has()：会在in操作符中被调用</li>
+<li>defineProperty()：会在Object.defineProperty()中被调用</li>
+<li>getOwnPropertyDescriptor()：会在Object.getOwnPropertyDescriptor()中被调用</li>
+<li>deleteProperty()：会在delete操作符中被调用。</li>
+<li>ownKeys()：会在Object.keys()及类似方法中被调用。</li>
+<li>getPrototypeOf()：会在Object.getPrototypeOf()中被调用</li>
+<li>setPrototypeOf()：会在Object.setPrototypeOf()中被调用</li>
+<li>isExtensible()：会在Object.isExtensible()中被调用。</li>
+<li>preventExtensions()：会在Object.preventExtensions()中被调用。</li>
+<li>apply()：会在调用函数时中被调用。</li>
+<li>construct()：会在new操作符中被调用。</li>
+</ul>
+<h1 id="函数">函数</h1>
+<h2 id="基本函数">基本函数</h2>
+<ul>
+<li>函数实际上是对象。每个函数都是Function类型的实例。</li>
+<li>箭头函数：基本与普通函数用法相同，但不能使用arguments、super和new.target，也不能用作构造函数，也没有prototype属性。</li>
+<li>参数：函数的参数在内部表现为一个数组。函数被调用时总会接收一个数组，但函数并不关心这个数组中包含什么。可以在函数内部访问arguments对象，从中取得传进来的每个参数值。
+<ul>
+<li>参数单向同步：arguments对象的值会自动同步到对应的命名参数，但修改命名参数的值，不会影响arguments对象中相应的值。</li>
+<li>参数初始化顺序遵循“暂时性死区”规则，即前面定义的参数不能引用后面定义的。</li>
+<li>参数也存在于自己的作用域中，它们不能引用函数体的作用域。</li>
+<li>扩展操作符：对可迭代对象应用，并将其作为一个参数传入，可以将可迭代对象拆分，并将迭代返回的每个值单独传入。</li>
+</ul>
+</li>
+<li>重载：不能重载，因为没有函数签名。同名函数后定义的会覆盖先定义的。</li>
+<li>函数声明与函数表达式：区别对待。JavaScript引擎在任何代码执行之前，会先读取函数声明，并在执行上下文中生成函数定义（函数声明提升）。而函数表达式必须等到代码执行到它那一行，才会在执行上下文中生成函数定义。</li>
+<li>函数内部对象：内部函数永远不可能直接访问外部函数的这些变量。
+<ul>
+<li>arguments：是一个类数组对象，包含调用函数时传入的所有参数。有一个callee属性，是一个指向arguments对象所在函数的指针。</li>
+<li>this：在标准函数中，this引用的是把函数当成方法调用的上下文对象；在箭头函数中，this引用的是定义箭头函数的上下文。</li>
+<li>caller：这个属性引用的是调用当前函数的函数，或者如果是在全局作用域中调用的则为null。</li>
+<li>new.target：如果函数是正常调用的，则new.target的值是undefined；如果是使用new关键字调用的，则new.target将引用被调用的构造函数。</li>
+</ul>
+</li>
+<li>函数属性：
+<ul>
+<li>length：保存函数定义的命名参数的个数</li>
+<li>prototype：保存引用类型所有实例方法</li>
+</ul>
+</li>
+<li>函数方法：apply()和call()。这两个方法都会以指定的this值来调用函数。
+<ul>
+<li>apply()方法接收两个参数：函数内this的值和一个参数数组。</li>
+<li>call()方法第一个参数是this值，而剩下的要传给被调用函数的参数则是逐个传递的。</li>
+</ul>
+</li>
+<li>尾调用：外部函数的返回值是一个内部函数的返回值。
+<ul>
+<li>尾调用优化：如果函数的逻辑允许基于尾调用将其销毁，则引擎就会那么做。优化条件如下：
+<ul>
+<li>代码在严格模式下执行；</li>
+<li>外部函数的返回值是对尾调用函数的调用；</li>
+<li>尾调用函数返回后不需要执行额外的逻辑；</li>
+<li>尾调用函数不是引用外部函数作用域中自由变量的闭包。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>闭包：指的是那些引用了另一个函数作用域中变量的函数，通常是在嵌套函数中实现的。</li>
+<li>立即调用的函数表达式：</li>
+</ul>
+<pre><code class="language-javascript">(function() {
+  // 块级作用域
+})();
+</code></pre>
+<ul>
+<li>私有变量：任何定义在函数或块中的变量，都可以认为是私有的，因为在这个函数或块的外部无法访问其中的变量。</li>
+<li>特权方法：是能够访问函数私有变量（及私有函数）的公有方法。</li>
+<li>模块模式：是在单例对象基础上加以扩展，使其通过作用域链来关联私有变量和特权方法。</li>
+</ul>
+<pre><code class="language-javascript">// 使用匿名函数返回一个对象
+let singleton = function() {
+  // 私有变量
+  let privateVariable = 10;
+  // 私有函数
+  function privateFunction() {
+    return false;
+  }
+
+  // 创建一个要通过匿名函数返回的对象字面量（定义了单例对象的公共接口）
+  // 因为这个对象定义在匿名函数内部，所以它的所有公有方法都可以访问同一个作用域的私有变量和私有函数。
+  return {
+    // 公有属性
+    publicProperty: true,
+    // 特权方法
+    publicMethod() {
+      privateVariable++;
+      return privateFunction();
+    }
+  };
+}();
+</code></pre>
+<ul>
+<li>模块增强模式：在返回对象之前先对其进行增强。这适合单例对象需要是某个特定类型的实例，但又必须给它添加额外属性或方法的场景。</li>
+</ul>
+<pre><code class="language-javascript">let singleton = function() {
+  // 私有变量和私有函数
+  let privateVariable = 10;
+
+  function privateFunction() {
+    return false;
+  }
+
+  // 创建对象
+  let object = new CustomType();
+
+  // 添加特权/公有属性和方法
+  object.publicProperty = true;
+
+  object.publicMethod = function() {
+    privateVariable++;
+    return privateFunction();
+  };
+
+  // 返回对象
+  return object;
+}();
+</code></pre>
+<h2 id="promise">Promise</h2>
+<ul>
+<li>Promise：对尚不存在结果的一个占位符。
+<ul>
+<li>可以通过new操作符来实例化。创建新Promise时需要传入执行器（executor）函数作为参数。</li>
+<li>执行器函数：是Promise的初始化程序，是同步执行的，主要有以下两项职责
+<ul>
+<li>初始化Promise的异步行为</li>
+<li>控制状态的最终转换：调用resolve()会把状态切换为兑现，调用reject()会把状态切换为拒绝。</li>
+</ul>
+</li>
+<li>Promise有三种状态：状态是私有的，不能直接通过JavaScript检测到，也不能被外部JavaScript代码修改。
+<ul>
+<li>pending：初始状态。可以转换为fulfilled状态或rejected状态，转换不可逆。</li>
+<li>fulfilled：已经成功完成。切换到此状态后会有一个私有的内部值（value）。</li>
+<li>rejected：没有成功完成。切换到此转太后会有一个私有的内部理由（reason）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Promise的实例化：
+<ul>
+<li>实现Thenable接口：拥有then()方法。</li>
+<li>Promise.prototype.then()：是为Promise实例添加处理程序的主要方法。
+<ul>
+<li>onResolved处理程序：进入fulfilled状态时执行</li>
+<li>onRejected处理程序：进入rejected状态时执行</li>
+<li>Promise.prototype.catch()：相当于调用Promise.prototype.then(null, onRejected)</li>
+<li>Promise.prototype.finally()：用于给Promise添加onFinally处理程序，这个处理程序在Promise转换为解决或拒绝状态时都会执行。</li>
+</ul>
+</li>
+<li>非重入特性：当Promise进入落定状态时，与该状态相关的处理程序仅仅会被排期，而非立即执行。跟在添加这个处理程序的代码之后的同步代码一定会在处理程序之前先执行。</li>
+<li>连锁：Promise逐个串联</li>
+<li>合成：
+<ul>
+<li>Promise.all()静态方法创建的Promise会在一组Promise全部解决之后再解决。</li>
+<li>Promise.race()静态方法返回一个包装Promise，是一组集合中最先解决或拒绝的Promise的镜像。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Promise扩展
+<ul>
+<li>Promise取消：CancelToken</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-javascript">// 外部代码可以向构造函数中传入一个函数，从而控制什么情况下可以取消Promise。
+class CancelToken {
+  constructor(cancelFn) {
+    this.promise = new Promise((resolve, reject) =&gt; {
+      cancelFn(resolve);
+    });
+  }
+}
+</code></pre>
+<pre><code>- Promise进度通知：
+    - 一种实现方式是扩展Promise类，为它添加notify()方法
+</code></pre>
+<h2 id="异步函数">异步函数</h2>
+<ul>
+<li>也称为“async/await”（语法关键字），是ES6Promise模式在ECMAScript函数中的应用。
+<ul>
+<li>JavaScript运行时在碰到await关键字时，会记录在哪里暂停执行。等到await右边的值可用了，JavaScript运行时会向消息队列中推送一个任务，这个任务会恢复异步函数的执行。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-javascript">// 声明异步函数
+async function foo() {
+  // 实例化Promise对象
+  let p = new Promise((resolve, reject) =&gt; setTimeout(resolve, 1000, 3));
+  // await关键字会暂停执行异步函数后面的代码，让出JavaScript运行时的执行线程。
+  console.log(await p);
+}
+</code></pre>
+<ul>
+<li>异步函数始终返回Promise对象。
+<ul>
+<li>如果返回的是实现thenable接口的对象，则这个对象可以由提供给then()的处理程序“解包”。如果不是，则返回值就被当作已经解决。</li>
+</ul>
+</li>
+<li>异步函数策略：
+<ul>
+<li>实现sleep()</li>
+<li>利用平行执行</li>
+<li>串行执行Promise</li>
+</ul>
+</li>
+</ul>
+<h1 id="浏览器对象模型bombrowser-object-model">浏览器对象模型（BOM，Browser Object Model）</h1>
+<h2 id="window对象">window对象</h2>
+<ul>
+<li>window对象：表示浏览器的实例，它有两个含义
+<ul>
+<li>ECMAScript中的Global对象。</li>
+<li>浏览器窗口的JavaScript接口。</li>
+</ul>
+</li>
+<li>窗口关系：
+<ul>
+<li>top对象：始终指向浏览器直接包含的窗口。</li>
+<li>parent对象：始终指向当前窗口的父窗口。</li>
+<li>self对象：始终会指向window。</li>
+</ul>
+</li>
+<li>窗口位置：
+<ul>
+<li>screenLeft和screenTop属性：用于表示窗口相对于屏幕左侧和顶部的位置 ，返回值的单位是CSS像素。</li>
+<li>可以使用moveTo()和moveBy()方法移动窗口。</li>
+</ul>
+</li>
+<li>像素比：CSS像素是Web开发中使用的统一像素单位，像素比是物理像素与CSS像素之间的转换比率。</li>
+<li>窗口大小：outerWidth和outerHeight返回浏览器窗口自身的大小；innerWidth和innerHeight返回浏览器窗口中页面视口的大小（不包含浏览器边框和工具栏）。
+<ul>
+<li>可以使用resizeTo()和resizeBy()方法调整窗口大小。</li>
+</ul>
+</li>
+<li>视口位置：浏览器窗口尺寸通常无法满足完整显示整个页面，为此用户可以通过滚动在有限的视口中查看文档。
+<ul>
+<li>度量文档相对于视口滚动距离的属性有两对，返回相等的值：window.pageXoffset/window.scrollX和window.pageYoffset/window.scrollY。</li>
+<li>可以使用scroll()、scrollTo()和scrollBy()方法滚动页面。</li>
+</ul>
+</li>
+<li>导航&amp;打开新窗口：window.open()方法可以用于导航到指定URL，也可以用于打开新浏览器窗口。</li>
+<li>定时器：为了调度不同代码的执行，JavaScript维护了一个任务队列。其中的任务会按照添加到队列的先后顺序执行。
+<ul>
+<li>setTimeout()：在指定的毫秒数过后把任务添加到任务队列。</li>
+<li>setInterval()：用于指定每隔一段时间执行某些代码。</li>
+</ul>
+</li>
+<li>系统对话框：使用alert()（只有OK按钮）、confirm()（OK&amp;Cancel）和promt()（提示用户输入消息）方法，可以让浏览器调用系统对话框向用户显示消息。</li>
+</ul>
+<h3 id="location对象">location对象</h3>
+<ul>
+<li>location对象：保存着当前加载文档的信息和把URL解析为离散片段后能够通过属性访问的信息。
+<ul>
+<li>window.location和document.location指向同一个对象。</li>
+</ul>
+</li>
+<li>location对象的内容：
+<ul>
+<li>location.has：URL散列值（井号后跟零或多个字符），如果没有则为空字符串</li>
+<li>location.host：服务器名及端口号</li>
+<li>location.hostname：服务器名</li>
+<li>location.href：当前加载页面的完整URL。location的toString()方法返回这个值</li>
+<li>location.pathname：URL中的路径和（或）文件名</li>
+<li>location.port：请求的端口。如果URL中没有端口，则返回空字符串</li>
+<li>location.protocol：使用的协议。通常是&quot;http:&quot;或&quot;https:&quot;</li>
+<li>location.search：URL的查询字符串。这个字符串以问号开头</li>
+<li>location.username：域名前指定的用户名</li>
+<li>location.password：域名前指定的密码</li>
+<li>location.origin：URL的源地址。只读</li>
+</ul>
+</li>
+<li>查询字符串：URLSearchParams提供了一组标准API方法，通过它们可以检查和修改查询字符串。给URLSearchParams构造函数传入一个查询字符串，就可以创建一个实例。这个实例上暴露了get()、set()和delete()等方法，可以对查询字符串执行相应操作。</li>
+<li>操作地址：通过修改location对象修改浏览器的地址。
+<ul>
+<li>可以以使用assign()方法并传入一个URL，如果给location.href或window.location设置一个URL，也会以同一个URL值调用assign()方法。</li>
+</ul>
+</li>
+</ul>
+<h3 id="navigator对象">navigator对象</h3>
+<ul>
+<li>naviator对象：包含的属性通常用于确定浏览器的类型。</li>
+<li>检测浏览器是否安装了某个插件：通过plugins数组来确定。</li>
+<li>registerProtocolHandler()方法可以把一个网站注册为处理某种特定类型信息应用程序。</li>
+</ul>
+<h3 id="screen对象">screen对象</h3>
+<ul>
+<li>screen对象：在编程中很少用。这个对象中保存的纯粹是客户端能力信息，也就是浏览器窗口外面的客户端显示器的信息。</li>
+</ul>
+<h3 id="history对象">history对象</h3>
+<ul>
+<li>history对象：表示当前窗口首次使用以来用户的导航历史记录。
+<ul>
+<li>出于安全考虑，这个对象不会暴露用户访问过的URL，但可以通过它在不知道实际URL的情况下前进和后退。</li>
+</ul>
+</li>
+<li>导航：go()方法可以在用户历史记录中沿任何方向导航，可以前进也可以后退。</li>
+</ul>
+<h1 id="客户端检测">客户端检测</h1>
+<ul>
+<li>能力检测：不要求事先知道特定浏览器的信息，只需检测自己关心的能力是否存在即可。比起用户代理检测的优点在于，伪造用户代理字符串很简单，而伪造能够欺骗能力检测的浏览器特性却很难。
+<ul>
+<li>检测特性：最好集中检测所有能力，而不是等到用的时候再重复检测。</li>
+<li>检测浏览器：可以根据对浏览器特性的检测并与已知特性对比，确认用户使用的是什么浏览器。</li>
+<li>能力检测的局限：通过检测一种或一组能力，并不总能确定使用的是哪种浏览器。</li>
+<li>能力检测最适合用于决定下一步该怎么做，而不一定能够作为 辨别浏览器的标志。</li>
+</ul>
+</li>
+<li>用户代理检测：通过浏览器的用户代理字符串（包含在每个HTTP请求的头部，可以通过window.navigtor.userAgent访问）确定使用的是什么浏览器。
+<ul>
+<li>在服务端，常见的做法是根据接收到的用户代理字符串确定浏览器并执行相应操作。而在客户端，用户代理检测被认为是不可靠的（虽然准确但可以造假），只应该在没有其他选项时再考虑。</li>
+</ul>
+</li>
+<li>软件与硬件检测：navigator和screen对象也提供了关于页面所载软件环境的信息。</li>
+<li>浏览器元数据：
+<ul>
+<li>Geolocation API：navigator.geolocation属性暴露了该API，可以让浏览器脚本感知当前设备的地理位置（只在HTTPS脚本中可用）</li>
+<li>Connection State和NetworkInformation API：浏览器会跟踪网络连接状态并以连接事件和navigator.onLine属性两种方式暴露这些信息。</li>
+<li>Battery Status API：通过navigator.getBattery()方法可以访问设备电池及充电状态的信息。</li>
+</ul>
+</li>
+<li>硬件设备：navigator.hardwareConcurrency属性返回浏览器支持的逻辑处理器核心数量；navigator.deviceMemory属性设备大致的系统内存大小；navigator.maxTouchPoints属性返回触摸屏支持的最大关联触点数量，等。</li>
+</ul>
+<h1 id="文档对象模型dom-document-object-model">文档对象模型（DOM, Document Object Model）</h1>
+<ul>
+<li>概念：是HTML和XML文档的编程接口。表示由多层节点构成的文档，通过它开发者可以添加、删除和修改页面的各个部分。</li>
+</ul>
+<h2 id="节点层级">节点层级</h2>
+<ul>
+<li>document节点表示每个文档的根节点。</li>
+<li>文档元素：是文档最外层的元素，所有其他元素都存在于这个元素之内。每个文档只有一个文档元素。在HTML页面中，始终是<code>&lt;html&gt;</code>元素。</li>
+</ul>
+<h3 id="node类型">Node类型</h3>
+<ul>
+<li>Node类型：在JavaScript中所有节点类型都继承Node类型，因此所有类型都共享相同的基本属性和方法 。</li>
+<li>Node属性：
+<ul>
+<li>nodeType属性：节点的类型
+<ol>
+<li>ELEMENT_NODE：元素节点（最常用）</li>
+<li>ATTRIBUTE_NODE：属性节点</li>
+<li>TEXT_NODE：文本节点（最常用）</li>
+<li>CDATA_SECTION_NODE：CDATA区段</li>
+<li>ENTITY_REFERENCE_NODE：实体引用元素</li>
+<li>ENTITY_NODE：实体</li>
+<li>PROCESSING_INSTRUCTION_NODE：表示处理指令</li>
+<li>COMMENT_NODE：注释节点</li>
+<li>DOCUMENT_NODE：最外层的Root element，包括所有其他子节点</li>
+<li>DOCUMENT_TYPE_NODE：&lt;!DOCTYPE&gt;</li>
+<li>DOCUMENT_FRAGMENT_NODE：文档碎片节点</li>
+<li>NOTATION_NODE：DTD中声明的符号节点</li>
+</ol>
+</li>
+<li>nodeName属性：节点名</li>
+<li>nodeValue属性：节点值，元素节点值为null</li>
+<li>childNodes属性：子节点列表，由一个NodeList类数组对象组成，它是实时的活动对象，DOM结构的变化会自动地在NodeList中反映出来。
+<ul>
+<li>firstChild属性：childNodes中的第一个节点</li>
+<li>lastChild属性：childNodes中的最后一个节点</li>
+</ul>
+</li>
+<li>parentNode属性：父节点。</li>
+<li>previousSibling属性/nextSibling属性：可以在同胞节点之间导航，如果没有则为null</li>
+<li>ownerDocument属性：指向代表整个文档的文档节点的指针。</li>
+</ul>
+</li>
+<li>Node操作：
+<ul>
+<li>appendChild()：在childNodes列表末尾添加节点。</li>
+<li>insertBefore()：调用这个方法后，要插入的节点会变成参照节点的前一个同胞节点。</li>
+<li>replaceChild()：要替换的节点会被返回并从文档树中完全移除，要插入的节点会取而代之。</li>
+<li>removeChild()：删除节点。</li>
+<li>cloneNode()：返回与调用它的节点一模一样的节点。</li>
+<li>normalize()：处理文档子树中的文本节点。调用该方法会检测这个节点的所有后代，发现空文本节点就将其删除，如果有相邻同胞节点就将其合并。</li>
+</ul>
+</li>
+</ul>
+<h3 id="document类型">Document类型</h3>
+<ul>
+<li>Document类型：在浏览器中，文档对象document是HTMLDocument的实例，表示整个html页面，它是一个全局对象。可用于获取关于页面的信息以及操纵其外观和底层结构。</li>
+<li>文档子节点：
+<ul>
+<li>documentElemennt属性：始终指向HTML页面中的<code>&lt;html&gt;</code>元素。它与<code>firstChild</code>/<code>childNodes[0]</code>指向同一个值。</li>
+<li>body属性：直接指向<code>&lt;body&gt;</code>元素</li>
+<li>对注释的处理依据浏览器而不同。</li>
+</ul>
+</li>
+<li>文档信息：
+<ul>
+<li>title属性：包含<code>&lt;title&gt;</code>元素中的文二本</li>
+<li>URL属性：包含当前页面的完整URL</li>
+<li>domain属性：包含页面的域名</li>
+<li>referrer属性：包含链接到当前页面的那个页面的URL。</li>
+</ul>
+</li>
+<li>定位元素：获取某个或某组元素的引用，然后对它们执行某些操作。
+<ul>
+<li>getElementById()：接收要获取元素的ID，如果找到了返回这个元素，没找到返回null。</li>
+<li>getElementsByTagName()：接收要获取元素的标签名，返回包含若干个元素的HTMLCollection，该对象有一个namedItem()方法可通过标签的name属性取得某一项的引用。</li>
+<li>getElementsByName()：返回具有给定name属性的所有元素。</li>
+<li>特殊集合：document.anchors返回所有带name属性的<code>&lt;a&gt;</code>元素；document.forms返回所有的<code>&lt;form&gt;</code>元素；documentt.images返回所有的<code>&lt;img&gt;</code>元素。document.links返回所有带href属性的<code>&lt;a&gt;</code>元素。</li>
+</ul>
+</li>
+<li>兼容性检测：document.implementation属性提供了与浏览器DOM实现相关的信息和能力。</li>
+<li>文档写入：向网页输出流中写入内容。
+<ul>
+<li>write()/writeln()：将接收到的字符串写入网页中。可以在页面加载期间向页面中动态添加内容，或动态包含外部资源。</li>
+<li>open()/close()：分别用于打开和关闭网页输出流。</li>
+</ul>
+</li>
+</ul>
+<h3 id="element类型">Element类型</h3>
+<ul>
+<li>Element类型：表示XML或HTML元素，对外暴露出访问元素标签名、子节点和属性的能力。
+<ul>
+<li>HTML元素：通过HTMLElement类型表示，包括其直接实例和间接实例，它直接继承Element并增加了一些属性。</li>
+<li>取得属性：getAttribute()；setAttribute()；removeAttribute()。
+<ul>
+<li>属性名不区分大小写。</li>
+<li>公认（非自定义）的属性会被添加为DOM对象的属性。</li>
+</ul>
+</li>
+<li>attributes属性：Element类型是唯一使用attributes属性的DOM节点类型。它包含一个NamedNodeMap实例，是一个类似NodeList的“实时”集合，元素的每个属性都表示为一个Attribute节点，并保存在这个NamedNodeMap对象中。每个节点的nodeName是对应属性的名字，nodeValue是属性的值。
+<ul>
+<li>应用场景：需要迭代元素上所有属性的时候。</li>
+</ul>
+</li>
+<li>创建元素：document.createElement()方法，接受一个要创建元素的标签名。</li>
+</ul>
+</li>
+</ul>
+<h3 id="text类型">Text类型</h3>
+<ul>
+<li>Text类型：包含按字面解释的纯文本，也可能包含转义后的HTML字符，但不含HTML代码。
+<ul>
+<li>document.createTextNode()：创建新文本节点。</li>
+<li>normalize()：合并相邻文本节点，删除空节点。</li>
+<li>splitText()：在指定的偏移位置拆分文本节点。常用于从文本节点提取数据的DOM解析技术。</li>
+</ul>
+</li>
+</ul>
+<h3 id="comment类型">Comment类型</h3>
+<ul>
+<li>Comment类型：注释，与Text类型继承自同一基类。</li>
+</ul>
+<h3 id="cdatasection类型">CDATASection类型</h3>
+<ul>
+<li>CDATASection类型：XML中特有的CDATA区块，继承自Text类型。</li>
+</ul>
+<h3 id="documenttype类型">DocumentType类型</h3>
+<ul>
+<li>DocumentType类型：包含文档的doctype信息。</li>
+</ul>
+<h3 id="documentfragment类型">DocumentFragment类型</h3>
+<ul>
+<li>DocumentFragment类型：是唯一一个在标记中没有对应表示的类型。它能够包含和操作节点，却没有完整文档那样的消耗。它用来充当其他要被添加到文档的节点的仓库。</li>
+</ul>
+<h3 id="attr类型">Attr类型</h3>
+<ul>
+<li>Attr类型：是节点但不是DOM文档树的一部分，很少被直接引用。</li>
+</ul>
+<h2 id="dom编程">DOM编程</h2>
+<ul>
+<li>NodeList：是基于DOM文档的实时查询，始终代表最新的状态。</li>
+<li>MutationObserver接口：可以在DOM被修改时异步执行回调，从而可以观察整个文档、DOM树的一部分、某个元素或元素属性、子节点、文本三者任意组合的变化。
+<ul>
+<li>创建：调用构造函数，传入一个回调函数。</li>
+<li>关联：使用observe()方法，指定需要观察其变化的DOM节点，指定一个MutationObserverInit对象（用于控制观察哪些方面的变化及观察范围，是一个键值对形式配置选项的字典）。</li>
+<li>回调：每个回调都会收到一个MutationRecord实例的数组，数组中每个实例包含的信息包括发生了什么变化，以及DOM的哪一部分收到了影响等。</li>
+<li>终止：调用disconnect()方法。</li>
+<li>复用：多次调用observe()方法，可以复用一个MutationObserver对象观察多个不同的目标节点。此时，MutationRecord的target属性可以标识发生变化事件的目标节点。</li>
+<li>重用：调用disconnect()并不会结束MutationObserver的生命周期，还可以重新使用它，再将它关联到新的目标节点。</li>
+<li>引用：MutationObserver拥有观察目标的弱引用，不会影响垃圾回收程序回收观察目标；观察目标拥有对MutationObserver的强引用，一旦观察目标从DOM移出并被垃圾回收，关联的MutationObserver也会被垃圾回收。</li>
+</ul>
+</li>
+<li>MutationObserver的核心：异步回调与记录队列模型。
+<ul>
+<li>每次变化的信息会保存在MutationRecord实例中，然后添加到记录队列。调用MutationObservr实例的takeRecords()方法可以清空记录队列，取出并返回其中所有的MutationRecord实例。</li>
+</ul>
+</li>
+</ul>
+<h2 id="dom扩展">DOM扩展</h2>
+<ul>
+<li>Selectors API：规定了浏览器原生支持的CSS查询API。
+<ul>
+<li>Level1核心方法：在兼容浏览器中，Document类型和Element类型的实例上都会有这两个方法。
+<ul>
+<li>querySelector()：接收CSS选择符参数，返回匹配该模式的第一个后代元素，如果没有匹配项则返回null。</li>
+<li>querySelectorAll()：也接收一个用于查询的参数，但它会返回所有匹配的节点，而不止一个。这个方法返回的是一个NodeList的静态实例。</li>
+</ul>
+</li>
+<li>Level2核心方法：
+<ul>
+<li>matches()：接收一个CSS选择符参数，如果元素匹配则该选择符返回true，否则返回false。可以方便地检测某个元素会不会被querySelector()或querySelectorAll()方法返回。</li>
+<li>find()/findAll()：未实现。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Element Traversal API：提供元素遍历的相关API。
+<ul>
+<li>childElementCount，返回子元素数量（不包含文本节点和注释）。</li>
+<li>firstElementChild，指向第一个Element类型的子元素（Element版firstChild）。</li>
+<li>lastElementChild，指向最后一个Element类型的子元素（Element版lastChild）。</li>
+<li>previousElementSibling，指向前一个Element类型的同胞元素（Element版previousSibling）。</li>
+<li>nextElementSibling，指向后一个Element类型的同胞元素（Element版nextSibling）。</li>
+</ul>
+</li>
+<li>HTML5：
+<ul>
+<li>CSS类扩展：
+<ul>
+<li>getElementsByClassName()：暴露在document对象和所有HTML元素上。接收一个参数，即包含一个或多个类名的字符串，返回类名中包含相应类的元素的NodeList。</li>
+<li>classList属性：更简便地替代className属性。</li>
+</ul>
+</li>
+<li>管理焦点：document.activeElement始终包含当前拥有焦点的DOM元素。</li>
+<li>HTMLDocument扩展：
+<ul>
+<li>readyState属性：指示文档是否加载完毕。</li>
+<li>compatMode属性：指示浏览器当前处于什么渲染模式。</li>
+<li>document.head属性：指向文档的<code>&lt;head&gt;</code>元素。</li>
+<li>characterSet属性：表示文档实际使用的字符集</li>
+</ul>
+</li>
+<li>自定义数据属性：使用前缀data-给元素指定非标准的属性。</li>
+<li>插入标记：
+<ul>
+<li>innerHTML属性：会返回元素所有后代的HTML字符串，包括元素、注释和文本节点。</li>
+<li>outerHTML属性：会返回调用它的元素（及所有后代元素）的HTML字符串。</li>
+<li>insertAdjacentHTML()：插入HTML节点。</li>
+<li>insertAdjacentText()：插入Text节点。</li>
+</ul>
+</li>
+<li>如何滚动页面中的某个区域：scrollIntoView()，存在于所有HTML元素上，可以滚动浏览器窗口或容器元素以便包含元素进入视口。</li>
+</ul>
+</li>
+</ul>
+<h2 id="dom2dom3">DOM2/DOM3</h2>
+<ul>
+<li>按照模块化的思路为文档的底层结构加入更多交互能力。
+<ul>
+<li>DOM Core：在DOM1核心部分的基础上，为节点增加方法和属性。</li>
+<li>DOM Views：定义基于样式信息的不同视图。</li>
+<li>DOM Events：通过事件实现DOM文档交互。</li>
+<li>DOM Style：定义以编程方式访问和修改CSS样式的接口。</li>
+<li>DOM Traversal and Range：新增遍历DOM文档及选择文档内容的接口。</li>
+<li>DOM HTML：在DOM1 HTML部分的基础上，增加属性、方法和新接口。</li>
+<li>DOM Mutation Observers：定义基于DOM变化触发回调的接口，用于取代Muttion Events。</li>
+</ul>
+</li>
+</ul>
+<h1 id="事件">事件</h1>
+<h2 id="基本概念">基本概念</h2>
+<ul>
+<li>事件：JavaScript与HTML的交互是通过事件实现的，事件代表文档或浏览器窗口中某个有意义的时刻（用户或浏览器执行了一个动作）。</li>
+<li>事件流：描述了页面接收事件的顺序。
+<ul>
+<li>事件冒泡：IE的事件流，事件被定义为从最具体的元素（文档树中最深的节点）开始触发，然后向上传播至文档。</li>
+<li>事件捕获：最不具体的节点最先收到事件，而最具体的节点最后收到事件。（通常不建议使用）</li>
+</ul>
+</li>
+<li>DOM事件流：分为事件捕获、到达目标、事件冒泡三个阶段。</li>
+<li>事件处理程序：为响应事件而调用的函数。事件处理程序的名字以&quot;on&quot;开头。如单击(onclick)、加载(onload)、鼠标悬停(onmouseover)。</li>
+</ul>
+<h2 id="事件处理程序">事件处理程序</h2>
+<ul>
+<li>HTML事件处理程序：特定元素支持的每个事件都可以使用事件处理程序的名字以HTML属性的形式指定，属性的值为能够执行的JavaScript代码。
+<ul>
+<li>有一个特殊局部变量event，其中保存event对象。</li>
+<li>this的值相当于事件的目标元素。</li>
+<li>作用域被扩展：document和元素自身的成员都可以被当成局部变量来访问（通过with实现）。</li>
+<li>大多数HTML事件处理程序会封装在try/catch块中，以便在这种情况下静默失败。</li>
+<li>问题：强耦合，如果需要修改事件处理程序，必须同时在HTML和JavaScript中修改代码。</li>
+</ul>
+</li>
+<li>DOM0事件处理程序：把一个函数赋值给DOM元素的一个事件处理程序属性。
+<ul>
+<li>代码在运行之后才会给事件处理程序赋值</li>
+<li>事件处理程序会在元素的作用域中运行，this为元素</li>
+</ul>
+</li>
+<li>DOM2事件处理程序：为事件处理程序的赋值和移除定义了两个方法，这两个方法暴露在所有DOM节点上。
+<ul>
+<li>addEventListener()：添加的匿名函数无法移除</li>
+<li>removeEventListener()</li>
+<li>可以为同一事件添加多个事件处理程序。</li>
+</ul>
+</li>
+<li>IE事件处理程序：实现了与DOM2类似的方法，即attachEvent()和detachEvent()
+<ul>
+<li>事件处理程序在全局作用域中执行。</li>
+</ul>
+</li>
+<li>跨浏览器事件处理程序：自行实现addHandler()和removeHanlder()方法。</li>
+</ul>
+<h2 id="事件对象">事件对象</h2>
+<ul>
+<li>event对象：在DOM合规的浏览器中，是传给事件处理程序的唯一参数。它包含了一些基本信息（导致事件的元素、发生的事件类型以及可能与特定事件相关的任何其他数据）。
+<ul>
+<li>IE浏览器支持额外的属性和方法。</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">属性</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">bubbles</td>
+<td style="text-align:left">返回布尔值，指示事件是否冒泡。</td>
+</tr>
+<tr>
+<td style="text-align:left">cancelable</td>
+<td style="text-align:left">返回布尔值，指示事件是否可拥可取消的默认动作。</td>
+</tr>
+<tr>
+<td style="text-align:left">currentTarget</td>
+<td style="text-align:left">返回其事件监听器触发该事件的元素。</td>
+</tr>
+<tr>
+<td style="text-align:left">eventPhase</td>
+<td style="text-align:left">返回事件传播的当前阶段。</td>
+</tr>
+<tr>
+<td style="text-align:left">target</td>
+<td style="text-align:left">返回触发此事件的元素（事件的目标节点）。</td>
+</tr>
+<tr>
+<td style="text-align:left">timeStamp</td>
+<td style="text-align:left">返回事件生成的日期和时间。</td>
+</tr>
+<tr>
+<td style="text-align:left">type</td>
+<td style="text-align:left">返回当前 Event 对象表示的事件的名称。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="事件类型">事件类型</h2>
+<ul>
+<li>DOM3 Events定义了如下事件类型：
+<ul>
+<li>用户界面事件：涉及与BOM交互的通用浏览器事件。
+<ul>
+<li>load/unload/abort/error/select/resize/scroll</li>
+</ul>
+</li>
+<li>焦点事件：在元素获得和失去焦点时触发。
+<ul>
+<li>当焦点从页面中的一个元素移到另一个元素上时，会依次发生如下事件：
+<ol>
+<li>focusout在失去焦点的元素上触发。</li>
+<li>focusin在获得焦点的元素上触发。</li>
+<li>blur在失去焦点的元素上触发。</li>
+<li>DOMFoucusOut在失去焦点的元素上触发。</li>
+<li>focus在获得焦点的元素上触发。</li>
+<li>DOMFocusIn在获得焦点的元素上触发</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>鼠标事件：使用鼠标在页面上执行某些操作时触发。
+<ul>
+<li>双击触发流程：mousedown/mouseup/click/mousedown/mouseup/click/dbclick</li>
+<li>客户端坐标：事件发生时鼠标光标在客户端视口中的坐标。在event对象的clientX和clientY属性中。</li>
+<li>页面坐标：事件发生时鼠标光标在页面上的坐标。在event对象的pageX和pageY属性中。</li>
+<li>屏幕坐标：事件发生时鼠标光标在屏幕上的坐标。在event对象的screenX和screenY属性中。</li>
+<li>修饰键：shiftKey/ctrlKey/altKey/metaKey</li>
+<li>相关元素：event对象的relatedTarget属性中，只有在mouseover和mouseout事件发生时才包含值，其他所有事件的这个属性的值都是null。</li>
+<li>鼠标按键：DOM为event对象上的button属性定义了三个值表示按下或释放的是哪个键。0表示鼠标主键，1表示鼠标中键（滚轮键），2表示鼠标副键。</li>
+<li>额外信息：event对象上的detail属性包含一个数值，表示在给定位置上发生了多少次单击。</li>
+</ul>
+</li>
+<li>滚轮事件：使用鼠标滚轮时触发。
+<ul>
+<li>mousewheel事件的event对象包含鼠标事件的所有标准信息，此外还有一个wheelDelta的新属性</li>
+</ul>
+</li>
+<li>输入事件：向文档中输入文本时触发。</li>
+<li>键盘事件：使用键盘在页面上执行某些操作时触发。
+<ul>
+<li>包含三个事件：
+<ul>
+<li>keydown：用户按下键盘上某个键时触发，持续按住会重复触发。</li>
+<li>keypress：用户按下键盘上某个键并产生字符时出发，持续按住会重复触发。</li>
+<li>keyup：用户释放键盘上某个键时触发。</li>
+</ul>
+</li>
+<li>键码：对于keydown和keyup事件，event对象的keyCode属性中会保存一个键码，对应键盘上特定的一个键。</li>
+<li>字符编码：在发生keypress事件时，event对象的charCode属性包含案件字符对应的ASCII编码。</li>
+<li>textInput事件：在字符被输入到可编辑区域时触发。在event对象的data属性中包含要插入的字符（不是字符编码）。event对象的inputMethod表示该属性向控件中输入文本的手段。</li>
+</ul>
+</li>
+<li>合成事件：在使用某种IME（输入法编辑器）输入字符时触发。</li>
+<li>专有事件：根据开发者需求，不同浏览器的实现可能不同。</li>
+</ul>
+</li>
+<li>事件句柄：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>onabort</td>
+<td>图像的加载被中断。</td>
+</tr>
+<tr>
+<td>onblur</td>
+<td>元素失去焦点。</td>
+</tr>
+<tr>
+<td>onchange</td>
+<td>域的内容被改变。</td>
+</tr>
+<tr>
+<td>onclick</td>
+<td>当用户点击某个对象时调用的事件句柄。</td>
+</tr>
+<tr>
+<td>ondblclick</td>
+<td>当用户双击某个对象时调用的事件句柄。</td>
+</tr>
+<tr>
+<td>onerror</td>
+<td>在加载文档或图像时发生错误。</td>
+</tr>
+<tr>
+<td>onfocus</td>
+<td>元素获得焦点。</td>
+</tr>
+<tr>
+<td>onkeydown</td>
+<td>某个键盘按键被按下。</td>
+</tr>
+<tr>
+<td>onkeypress</td>
+<td>某个键盘按键被按下并松开。</td>
+</tr>
+<tr>
+<td>onkeyup</td>
+<td>某个键盘按键被松开。</td>
+</tr>
+<tr>
+<td>onload</td>
+<td>一张页面或一幅图像完成加载。</td>
+</tr>
+<tr>
+<td>onmousedown</td>
+<td>鼠标按钮被按下。</td>
+</tr>
+<tr>
+<td>onmousemove</td>
+<td>鼠标被移动。</td>
+</tr>
+<tr>
+<td>onmouseout</td>
+<td>鼠标从某元素移开。</td>
+</tr>
+<tr>
+<td>onmouseover</td>
+<td>鼠标移到某元素之上。</td>
+</tr>
+<tr>
+<td>onmouseup</td>
+<td>鼠标按键被松开。</td>
+</tr>
+<tr>
+<td>onreset</td>
+<td>重置按钮被点击。</td>
+</tr>
+<tr>
+<td>onresize</td>
+<td>窗口或框架被重新调整大小。</td>
+</tr>
+<tr>
+<td>onselect</td>
+<td>文本被选中。</td>
+</tr>
+<tr>
+<td>onsubmit</td>
+<td>确认按钮被点击。</td>
+</tr>
+<tr>
+<td>onunload</td>
+<td>用户退出页面。</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>内存与性能
+<ul>
+<li>页面中事件处理程序的数量与页面整体性能直接相关。</li>
+<li>事件委托：对事件处理程序过多的解决方案。利用事件冒泡，可以只使用一个事件处理程序来管理一种类型的事件。
+<ul>
+<li>最适合使用事件委托的事件包括：click/mousedown/mouseup/keydown/keypress</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>模拟事件：任何时候，都可以使用document.createEvent()方法创建一个event对象。</li>
+</ul>
+<h1 id="表单脚本">表单脚本</h1>
+<h2 id="基础">基础</h2>
+<ul>
+<li>开发者需要使用JavaScript既做表单验证，又用于增强标准表单控件的默认行为。</li>
+<li>Web表单在HTML中以<code>&lt;form&gt;</code>元素表示，在JavaScript中则以HTMLFormElement类型表示。
+<ul>
+<li>可以将表单当做普通元素为它指定一个id属性，从而可以使用getElementById()来获取表单；也可以使用document.forms集合获取页面上所有的表单元素。</li>
+</ul>
+</li>
+<li>表单提交：表单是通过用户点击提交按钮或图片按钮的方式提交的。
+<ul>
+<li>提交按钮可以使用type属性为&quot;submit&quot;的<code>&lt;input&gt;</code>或<code>&lt;button&gt;</code>元素来定义。</li>
+<li>图片按钮可以使用type属性为&quot;image&quot;的<code>&lt;input&gt;</code>元素来定义。</li>
+</ul>
+</li>
+<li>重置表单：用户单击重置按钮可以重置表单。
+<ul>
+<li>重置按钮可以使用type属性为&quot;reset&quot;的<code>&lt;input&gt;</code>或<code>&lt;button&gt;</code>元素来创建。</li>
+</ul>
+</li>
+<li>表单字段：变单元素可以像页面中的其他元素一样使用原生DOM方法来访问。此外所有表单元素都是表单elements属性(元素集合)中包含的一个值。这个elements集合是一个有序列表，包含对表单中所有字段的引用。
+<ul>
+<li>公共属性：
+<ul>
+<li>disabled：布尔值，表示当前字段是否被禁用。</li>
+<li>form：指向当前字段所属表单的指针；只读。</li>
+<li>name：当前字段的名称。</li>
+<li>readOnly：布尔值，表示当前字段是否只读。</li>
+<li>tabIndex：表示当前字段在按Tab键时的切换顺序。</li>
+<li>type：当前字段的类型。</li>
+<li>value：当前字段将被提交给服务器的值。对文件字段来说，这个属性是只读的，包含着文件在计算机中的路径。</li>
+</ul>
+</li>
+<li>公共方法：
+<ul>
+<li>focus()：把浏览器焦点设置到表单字段。</li>
+<li>blur()：用于从元素上移除焦点。</li>
+</ul>
+</li>
+<li>公共事件：
+<ul>
+<li>blur：在字段失去焦点时触发。</li>
+<li>change：在<code>&lt;input&gt;</code>和<code>&lt;textarea&gt;</code>元素的value发生变化且失去焦点时触发，或者在<code>&lt;select&gt;</code>元素中选中项发生变化时触发。</li>
+<li>focus：在字段获得焦点时触发。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="文本框编程">文本框编程</h2>
+<ul>
+<li>在HTML中有两种表示文本框的方式：单行使用<code>&lt;input&gt;</code>元素，多行使用<code>&lt;textarea&gt;</code>元素。</li>
+<li>选择文本：select()方法用于全部选中文本框中的文本。</li>
+<li>取得选中文本：selectionStart属性/selectionEnd属性。</li>
+<li>部分选中文本：setSelectionRange()</li>
+<li>输入过滤：数据需要包含特定字符或匹配某个特定模式。
+<ul>
+<li>屏蔽字符：keypress中使用event.preventDefault()</li>
+<li>处理剪贴板：
+<ul>
+<li>剪贴板有6个相关事件
+<ul>
+<li>beforecopy：复制操作发生前触发。</li>
+<li>copy：复制操作发生时触发。</li>
+<li>beforecut：剪切操作发生前触发。</li>
+<li>cut：剪切操作发生时触发。</li>
+<li>beforepaste：粘贴操作前触发</li>
+<li>paste：粘贴操作发生时触发。</li>
+</ul>
+</li>
+<li>剪贴板上的数据可以通过window对象(IE)或event对象(Chrome等)上的clipboardData对象来获取。该对象有三个方法，getData()/setData()/clearData()</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>自动切换：当前字段完成时自动切换到下一个字段。</li>
+<li>HTML5约束验证API：HTML5为浏览器新增了在提交表单前验证数据的能力。
+<ul>
+<li>必填字段：给表单字段添加required属性。</li>
+<li>更多输入类型：email/url。</li>
+<li>数值范围</li>
+<li>输入模式：pattern属性。</li>
+<li>检测有效性：checkValidity()方法。</li>
+<li>禁用验证：指定novalidate属性可以禁止对表单进行任何验证。</li>
+</ul>
+</li>
+</ul>
+<h2 id="选择框编程">选择框编程</h2>
+<ul>
+<li>选择框时使用<code>&lt;select&gt;</code>和<code>&lt;option&gt;</code>元素创建的。为方便交互，HTMLSelectElement类型在所有表单字段的公共能力之外又提供了以下属性和方法。
+<ul>
+<li>add(newOption, relOption)：在relOption之前向控件中添加新的<code>&lt;option&gt;</code></li>
+<li>multiple：布尔值，表示是否允许多选，等价于HTML的multiple属性。</li>
+<li>options：控件中所有<code>&lt;option&gt;</code>元素的HTMLCollection。</li>
+<li>remove(index)：移出给定位置的选项。</li>
+<li>selectedIndex：选中项基于0的索引值，如果没有选中项则为-1，对允许多选的列表，始终是第一个选项的索引。</li>
+<li>size：选择框中可见的行数，等价于HTML的size属性。</li>
+</ul>
+</li>
+<li>选择选项：
+<ul>
+<li>只允许选择一项：使用选择框的selectedIndex属性。</li>
+<li>动态选择任意多个选项：设置选项的selected属性。</li>
+<li>getSelectedOptions()可以用于获取选中项的信息。</li>
+</ul>
+</li>
+<li>添加选项：可以使用DOM方法；可以使用Option构造函数创建新选项；可以使用选择框的add()方法。</li>
+<li>移除选项：可以使用DOM方法；可以使用选择框的remove()方法；可以直接将选项设置为等于null</li>
+<li>移动和重排选项：DOM方法的appendChild()方法可以移动，insertBefore()方法可以重排。</li>
+<li>提交表单时要把什么发送到服务器：
+<ul>
+<li>字段名和值是URL编码的并以&amp;分隔。</li>
+<li>禁用字段不会发送。</li>
+<li>复选框或单选按钮只在被选中时才发送。</li>
+<li>类型为&quot;reset&quot;或&quot;button&quot;的按钮不会发送。</li>
+<li>多选字段的每个选中项都有一个值。</li>
+<li>通过点击提交按钮提交表单时，会发送该提交按钮；否则，不会发送提交按钮。</li>
+<li><code>&lt;select&gt;</code>元素的值是被选中<code>&lt;option&gt;</code>元素的value属性，如果没有value属性则值是它的文本。</li>
+</ul>
+</li>
+<li>富文本编辑：“所见即所得”编辑。</li>
+</ul>
+<h1 id="javascript-api">JavaScript API</h1>
+<ol>
+<li>Atomics与SharedArrayBuffer：多个上下文访问SharedArrayBuffer时，如果同时对缓冲区执行操作，就可能出现资源争用问题。Atomics API通过强制同一时刻只能对缓冲区执行一个操作，可以让多个上下文安全地读写一个SharedArrayBuffer。
+<ul>
+<li>任何全局上下文中都有Atomics对象，这个对象暴露了用于执行线程安全操作的一套静态方法。保证所有原子指令相互之间的顺序永远不会重排，保证所有指令都不会相对原子读写重新排序。</li>
+</ul>
+</li>
+<li>跨上下文消息(XDM)：是一种在不同执行上下文（如不同工作线程或不同源的页面）间传递消息的能力。
+<ul>
+<li>核心是postMessage()方法。</li>
+</ul>
+</li>
+<li>EncodingAPI：主要用于实现字符串与定型数组之间的转换。
+<ul>
+<li>有四个用于执行转换的全局类：TextEncoder/TextEncoderStream/TextDecoder/TextDecoderStream。</li>
+</ul>
+</li>
+<li>File API与Blob API：使开发者以安全的方式访问客户端机器上的文件。</li>
+</ol>
+<ul>
+<li>File API仍然以表单中的文件输入字段为基础，但是增加了直接访问文件信息的能力。</li>
+<li>blob表示二进制大对象，是JavaScript对不可修改二进制数据的封装类型。</li>
+</ul>
+<ol start="5">
+<li>拖放：组合使用拖放API与File API可以创建读取文件信息的有趣功能，在页面上创建放置目标后，可以从桌面上把文件拖动并放到放置目标。</li>
+<li>Notifications API：用于向用户显示通知（类似于alert()对话框）</li>
+<li>Page Visibility API：为用户开发者提供页面对用户是否可见的信息。</li>
+<li>Streams API：方便Web应用消费有序的小信息而不是大块信息。</li>
+<li>计时 API</li>
+<li>Web组件：一套用于增强DOM行为的工具，包括影子DOM、自定义元素和HTML模板。</li>
+<li>Web Cryptography API：一套密码学公爵，规范了JavaScript如何以安全和符合惯例的方式实现加密。</li>
+</ol>
+<h1 id="json">JSON</h1>
+<ul>
+<li>JSON是一种通用数据格式，而不是编程语言，它与JavaScript拥有相同的语法。很多语言都有解析和序列化JSON的内置能力。</li>
+</ul>
+<h2 id="语法">语法</h2>
+<ul>
+<li>JSON语法支持表示3种类型的值。
+<ul>
+<li>简单值：字符串、数值、布尔值和null可以在JSON中出现。</li>
+<li>对象：复杂类型一，表示有序键值对，每个值可以是任意类型。</li>
+<li>数组：复杂类型二，表示可以通过数值索引访问的值的有序列表，每个值可以是任意类型。</li>
+</ul>
+</li>
+</ul>
+<h2 id="解析与序列化">解析与序列化</h2>
+<ul>
+<li>解析：使用全局JSON对象进行解析。
+<ul>
+<li>stringify()：将JavaScript序列化为JSON字符串。
+<ul>
+<li>第一个参数指定要序列化的对象，第二个参数是过滤器（数组或函数），第三个参数用于缩进结果JSON字符串。</li>
+<li>可以通过在对象上面自定义toJSON()方法来实现自定义序列化</li>
+<li>在把对象传给JSON.stringify()时会执行如下步骤：
+<ol>
+<li>如果可以获取实际的值，则调用toJSON()方法获取实际的值，否则使用默认的序列化。</li>
+<li>如果提供了第二个参数，则应用过滤。传入过滤函数的值就是上一步返回的值。</li>
+<li>对上一步返回的每个值都进行相应的序列化。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>parse()：将JSON解析为原生JavaScript值。
+<ul>
+<li>第一个参数指定要解析的JSON对象，第二个参数是还原函数，它会针对每个键值对都调用一次。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="网络请求与远程资源">网络请求与远程资源</h1>
+<ul>
+<li>Ajax(Asynchronous JavaScript+XML，异步JavaScript加XML)：发送服务器请求额外数据而不刷新页面，从而实现更好的用户体验。
+<ul>
+<li>核心技术：XMLHttpRequest(XHR)对象。</li>
+</ul>
+</li>
+</ul>
+<h2 id="xhr对象">XHR对象</h2>
+<ul>
+<li>使用XHR对象：
+<ol>
+<li>调用open()方法，指定请求类型（get/post等），请求URL、是否异步，为发送请求做好准备。</li>
+<li>调用send()方法发送定义好的请求，接收一个作为请求体发送的数据。</li>
+<li>收到响应后，XHR对象的以下属性会被填充上数据：
+<ul>
+<li>responseText：作为响应体返回的文本。</li>
+<li>responseXML：如果相应内容类型为&quot;text/xml&quot;或&quot;application/xml&quot;那就是包含相应数据的XML DOM文档。</li>
+<li>status：响应的HTTP状态。</li>
+<li>statusText：相应的HTTP状态描述。</li>
+</ul>
+</li>
+<li>检查status属性以确保响应成功返回。</li>
+</ol>
+</li>
+<li>异步请求：使用readyState属性表示当前处在请求/响应过程的哪个阶段，该属性每次改变都会触发readystatechange事件。
+<ul>
+<li>readyState取值：
+<ul>
+<li>0：未初始化，尚未调用open()方法。</li>
+<li>1：已打开，已调用open()方法，尚未调用send()方法。</li>
+<li>2：已发送，已调用send()方法，尚未收到响应。</li>
+<li>3：接收中，已收到部分响应。</li>
+<li>4：完成：已经收到所有响应。</li>
+</ul>
+</li>
+<li>在收到响应前如果想取消异步请求，可以调用abort()方法。中断请求后应取消对XHR对象的引用而不是重用。</li>
+</ul>
+</li>
+<li>HTTP头部：默认情况下XHR请求会发送以下头部字段。
+<ul>
+<li>Accept：浏览器可以处理的内容类型。</li>
+<li>Accept-Charset：浏览器可以显示的字符集。</li>
+<li>Accept-Encoding：浏览器可以处理的压缩编码类型。</li>
+<li>Accept-Language：浏览器使用的语言。</li>
+<li>Connection：浏览器与服务器的连接类型。</li>
+<li>Cookie：页面中设置的Cookie。</li>
+<li>Host：发送请求的页面所在的域。</li>
+<li>Referer：发送请求的页面的URI。</li>
+<li>User-Agent：浏览器的用户代理字符串。</li>
+<li>如果需要发送额外的请求头部，可以在open()之后、send()之前使用setRequestHeader()方法。（通过getResponseHeader()/getAllResponseHeaders()方法获取响应头部）</li>
+</ul>
+</li>
+<li>GET请求：用于向服务器查询某些信息。</li>
+<li>POST请求：用于向服务器发送应该保存的数据。每个POST请求都应该在请求体中携带提交的数据。</li>
+<li>XHR Level2：
+<ul>
+<li>FormData类型：便于表单序列化，也便于创建与表单类似格式的数据然后通过XHR发送。</li>
+<li>超时：timeout属性。</li>
+<li>overrideMimeType()方法：用于重写XHR相应的MIME类型。</li>
+</ul>
+</li>
+<li>进度事件：定义了客户端-服务器端通信。有以下6个进度相关的事件，每次请求都会首先触发loadstart事件，之后是一个或多个progress事件，接着是error/abort/load中的一个，最后一loadend事件结束。
+<ul>
+<li>loadstart：在接收到相应的第一个字节时触发。</li>
+<li>progress：在接收响应期间反复触发，可以给用户提供进度条。
+<ul>
+<li>每次触发时，onprogress事件处理程序都会收到event对象，其target属性是XHR对象，且包含3个额外属性：lengthComputable（布尔值，表示进度信息是否可用）、position（接收到的字节数）和totalSize（相应的Content-Length头部定义的总字节数）。</li>
+</ul>
+</li>
+<li>error：在请求出错时触发。</li>
+<li>abort：在调用abort()终止连接时触发。</li>
+<li>load：在成功接收完响应时触发。
+<ul>
+<li>只要从服务器收到响应，无论状态码是什么， 都会触发load事件，这意味着还需要检查status属性才能确定数据是否有效。</li>
+</ul>
+</li>
+<li>loadend：在通信完成时，且在error、abort或load之后触发。</li>
+</ul>
+</li>
+</ul>
+<h2 id="跨源资源共享cross-origin-resource-sharing-cors">跨源资源共享(Cross-Origin Resource Sharing, CORS)</h2>
+<ul>
+<li>默认情况下，XHR只能访问与发起请求的页面在同一个域内的资源，这样的安全限制可以防止某些恶意行为。CORS定义了浏览器与服务器如何实现跨域通信。
+<ul>
+<li>基本思路：使用自定义的HTTP头部允许浏览器和服务器互相了解，以证实请求或相应应该成功还是失败。</li>
+</ul>
+</li>
+<li>对于简单的请求（如GET/POST）没有自定义头部，且请求体是text/plain类型，这样的请求在发送时会有一个额外的头部叫Origin，它包含发送请求的页面的源（协议、域名、端口），以便服务器确定是否为其提供响应。
+<ul>
+<li>如果服务器决定响应请求，就发送Access-Control-Allow-Origin头部；如果没有这个头部或有但源不匹配，就表明不会响应浏览器请求。</li>
+</ul>
+</li>
+<li>XMLHttpRequest对象原生支持CORS。在尝试访问不同源的资源时，这个行为会被自动触发。要向不同域的源发送请求，可以使用标准XHR对象并给open()方法传入一个绝对URL。
+<ul>
+<li>跨域XHR对象允许访问status和statusText属性，也允许同步请求的，但不能使用setRequestHeader()设置自定义头部，不能发送和接收cookie，getAllResponseHeaders()方法始终返回空字符串。</li>
+</ul>
+</li>
+<li>预检请求：一种服务器验证机制，允许使用自定义头部、除GET和POST之外的方法，以及不同请求体内容类型。
+<ul>
+<li>要发送涉及上述某种高级选项的请求时，会先向服务器发送一个“预检”请求；在这个请求发送后，服务器可以确定是否允许这种类型的请求；预检请求返回后，结果会按响应指定的时间缓存一段时间。</li>
+</ul>
+</li>
+<li>凭据请求：默认情况下，跨源请求不提供凭据（cookie/HTTP认证/客户端SSL证书），可以通过将withCredentials属性设置为true来表明请求会发送凭据。</li>
+<li>替代性跨源技术：和CORS比起来，它们不需要修改服务器
+<ul>
+<li>图片探测：通过监听<code>&lt;img&gt;</code>标签的onload和onerror事件知道什么时候能接收到响应。它只能发送Get请求，无法获取服务器响应的内容。</li>
+<li>JSONP(JSON with padding)，看起来和JSON一样，但会被包在一个函数调用里。包含回调和数据两个部分。相比于图片探测，使用JSONP可以直接访问响应，实现浏览器与服务器的双向通信。
+<ul>
+<li>回调：在页面接收到响应之后应该调用的函数，通常回调函数的名称是通过请求来动态指定的。</li>
+<li>数据：作为参数传给回调函数的JSON数据。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="fetch-api">Fetch API</h2>
+<ul>
+<li>Fetch API能够执行XMLHttpRequest对象的所有任务，但更容易使用，必须是异步。</li>
+<li>基本用法：fetch()方法是暴露在全局作用域中的，包括主页面执行线程、模块和工作线程。调用这个方法，浏览器就会向给定URL发送请求。
+<ul>
+<li>分派请求：传递一个获取资源的URL，返回一个Promise，请求完成资源可用时会Resolved一个Response对象，可以通过它获取相应的资源。</li>
+<li>读取响应：使用text()方法获取纯文本格式的内容。</li>
+<li>状态：可通过Response的status和statusText属性检查响应状态</li>
+<li>自定义选项：在fetch()方法的第二个参数中传入init对象。</li>
+</ul>
+</li>
+<li>Headers对象：是所有外发请求和入站响应头部的容器。每个外发的Request实例都包含一个空的Header实例，可以通过Request.prototype.headers访问，每个入站的Response实例也可以通过Response.prototype.headers访问包含响应头部的Headers对象。</li>
+<li>Request对象：是获取请求资源的接口，这个接口暴露了请求的相关信息，也暴露了使用请求体的不同方式。</li>
+<li>Response对象：是获取资源响应的接口，这个接口暴露了响应的相关信息，也暴露了使用响应体的不同方式。</li>
+</ul>
+<h2 id="beacon-api">Beacon API</h2>
+<ul>
+<li>很多分析工具需要在页面生命周期中尽量晚的时候向服务器发送分析数据，理想的情况下是通过浏览器的unload事件发送网络请求，这个事件表示用户要离开当前页面，不会再生成别的有用信息了。但unload事件意味着不会再发送任何结果未知的网络请求，因此异步XMLHttpRequest或fetch()不适合这个任务，因此引入了Beacon API。</li>
+</ul>
+<h1 id="客户端存储">客户端存储</h1>
+<h2 id="cookie">cookie</h2>
+<ul>
+<li>cookie：要求服务器在响应HTTP请求时，通过发送Set-Cookie的HTTP头部包含会话信息，浏览器会存储这些会话信息，并在之后的每个请求中都会通过HTTP头部cookie再将它们发回服务器。这些发回服务器的额外信息可用于唯一标识发送请求的客户端。</li>
+<li>限制：
+<ul>
+<li>cookie是与特定域绑定的。设置cookie后，它会与请求一起发送到创建它的域，这个限制能保证cookie中存储的信息只对被认可的接收者开放，不被其他域访问。</li>
+<li>为了保证不被恶意利用，浏览器会施加限制。</li>
+<li>cookie的大小和每个域持有cookie的个数都有限制。</li>
+</ul>
+</li>
+<li>构成：这些参数在Set-Cookie头部中使用分号加空格隔开。
+<ul>
+<li>名称：唯一标识。不区分大小写，必须经过URL编码。</li>
+<li>值：所存储的字符串值，必须经过URL编码。</li>
+<li>域：有效域，可能包含子域。</li>
+<li>路径：请求URL包含这个路径才会把cookie发送到服务器。</li>
+<li>过期时间：到期后删除cookie。</li>
+<li>安全标志：设置后只在使用SSL才会把cookie发送给服务器。</li>
+</ul>
+</li>
+<li>JavaScript Cookie：BOM的document.cookie属性。
+<ul>
+<li>子cookie：为了绕开浏览器的单域名下的cookie数限制，一些开发人员使用了一种称为子cookie(subcookie)的概念。子cookie是存放在单个cookie中的更小段的数据。也就是使用cookie值来存储多个名称值对。</li>
+</ul>
+</li>
+<li>HTTP-only cookie：可以在浏览器设置或服务器设置，但只能在服务器上读取，这是因为JavaScript无法取得这种cookie的值。</li>
+</ul>
+<h2 id="web-storage">Web Storage</h2>
+<ul>
+<li>Web Storage的目的是解决通过客户端存储不需要频繁发送回服务器的数据时使用cookie的问题。
+<ul>
+<li>提供在cookie之外的存储回话数据的途径。</li>
+<li>提供跨会话持久化存储大量数据的机制。</li>
+</ul>
+</li>
+<li>window对象上的新对象：
+<ul>
+<li>localStorage对象：永久存储机制。</li>
+<li>sessionStorage：跨会话存储机制。</li>
+</ul>
+</li>
+<li>Storage类型：用于保存名称值对数据，直至存储空间上限。
+<ul>
+<li>每当Storage对象发生变化时，都会在文档上触发storage事件。</li>
+</ul>
+</li>
+</ul>
+<h2 id="indexeddb">IndexedDB</h2>
+<ul>
+<li>思想：创造一套API，方便JavaScript对象的存储和获取，同时也支持查询和搜索。
+<ul>
+<li>大多数操作以异步请求的形式执行。</li>
+</ul>
+</li>
+<li>与传统数据库最大的区别在于：使用对象存储而不是表格保存数据，类似于NoSQL风格的实现。</li>
+</ul>
+<h1 id="模块">模块</h1>
+<ul>
+<li>思想：把逻辑分块，各自封装，相互独立，每个块自行决定对外暴露什么， 同时自行决定引入执行哪些外部代码。</li>
+<li>模块标识符：模块系统本质上是键值实体，其中每个模块都有个可用于引用它的标识符。</li>
+<li>模块依赖：本地模块向模块系统声明一组外部模块（依赖），这些外部模块对当前模块正常运行是必须的。模块系统检视这些以来，进而保证这些外部模块能够被加载并在本地模块运行时初始化所有依赖。</li>
+<li>模块加载：加载模块涉及执行其中的代码，但必须是在所有依赖都加载并执行之后。如果浏览器没有收到依赖模块的代码，则必须发送请求并等待网络返回。收到模块代码之后，浏览器必须确定刚收到的模块是否也有依赖。然后递归地评估并加载所有依赖，直到所有依赖模块都加载完成。只有整个依赖图都加载完成，才可以执行入口模块。</li>
+<li>入口：代码执行的起点。</li>
+</ul>
+<h2 id="模块加载器">模块加载器</h2>
+<ul>
+<li>ES6以前的模块加载器：（随着ES6模块的诞生逐渐会没落）
+<ul>
+<li>CommonJS：概述了同步声明依赖的模块定义，主要用于在服务器端实现模块化代码组织，但也可用于定义在浏览器中使用的模块依赖。CommonJS模块语法不能在浏览器中直接运行。
+<ul>
+<li>使用require()指定依赖，使用exports对象定义自己的公共API。</li>
+</ul>
+</li>
+<li>异步模块定义(Asynchronous Module Definition, AMD)：以浏览器为目标执行环境，考虑网络延迟问题。其核心是用函数包装模块定义，这样可以防止声明全局变量，并允许加载器库控制何时加载模块。包装函数也便于模块代码的移植，因为包装函数的内部所有模块代码都使用原生JavaScript结构。包装模块的函数是全局define的参数，它是由AMD加载器库的实现定义的。
+<ul>
+<li>也支持require和exports对象。</li>
+</ul>
+</li>
+<li>通用模块定义(Universal Module Definition, UMD)：用于创建两个系统都可以使用的代码。</li>
+</ul>
+</li>
+<li>ES6模块：
+<ul>
+<li>模块标签及定义：带有<code>type=&quot;module&quot;</code>属性的<code>&lt;script&gt;</code>标签会告诉浏览器相关代码应作为模块执行，模块可以嵌入在网页中，也可以作为外部文件引入。所有模块都会像<code>&lt;script defer&gt;</code>加载的脚本一样按顺序执行。</li>
+<li>模块加载：既可以通过浏览器原生加载，也可以与第三方加载器和构建工具一起加载。</li>
+<li>模块特性：
+<ul>
+<li>模块代码只在加载后执行。</li>
+<li>模块只能加载一次。</li>
+<li>模块只能是单例。</li>
+<li>模块可以定义公共接口，其他模块可以基于这个公共接口观察和交互。</li>
+<li>模块可以请求加载其他模块。</li>
+<li>支持循环依赖。</li>
+<li>ES6模块默认在严格模式下执行。</li>
+<li>ES6模块不共享全局命名空间。</li>
+<li>模块顶级this的值是Undefined</li>
+<li>模块中的var声明不会添加到window对象</li>
+<li>ES6模块是异步加载执行的。</li>
+</ul>
+</li>
+<li>模块导出：支持命名导出和默认导出，不同的导出方式对应不同的导入方式。
+<ul>
+<li>export关键字：声明一个值为命名导出，导出语句必须在模块顶级，不能嵌套在某个块中。</li>
+<li>default关键字：将一个值声明为默认导出，每个模块只能有一个默认导出。</li>
+</ul>
+</li>
+<li>模块导入：
+<ul>
+<li>import关键字：使用其他模块导出的值，必须出现在模块顶级。</li>
+</ul>
+</li>
+<li>模块转移导出：模块导入的值可以直接通过管道转移到导出，因此可以将默认导出转换为命名导出或者相反。</li>
+</ul>
+</li>
+</ul>
+<h1 id="工作者线程">工作者线程</h1>
+<h2 id="基础概念-2">基础概念</h2>
+<ul>
+<li>JavaScript是单线程的，工作者线程允许把主线程的工作转嫁给独立的实体，而不会改变现有的单线程模型。</li>
+<li>工作者线程与线程：
+<ul>
+<li>工作者线程是以实际线程实现的。</li>
+<li>工作者线程并行执行。</li>
+<li>工作者线程可以共享某些内存。</li>
+<li>工作者线程不共享全部内存。</li>
+<li>工作者线程不一定在同一个进程里。</li>
+<li>创建工作者线程的开销更大。</li>
+</ul>
+</li>
+<li>工作者线程的类型：
+<ul>
+<li>专用工作者线程：可以让脚本单独创建一个JavaScript线程，以执行委托的任务。只能被创建它的页面使用。</li>
+<li>共享工作者线程：与专用工作者线程非常相似，主要区别是共享工作者线程可以被多个不同的上下文使用，包括不同的页面。任何与创建共享工作者线程的脚本同源的脚本，都可以向共享工作者线程发送消息或从中接收消息。</li>
+<li>服务工作者线程：主要用途是拦截、重定向和修改页面发出的请求，充当网络请求的仲裁者角色。</li>
+</ul>
+</li>
+<li>WorkerGlobalScope：在工作者线程内部没有window的概念，这里的全局对象是通过self关键字暴露的WorkerGlobalScope实例。
+<ul>
+<li>self上可用的属性是window对象上属性的子集。</li>
+<li>专用工作者线程使用DedicateWorkerGlobalScope。</li>
+<li>共享工作者线程使用SharedWorkerGlobalScope。</li>
+<li>服务工作者线程使用ServiceWorkerGlobalScope。</li>
+</ul>
+</li>
+</ul>
+<h2 id="专用工作者线程">专用工作者线程</h2>
+<ul>
+<li>可以用于与父页面交换信息、发送网络请求、执行文件输入输出、进行密集计算、处理大量数据以及其他不适合在页面执行进程里做的任务（否则会导致页面响应迟钝）。
+<ol>
+<li>创建：把文件路径提供给Worker构造函数，然后构造函数在后台异步加载脚本并实例化工作者线程。</li>
+<li>安全限制：工作者线程的脚本文件只能从与父页面相同的源加载。基于加载脚本创建的工作者线程不受父文档的内容安全策略限制。</li>
+<li>使用Worker对象：Worker()构造函数返回的Worker对象是与刚创建的专用工作者线程通信的连接点。它可用于在工作者线程和父上下文间传输信息，以及捕获专用工作者线程发出的事件。</li>
+<li>DedicatedWorkerGlobalScope</li>
+</ol>
+</li>
+<li>生命周期：
+<ol>
+<li>初始化：虽然工作者线程脚本尚未执行，但可以先把要发送给工作者线程的消息加入队列。这些消息会等待工作者线程的状态变为活动，再把消息添加到它的消息队列。</li>
+<li>活动：创建之后，专用工作者线程就会伴随页面的整个生命期而存在</li>
+<li>终止：自我终止(self.close())或外部终止(worker.ternimate())</li>
+</ol>
+</li>
+<li>在JavaScript行内创建工作者线程
+<ol>
+<li>创建要执行的JavaScript代码字符串。</li>
+<li>基于脚本字符串生成Blob对象。</li>
+<li>基于Blob实例创建对象URL。</li>
+<li>基于对象URL创建专用工作者线程。</li>
+</ol>
+</li>
+<li>工作者线程中可以使用importScripts()方法通过编程方式加载和执行任意脚本。</li>
+<li>子工作者线程：在工作者线程中可以再创建工作者线程。</li>
+<li>错误处理：不打断父进程执行，但错误事件可以冒泡到工作者线程的全局上下文，可以通过在Worker对象上设置错误事件侦听器访问到。</li>
+<li>与专用工作者线程通信：通过异步消息完成。
+<ul>
+<li>使用postMessage()传递序列化的消息</li>
+<li>使用MesageChannel实例：有两个端口分别代表两个通信端点，要让父页面和工作者线程通过MessageChannel通信，需要把一个端口传到工作者线程中。它最有用的地方是可以让两个工作者线程之间直接通信。</li>
+<li>使用BroadcastChannel实例：同源脚本能够通过BroadcastChannel相互之间发送和接收消息。</li>
+</ul>
+</li>
+<li>数据传输：
+<ul>
+<li>结构化克隆算法：可用于在两个独立上下文间共享数据，该算法由浏览器在后台实现，不能直接调用。通过postMessage()传递对象时，浏览器会遍历该对象，并在目标上下文中生成它的一个副本。在对象比较复杂时会存在较大消耗。</li>
+<li>可转移对象：可以把所有权从一个上下文转移到另一个上下文。只有ArrayBuffer/MessagePort/ImageBitmap/OffscreenCanvas是可转移对象。</li>
+<li>共享数组缓冲区：SharedArrayBuffer作为ArrayBuffer能够在不同浏览器上下文间共享。在把SharedArrayBuffer传给postMessage()时，浏览器只会传递原始缓冲区的引用。</li>
+</ul>
+</li>
+<li>线程池：因为启用工作者线程代价很大，所以在某些情况下可以考虑始终保持固定数量的线程活动，需要时就把任务分派给它们。工作者线程在执行计算时，会被标记为忙碌状态。直到它通知线程池自己空闲了，才准备好接收新任务。
+<ul>
+<li>TaskWorker类：扩展Worker类，可以跟踪线程是否正忙于工作，并管理进出线程的信息与实践。传入给这个工作者线程的任务会封装到一个Promise中。</li>
+</ul>
+</li>
+</ul>
+<h2 id="共享工作者线程">共享工作者线程</h2>
+<ul>
+<li>可以看作是专用工作者线程的一个扩展。线程创建、线程选项、安全限制和importScripts()的行为都是相同的，也只能与其他上下文异步通信。</li>
+<li>SharedWorker()只会在标识不存在的情况下才创建新实例。</li>
+<li>SharedWorker()构造函数返回的SharedWorker对象被用作与新创建的共享工作者线程通信的连接点。它可以用来通过MessagePort在共享工作者线程和父上下文间传递信息，也可以用来捕获共享线程中发出的错误事件。</li>
+<li>SharedWorkerGlobalScope</li>
+</ul>
+<h2 id="服务工作者线程">服务工作者线程</h2>
+<ul>
+<li>服务工作者线程是一种类似浏览器中代理服务器的线程，可以拦截外出请求和缓存响应。这可以让网页在没有网络连接的情况下正常使用，因为部分或全部页面可以从服务工作者线程缓存中提供服务。与共享哦工作者线程类似，来自一个域的多个页面共享一个服务工作者线程。（主要用于充当网络请求的缓存层和启用推送通知）</li>
+<li>服务工作者线程没有全局构造函数，是通过ServiceWorkerContainer管理的。它的实例保存在navigator.serviceWorker属性中。</li>
+<li>服务工作者线程在还不存在时创建新实例，在存在时连接到已有实例。使用register()方法创建。</li>
+<li>ServiceWorkerRegistration对象表示注册成功的服务工作者线程，该对象可以在register()返回的resolved promise的处理程序中访问到，通过它的一些属性可以确定关联服务工作者线程的生命周期状态。</li>
+<li>服务工作者线程状态：
+<ul>
+<li>install：是每个服务工作者线程进入安装状态时触发，在客户端可以通过ServiceWorkerRegistration.installing判断，也可以再self.oninstall属性上指定该事件的处理程序。</li>
+<li>activate：是每个服务工作者线程进入激活或已激活状态时触发，在客户端可以通过ServiceWorkerRegistration.active判断，也可以再self.onactive属性上指定该事件的处理顺序。</li>
+</ul>
+</li>
+<li>相关API：
+<ul>
+<li>fetch：在服务工作者线程截获来自主页面的fetch()请求时触发。</li>
+<li>message：在服务工作者线程通过postMessage()获取数据时触发。</li>
+<li>notificationclick：在系统告诉浏览器用户点击了ServiceWorkerRegistration.showNotification()生成的通知时触发。</li>
+<li>notificationclose：在系统告诉浏览器用户关闭或取消显示了ServiceWorkerRegistration.showNotification()生成的通知时触发。</li>
+<li>push：在服务工作者线程接收到推送消息时触发。</li>
+<li>pushsubscriptionchange：在应用控制外的因素(非JavaScript显式操作)导致推送订阅状态变化时触发。</li>
+</ul>
+</li>
+<li>服务工作者线程只能拦截其作用域内的客户端发送的请求。作用域是相对于获取服务脚本的路径定义的。</li>
+<li>缓存机制：是一个双层字典，顶级字典(CacheStorage对象，通过全局作用域的caches属性访问)的条目映射到二级嵌套字典(Cache对象，是Request对象到Response对象的映射)。
+<ul>
+<li>服务工作者线程缓存不自动缓存任何请求。</li>
+<li>服务工作者线程缓存没有到期失效的概念。</li>
+<li>服务工作者线程缓存必须手动更新和删除。</li>
+<li>缓存版本必须手动管理。</li>
+<li>唯一的浏览器强制逐出策略基于服务工作者线程缓存占用的空间。</li>
+</ul>
+</li>
+<li>服务工作者线程使用Client对象跟踪关联的窗口、工作线程或服务工作者线程。</li>
+<li>服务工作者线程支持版本控制，以保证任何时候两个网页的操作都有一致性。
+<ul>
+<li>代码一致性：确保来自同源的所有并存页面始终会使用来自相同版本的资源。</li>
+<li>数据一致性：确保网页输入输出行为对同源的所有并存网页都相同。</li>
+</ul>
+</li>
+<li>服务工作者线程的生命周期：
+<ul>
+<li>已解析：刚创建的服务工作者线程会进入已解析状态。
+<ul>
+<li>确保服务脚本来自相同的源。</li>
+<li>确保在安全上下文中注册服务工作者线程。</li>
+<li>确保服务脚本可以被浏览器JavaScript解释器成功解析且不会报错。</li>
+<li>捕获服务脚本的快照，下一次浏览器下载到服务脚本，会与这个快照对比差异，并据此决定是否应该更新服务工作者线程。</li>
+</ul>
+</li>
+<li>安装中：执行所有服务工作者线程设置任务的状态，这些任务包括在服务器工作者线程控制页面前必须完成的操作。</li>
+<li>已安装：服务工作者线程此时没有别的事件要做，只是准备在得到许可的时候去控制客户端。</li>
+<li>激活中：服务工作者线程已经被浏览器选中即将变成可以控制页面的服务工作者线程。</li>
+<li>已激活：服务工作者线程正在控制一个或多个客户端。</li>
+<li>已失效：服务工作者线程已经被宣布死亡，不会再有事件发送给它，浏览器随时可能销毁它并回收它的资源。</li>
+</ul>
+</li>
+<li>虽然专用工作者线程和共享工作者线程是有状态的，但服务工作者线程是无状态的。服务工作者线程遵循控制反转（IoC）模式并且是事件驱动的。</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/gHfK-WRUA/" class="tag">
+                    JavaScript
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/SpringBootSourceCode6/">
+                  <h3 class="post-title">
+                    SpringBoot源码学习（6）：计时器、启动加载器
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>
