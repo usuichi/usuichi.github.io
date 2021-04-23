@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Leetcode 算法与数据结构笔记 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1619096785649">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+排序算法
+
+选择排序法
+插入排序法
+归并排序法
+快速排序法
+二分查找法
+
+
+
+
+
+https://blog.csdn.net/weixin_41190227/article/details/86600821
+排序算法
+选择排序法
+
+循环不..." />
+    <meta name="keywords" content="" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1619096785649" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Leetcode 算法与数据结构笔记</h2>
+            <div class="post-date">2020-10-04</div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95">排序算法</a>
+<ul>
+<li><a href="#%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F%E6%B3%95">选择排序法</a></li>
+<li><a href="#%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F%E6%B3%95">插入排序法</a></li>
+<li><a href="#%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F%E6%B3%95">归并排序法</a></li>
+<li><a href="#%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F%E6%B3%95">快速排序法</a></li>
+<li><a href="#%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE%E6%B3%95">二分查找法</a></li>
+</ul>
+</li>
+</ul>
+<br>
+<img src="https://usuichi.github.io/post-images/1619096280723.png" alt="" loading="lazy"><br>
+https://blog.csdn.net/weixin_41190227/article/details/86600821</p>
+<h1 id="排序算法">排序算法</h1>
+<h2 id="选择排序法">选择排序法</h2>
+<ul>
+<li>循环不变量：循环中的每一步<code>arr[i...n)</code>未排序，<code>arr[0...i)</code>已排序。
+<ul>
+<li>已排序的元素所在位置就是该元素的最终位置。</li>
+<li>保持：将<code>arr[i...n)</code>中的最小值与<code>arr[i]</code>位置的值进行交换。</li>
+</ul>
+</li>
+</ul>
+<h2 id="插入排序法">插入排序法</h2>
+<ul>
+<li>循环不变量：循环中的每一步<code>arr[i...n)</code>未排序，<code>arr[0...i)</code>已排序。
+<ul>
+<li>已排序的元素所在位置是在所有已访问过元素中的相对位置。</li>
+<li>保持：缓存当前处理的元素，在<code>arr[0...i)</code>中找到合适的位置，大于它的都向后平移，最后将当前处理元素放在合适的位置。</li>
+</ul>
+</li>
+<li>特点：对于有序数组，复杂度为O(n)。适合对近乎有序的数组进行排序，适合对小规模数据排序。</li>
+</ul>
+<h2 id="归并排序法">归并排序法</h2>
+<ul>
+<li>递归：对<code>arr[l,mid]</code>和<code>arr[mid+1,r]</code>这两个区间进行排序，再将两个排序好的子数组进行合并（不能原地合并）。</li>
+<li>特点：对于有序数组，复杂度为O(n)。</li>
+</ul>
+<h2 id="快速排序法">快速排序法</h2>
+<ul>
+<li>递归：选取数组中的随机一个元素作为标定点，将其放到正确的位置上，在它之前的元素都小于它，在它之后的元素都大于它。然后再分别对前半段和后半段进行排序。</li>
+<li>循环不变量：<code>arr[l+1...j] &lt; v</code>且<code>arr[j+1...i] &gt;= v</code>。</li>
+<li>特点：每次划分两个数组的大小近乎相同时性能好。当数组中元素几乎全都相同时会退化为O(n^2)。</li>
+<li>双路快速排序算法：将小于标定点元素的放在数组左端，将大于标定点元素的放在数组右端。循环不变量为<code>arr[l+1...i-1]&lt;=v</code>且<code>arr[j+1...r]&gt;=v</code>。可以防止在元素几乎全都相同时退化为O(n^2)。</li>
+<li>三路快速排序算法：将数组划分为小于、等于、大于三部分。循环不变量为<code>arr[l+1...lt]&lt;v</code>且<code>arr[gt...r]&gt;v</code>且<code>arr[lt+1...i-1]==v</code>。在元素几乎全都相同时进化为O(n)。</li>
+</ul>
+<h2 id="二分查找法">二分查找法</h2>
+<pre><code class="language-java">// 左边界下标，有在首元素前的情况可初始化为-1
+int l = ?;
+// 右边界下标，有在尾元素后的情况可初始化为data.length
+int r = ?;
+// 在data[l,r]中寻找解
+while(l &lt; r){
+    // 这样写可以防止越界。此时使用语言中默认的向下取整，如果需要向上取整则为l + (r - l + 1)/2
+    int mid = l + (r - l) / 2;
+    // 具体逻辑
+    if(data[mid].compareTo(target) &lt; 0){
+        ……
+    }
+    else{
+
+    }
+}
+return l;
+</code></pre>
+<p><img src="https://usuichi.github.io/post-images/1602309630634.png" alt="" loading="lazy"><br>
+<img src="https://usuichi.github.io/post-images/1602313564285.png" alt="" loading="lazy"><br>
+<img src="https://usuichi.github.io/post-images/1603003945746.png" alt="" loading="lazy"></p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/vuejs/">
+                  <h3 class="post-title">
+                    《深入浅出Vue.js》阅读笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>

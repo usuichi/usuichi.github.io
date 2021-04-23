@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《深入理解Spring MVC源代码》阅读笔记 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1619096785649">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+控制器（Controller）
+
+处理器查找
+
+拦截器
+适配器
+
+
+处理器执行
+视图查找和模型绑定
+处理器方法参数解析
+返回值处理
+控制器增强
+
+
+扩展支持
+
+跨域请求
+WebSocket
+异步请求
+WebFlux框架
+
+
+配置
+
+属性配..." />
+    <meta name="keywords" content="" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1619096785649" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《深入理解Spring MVC源代码》阅读笔记</h2>
+            <div class="post-date">2021-02-27</div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E6%8E%A7%E5%88%B6%E5%99%A8controller">控制器（Controller）</a>
+<ul>
+<li><a href="#%E5%A4%84%E7%90%86%E5%99%A8%E6%9F%A5%E6%89%BE">处理器查找</a>
+<ul>
+<li><a href="#%E6%8B%A6%E6%88%AA%E5%99%A8">拦截器</a></li>
+<li><a href="#%E9%80%82%E9%85%8D%E5%99%A8">适配器</a></li>
+</ul>
+</li>
+<li><a href="#%E5%A4%84%E7%90%86%E5%99%A8%E6%89%A7%E8%A1%8C">处理器执行</a></li>
+<li><a href="#%E8%A7%86%E5%9B%BE%E6%9F%A5%E6%89%BE%E5%92%8C%E6%A8%A1%E5%9E%8B%E7%BB%91%E5%AE%9A">视图查找和模型绑定</a></li>
+<li><a href="#%E5%A4%84%E7%90%86%E5%99%A8%E6%96%B9%E6%B3%95%E5%8F%82%E6%95%B0%E8%A7%A3%E6%9E%90">处理器方法参数解析</a></li>
+<li><a href="#%E8%BF%94%E5%9B%9E%E5%80%BC%E5%A4%84%E7%90%86">返回值处理</a></li>
+<li><a href="#%E6%8E%A7%E5%88%B6%E5%99%A8%E5%A2%9E%E5%BC%BA">控制器增强</a></li>
+</ul>
+</li>
+<li><a href="#%E6%89%A9%E5%B1%95%E6%94%AF%E6%8C%81">扩展支持</a>
+<ul>
+<li><a href="#%E8%B7%A8%E5%9F%9F%E8%AF%B7%E6%B1%82">跨域请求</a></li>
+<li><a href="#websocket">WebSocket</a></li>
+<li><a href="#%E5%BC%82%E6%AD%A5%E8%AF%B7%E6%B1%82">异步请求</a></li>
+<li><a href="#webflux%E6%A1%86%E6%9E%B6">WebFlux框架</a></li>
+</ul>
+</li>
+<li><a href="#%E9%85%8D%E7%BD%AE">配置</a>
+<ul>
+<li><a href="#%E5%B1%9E%E6%80%A7%E9%85%8D%E7%BD%AE">属性配置</a></li>
+<li><a href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6">配置文件</a></li>
+</ul>
+</li>
+<li><a href="#%E6%A1%86%E6%9E%B6%E6%BA%90%E7%A0%81">框架源码</a>
+<ul>
+<li><a href="#%E5%90%AF%E5%8A%A8%E9%98%B6%E6%AE%B5">启动阶段</a>
+<ul>
+<li><a href="#springapplication%E7%9A%84%E5%88%9B%E5%BB%BA">SpringApplication的创建</a></li>
+</ul>
+</li>
+<li><a href="#%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86%E9%98%B6%E6%AE%B5">请求处理阶段</a></li>
+</ul>
+</li>
+</ul>
+</p>
+<h1 id="控制器controller">控制器（Controller）</h1>
+<ul>
+<li>概念：控制器层用于接收用户的请求，根据用户请求调用不同的服务，并将响应结果返回到视图。</li>
+<li>功能：处理器查找-&gt;处理器执行-&gt;视图查找-&gt;模型绑定-&gt;返回响应。</li>
+</ul>
+<h2 id="处理器查找">处理器查找</h2>
+<ol>
+<li>直接URL映射：向Spring注册<code>SimpleUrlHandlerMapping</code>类型的Bean。</li>
+<li>BeanName与URL映射：如果Bean的名称或别名以<code>/</code>开头，则该Bean会自动映射为处理器，URL为Bean的名称。注册逻辑在<code>BeanNameUrlHandlerMapping</code>中实现。</li>
+<li><code>@RequestMapping</code>映射：为方法添加<code>@RequestMapping</code>注解，则该方法会自动映射为处理器方法，URL在注解中指定。注册逻辑在<code>RequestMappingHandlerMapping</code>中实现。</li>
+</ol>
+<h3 id="拦截器">拦截器</h3>
+<ul>
+<li>在处理器查找时，<code>HandlerMapping</code>接口实现类并不直接返回处理器，而是返回<code>HandlerExecutionChain</code>类，该类封装了所有应用在该处理器上的拦截器，拦截器的类型是<code>HandlerInterceptor</code>接口的实现类。</li>
+<li>拦截器中有三个方法：<code>boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)</code>（预处理）、<code>void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable ModelAndView modelAndView)</code>（结果处理）、<code>void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex)</code>（异常处理）。
+<ol>
+<li>在执行处理器前，会先执行<code>HandlerInterceptor</code>接口实现类的<code>preHandle()</code>，若方法返回<code>false</code>则中断处理流程，若方法返回<code>true</code>则继续后续的拦截器处理。</li>
+<li>若处理器正常执行完成则会先执行<code>HandlerInterceptor</code>接口实现类的<code>postHandle()</code>，所有<code>postHandler()</code>执行完成后再执行所有的<code>afterCompletion()</code>。</li>
+<li>若处理器执行错误则会执行<code>HandlerInterceptor</code>接口实现类的<code>afterCompletion()</code>。<br>
+<img src="https://usuichi.github.io/post-images/1614392649613.png" alt="拦截器处理流程" loading="lazy"></li>
+</ol>
+</li>
+</ul>
+<h3 id="适配器">适配器</h3>
+<ul>
+<li>在拦截器的<code>preHandler()</code>均返回<code>true</code>后，会把当前的处理器交给可以执行它的适配器<code>HandlerAdapter</code>接口实现类去执行。
+<ul>
+<li><code>HandlerMethod</code>类对应的适配器为<code>RequestMappingHandlerAdapter</code>。</li>
+</ul>
+</li>
+</ul>
+<h2 id="处理器执行">处理器执行</h2>
+<ol>
+<li><code>HttpRequestHandler</code>接口：只包含一个<code>public void handleRequest(HttpServletRequest request, HttpServletResponse response)</code>方法，适合处理简单的HTTP请求。</li>
+<li><code>Controller</code>接口：只包含一个<code>public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response)</code>方法，返回值中提供了对视图和模型的绑定功能。</li>
+<li><code>HandlerMethod</code>类：有<code>@RequestMapping</code>注解标记的方法会封装为该类，类中包含该方法所在的Bean及该方法的引用。</li>
+</ol>
+<h2 id="视图查找和模型绑定">视图查找和模型绑定</h2>
+<ul>
+<li>控制器最终对视图进行渲染时，会从<code>ModelAndView</code>类型返回值中获取视图或根据视图名查找视图，之后再从<code>ModelAndView</code>类型返回值中获得模型数据，通过调用视图的渲染方法传入模型数据执行渲染操作，渲染后把结果通过HTTP Response返回给用户。</li>
+</ul>
+<h2 id="处理器方法参数解析">处理器方法参数解析</h2>
+<ul>
+<li>Spring MVC为<code>@RequestMapping</code>标记的处理器方法增加了参数自动解析的功能。在适配器执行处理器方法前，会遍历当前处理器方法中所有的参数签名，根据每个参数签名自动从请求信息或当前应用信息中心获取最合适的值，作为执行处理器方法的参数列表，在执行时传递给该处理器方法。</li>
+<li><code>MethodParameter</code>类：是Spring MVC对处理器方法中的参数封装，包含了参数在参数列表中的索引、所在方法、参数注解、当前参数名等参数相关的元信息。</li>
+<li><code>HandlerMethodArgumentResolver</code>接口：
+<ul>
+<li>声明<code>boolean supportsParameter(MethodParameter parameter)</code>方法，该方法根据参数元信息判断是否可以直接解析该参数的参数值。</li>
+<li>声明<code>Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer, NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory)</code>方法，该方法需要传入请求信息与参数信息，返回<code>Object</code>类型的值，该值即解析后当前处理中参数对应的参数值。</li>
+</ul>
+</li>
+<li><code>RequestMappingHandlerAdapter</code>类中封装了<code>HandlerMethodArgumentResolver</code>接口实现类的列表，参数解析时遍历参数列表，对每个参数遍历解析器列表，当<code>supportsParameter()</code>方法返回<code>true</code>时，表示当前解析器支持解析此参数，再调用该解析器的<code>resolveArgument()</code>方法，最终获得参数值数组。</li>
+<li>根据参数信息对参数进行解析的方式大致分为两类：根据参数类型解析、根据参数注解解析。
+<ul>
+<li>参数类型解析策略：
+<ol>
+<li><code>WebRequest</code>、<code>NativWebRequest</code>：Spring MVC对Servlet原生Request的封装。</li>
+<li><code>ServletRequest</code>、<code>ServletResponse</code>及其子类：Servlet API中对HTTP请求和响应的封装。</li>
+<li><code>HttpSession</code>：HTTP会话。</li>
+<li><code>HttpMethod</code>：当前的请求方法。</li>
+<li><code>HttpEntity&lt;T&gt;</code>：Spring MVC封装的HTTP请求实体，可以用于访问请求头和请求体，请求体用<code>HttpMessageConverter</code>的实现类转换为<code>T</code>类型的对象。</li>
+</ol>
+</li>
+<li>参数注解解析策略：
+<ol>
+<li><code>@PathVariable</code>：用于获取<code>@RequestMappinig</code>的<code>path</code>中的模板变量</li>
+<li><code>@MatrixVariable</code>：用于获取URL中路径段用分号隔开的键值对的值。</li>
+<li><code>@RequestParam</code>：用于绑定请求参数，使用<code>Request.getParameter()</code>获取值。</li>
+<li><code>@RequestHeader</code>：用于绑定请求头参数，使用<code>Request.getHeader()</code>获取值。</li>
+<li><code>@CookieValue</code>：用于绑定Cookie值，使用<code>Request.getCookies()</code>获取值。</li>
+<li><code>@RequestBody</code>：用于绑定请求体数据，使用<code>HttpMessageConverter</code>接口实现类把请求的<code>InputStream</code>数据流转化为声明类型。</li>
+<li><code>@RequestPart</code>：用于获取multipart/form-data类型请求中的请求块。</li>
+<li><code>@ModelAttribute</code>：用于绑定当前数据模型中的属性值。</li>
+<li><code>@SessionAttribute</code>：用于从Session的属性中获取值。</li>
+<li><code>@RequestAttribute</code>：用于从Request的属性中获取值。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="返回值处理">返回值处理</h2>
+<ul>
+<li>对返回值的支持大致分为三类：数据模型相关类型、视图相关类型、<code>@ResponseBody</code>相关类型。举例如下：
+<ul>
+<li><code>@ModelAttibute</code>：返回数据为模型属性，是默认类型。</li>
+<li><code>@ResponseBody</code>：返回值直接作为相应内容。</li>
+<li><code>HttpHeaders</code>：只返回响应的头数据，不返回响应体。</li>
+<li><code>HttpEntity</code>、<code>ResponseEntity</code>：结合<code>HttpHeaders</code>与<code>@ResponseBody</code>的功能。</li>
+</ul>
+</li>
+</ul>
+<h2 id="控制器增强">控制器增强</h2>
+<ul>
+<li>数据绑定：有注解<code>@InitBinder</code>的方法（返回值void）可以为当前控制器的<code>WebDataBinder</code>添加新的类型转换器。（所有需进行类型转换的参数绑定，都需要用到<code>WebDataBinder</code>的数据转换功能）</li>
+<li>模型属性：有注解<code>@ModelAttribute</code>的非处理器方法可以为当前控制器的所有处理器方法附加模型属性。（在执行处理器方法前先执行<code>@ModelAttribute</code>标记的方法，并添加该方法的返回值得到模型中）</li>
+<li>异常处理：有注解<code>@ExceptionHandler</code>的方法可以为当前控制器的所有处理器方法声明异常处理方法。</li>
+<li>请求体与响应体增强：在<code>@RequestBody</code>、<code>@ResponseBody</code>的处理中增强消息转换功能，可以在读请求体前、读请求体后、写响应体前对数据做一些特殊处理。</li>
+<li><code>@ControllerAdvice</code>注解：控制器增强器，可以为其中的方法标记<code>@InitBinder</code>、<code>@ModelAttribute</code>、<code>@ExceptionHandler</code>三种增强器注解。</li>
+<li>三种注解如果在<code>@ControllerAdvice</code>标记的Bean中定义，此时增强功能按照<code>@ControllerAdvice</code>注解定义的条件范围应用到处理器方法中；如果在控制器Bean中定义，此时增强功能只应用于当前控制器中。</li>
+</ul>
+<h1 id="扩展支持">扩展支持</h1>
+<h2 id="跨域请求">跨域请求</h2>
+<ul>
+<li>CORS跨域资源共享：分为简单请求和非简单请求。对于简单请求，浏览器为请求头添加Origin字段，标记当前发出请求的页面所在域，服务端检测请求头中的Origin字段，如果是可信的请求源，则可以在该请求的响应头中添加Access-Control-Allow-Origin字段，内容为请求的Origin，表明允许当前Origin进行跨域请求；对于非简单请求，会在正式通信前增加一次HTTP OPTIONS请求（称为预检请求），服务器根据预检请求里的信息判断是否允许该CORS请求，通过后才允许发送正式请求。
+<ul>
+<li>简单请求/非简单请求：请求方法是HEAD/GET/POST，HTTP header字段不超出Accept/Accept-Language/Content-Language/Last-Event-ID/Content-Type的请求是简单请求，否则为非简单请求。</li>
+<li>有<code>@CrossOrigin</code>注解的处理器方法可允许其<code>origin</code>字段发起的跨域请求。</li>
+</ul>
+</li>
+</ul>
+<h2 id="websocket">WebSocket</h2>
+<ul>
+<li>WebSocket协议：基于TCP协议，可以使客户端与服务端创建一个持久的Socket连接，在不关闭该连接的情况下，双方可以互相主动发送消息。
+<ol>
+<li>客户端首先使用HTTP向WebSocket的连接地址发起一个GET请求，请求头中的Upgrade代表请求协议升级为WebSocket协议，Connection使用Upgrade标记。</li>
+<li>服务端回复响应状态码为101表示切换协议，Upgrade和Connection与请求头相同。</li>
+<li>当前两步（握手请求）完成后，浏览器会使用与握手请求相同的TCP连接发起WebSocket连接请求。</li>
+<li>连接请求成功时，才算完成WebSocket的连接，可以进行后续的发送与接收消息动作。</li>
+</ol>
+</li>
+<li>定义一个继承自<code>WebSocketHandler</code>类的处理器类，包含<code>afterConnectionEstablished()</code>（连接开启时的处理方法）、<code>handleMessage()</code>（收到消息时的处理方法）、<code>afterConnectioinClosed()</code>（关闭连接时的处理方法）、<code>handleTransportError()</code>（传输错误时的处理方法）等几个方法。在<code>@Configuration</code>注解类上添加开启WebSocket的注解<code>@EnableWebSocket</code>，该类实现<code>WebSocketConfigurer</code>接口，该类中的<code>registerWebSocketHandlers()</code>方法对处理器类进行注册。</li>
+<li>WebSocket中的Session与HTTP中的Session不是同一个，它直接与连接绑定。如果想要通过WebSocket获取HTTP的Session信息，可以在握手时通过HTTP的Session获取信息放入WebSocket的Session。</li>
+<li>通过WebSocket协议可以传输基于STOMP协议的消息负载，它规定了各种头信息用于表示此条消息的含义。STOMP协议整体框架是消息发布订阅协议。</li>
+</ul>
+<h2 id="异步请求">异步请求</h2>
+<ul>
+<li>Servlet对异步请求的支持：通过<code>ServletRequest</code>的<code>startAsync()</code>方法标记对此请求开启异步处理，该方法返回一个<code>AsyncContext</code>，其中包含有<code>Request</code>与<code>Response</code>，可以对此<code>AsyncContext</code>进行异步操作，在其他线程中直接对其中的<code>Request</code>和<code>Response</code>进行读写都可行，在处理完成后，调用其<code>complete</code>表示处理完成。</li>
+<li>SpringMVC对异步请求的支持：
+<ol>
+<li><code>Callable&lt;T&gt;</code>：返回值为<code>T</code>类型，与<code>Runnable</code>接口效果类似。</li>
+<li><code>WebAsyncTask</code>：封装了<code>Callable</code>类型的实例作为异步执行逻辑，同时还可定制异步处理的超时、异步执行器、超时回调、异常回调、完成回调等功能。</li>
+<li><code>DeferredResult</code>：使用方式与<code>Callable</code>类似，但在返回结果上不一样，它返回的时候实际结果可能没有生成，实际的结果可能会在另外的线程里面设置到<code>DeferredResult</code>中去。</li>
+</ol>
+</li>
+</ul>
+<h2 id="webflux框架">WebFlux框架</h2>
+<ul>
+<li>背景：虽然Servlet对请求和响应都支持非阻塞处理，但SpringMVC异步请求过程中，需要先得到完整的HTTP请求数据，解析请求中的相关参数（同步获取请求），然后才能执行后续操作（异步发送响应）。因此需要WebFlux框架实现对请求和响应都是异步处理。</li>
+<li>响应式编程：与面向对象中把数据相关的操作封装为对象不同，响应式编程把数据抽象为数据流及对数据流的操作与变化的响应。WebFlux的响应式模型由Spring自己的Reactor库来实现，Netty作为默认的WebFlux框架服务端。</li>
+<li>WebFlux框架下的HTTP请求处理过程：
+<ol>
+<li>Netty接收HTTP连接，准备开始接收请求数据。</li>
+<li>Netty把请求封装为数据源，之后获取所有对该数据源的操作，但所有操作此时都不会被执行（因为数据可能尚未准备好，且数据源没有订阅者）。</li>
+<li>WebFlux框架封装包括处理器查找、处理器执行、返回值处理的逻辑，将这三种操作作为数据转换操作链接在数据源上，这些操作页还未执行。</li>
+<li>所有的处理器逻辑的返回值都建议使用Flux（包含0<sub>n个元素）、Mono（包含0</sub>1个元素）或其他异步结果进行，可做到对响应的数据写入也变为异步。</li>
+<li>待所有操作链接完成后，在对请求进行响应时，会对数据源进行订阅以执行所有的转换逻辑，订阅后，只有当数据源准备好时，才会使用线程执行所有的转换操作，在数据转换逻辑中包含把数据写入响应的逻辑。</li>
+</ol>
+</li>
+<li>使用：
+<ul>
+<li>若想使用Reactive特性，需要把客户端换为支持Reactive特性的客户端。</li>
+<li>由于其不是基于Servlet的，所以Servlet原生的一些类型都不能被直接使用。</li>
+<li>WebFlux把请求和响应封装在了一起，作为<code>ServerWebExchange</code>类型使用，可以通过其访问请求<code>ServeWebExchange</code>、响应<code>ServerHttpResponse</code>、Session<code>WebSession</code>。</li>
+<li>WebFlux建议处理器方法返回的结果为异步类型。</li>
+</ul>
+</li>
+</ul>
+<h1 id="配置">配置</h1>
+<ul>
+<li>在Spring Boot中提供了各种属性，通过修改其中的一些组件属性，可以实现对Spring MVC的定制，同时原始的Spring MVC支持使用配置器<code>WebMvcConfigurer</code>方式进行配置。
+<ul>
+<li>对Spring MVC进行定制，本质上就是通过提供工厂创建Bean需要使用的属性来定制产生的Spring MVC组件。</li>
+</ul>
+</li>
+<li>Spring容器提供了通用的环境<code>Environment</code>用于包含当前运行应用的一些初始化属性，属性<code>Key</code>的值是<code>Value</code>。在工厂模式下，Bean的产生依赖的外部属性都存放在<code>Environment</code>中。<code>Environment</code>中包含多个属性源<code>PropertySource</code>，而在Spring Boot中又对这些属性源进行了增强，支持以更多的方式为<code>Environment</code>添加不同的属性源。</li>
+</ul>
+<h2 id="属性配置">属性配置</h2>
+<ol>
+<li>系统属性（VM options）：系统属性指当前应用所依赖的执行系统中配置的属性，Java中通过<code>System.getProperties()</code>方法来获取全部系统属性，Spring Boot把该方法获取的结果作为属性源来使用。系统内属性包括JVM相关属性，命令行参数指定属性等，在运行时可以通过<code>System.setProperty(key, value)</code>动态添加系统属性。</li>
+<li>环境变量（Environment variables）：环境变量指当前应用的宿主系统的环境变量（Windows/Linux等），Java中通过<code>System.getenv()</code>方法来获取全部环境变量。</li>
+<li>启动参数（Program arguments）：启动参数是指min方法接收的String数组类型的参数。Spring Boot支持通过启动参数添加属性源，在启动参数中，以<code>--key:value</code>的格式表示要添加到属性源中的属性。</li>
+<li>构建参数：使用<code>SpringApplicationBuilder</code>类来构建Spring应用，在构建时可以传入更多的自定义参数。</li>
+</ol>
+<h2 id="配置文件">配置文件</h2>
+<ul>
+<li>配置文件位置：通过属性配置中的四种方法来指定配置文件的位置。（<code>spring.config.location</code>属性的值）
+<ol>
+<li><code>resources</code>目录：编译后其中文件会被放在与最上级包同级的文件夹，即编译后文件的根目录（<code>classpath:/</code>）</li>
+<li><code>resources/config</code>目录：<code>classpath:/config/</code></li>
+<li>当前应用启动目录：<code>file:./</code></li>
+<li>当前应用启动目录下的config目录：<code>file:./config/</code></li>
+</ol>
+</li>
+<li>配置文件格式：
+<ol>
+<li>properties：是Java标准定义的配置文件格式，提供<code>key=value</code>的方式配置属性，每个属性占一行。绑定功能包括通过<code>.</code>分割多级属性，<code>[int]</code>表示数组属性，<code>[String]</code>表示字典属性等。</li>
+<li>yml：是使用YAML语言的配置文件格式，它对简单属性、多层属性、数组、字典等提供了原生的支持，还提供了对高级功能的支持。</li>
+<li>xml：通过标签表示属性名，冗余度很高，不建议使用。</li>
+</ol>
+</li>
+<li>配置文件命名：通过属性配置中的四种方法来指定配置文件名。（<code>spring.conofig.name</code>属性的值）。默认情况下，Spring Boot会使用<code>application</code>作为配置文件名进行查找。</li>
+<li>多环境配置：Spring通过Profile功能为不同的环境提供不同的Bean，Spring Boot为不同的profile提供了加载不同配置文件的功能。
+<ol>
+<li>可以为配置文件的文件名与文件后缀之间添加<code>-环境配置名</code>来为不同的环境应用不同的配置。对于不包含环境配置名的文件来说，则作为所有环境都需要加载的配置使用。可以通过<code>spring.profiles.active</code>来指定当前活动的环境配置名，该属性可以通过属性配置中的四种方法来指定，也可以通过全局配置文件来指定。</li>
+<li>在Spring中可以通过注解<code>@PropertySource</code>把执行的配置文件加载到当前环境中作为属性源，不支持yml格式文件。</li>
+</ol>
+</li>
+<li><code>WebMvcConfigurer</code>配置器：在SpringMVC框架启动时，会获取当前Spring容器中所有的<code>WebMvcConfigurer</code>实现类Bean，把获取到的全部Bean作为配置器，并执行其中的的方法以对当前Web框架进行配置，该接口提供了多个方法，实现类通过实现接口中的方法（配置、扩展、覆盖）来达到配置的目的。
+<ul>
+<li>配置类方法：修改当前组件的特性。</li>
+<li>扩展类方法：添加组件。</li>
+<li>覆盖类方法：替换内置的默认组件实现。</li>
+</ul>
+</li>
+<li><code>DelegatingWebMvcConfiguration</code>配置器：该类中引用了当前Spring中所有<code>WebMvcConfigurer</code>的实现类Bean，并通过调用它们的方法对MVC框架进行配置。继承此类可以更加底层的组件进行配置。</li>
+<li>常用配置类方法：
+<ol>
+<li>异步请求：<code>configureAsyncSupport(AsyncSupportConfigurer)</code></li>
+<li>路径匹配：<code>configurePathMatch(PathMatchConofigurer)</code></li>
+<li>内容协商管理：<code>configureContentNegotiation(ContentNegotiationConfigurer)</code></li>
+<li>消息转换器：<code>configureMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt;)</code></li>
+<li>默认请求处理器：<code>configureDefaultServletHandling(DefaultServletHandlerConfigurer)</code></li>
+<li>处理器异常解析器：<code>configureHandlerExceptionResolvers(List&lt;HandlerExceptionResolver&gt;)</code></li>
+<li>配置与注册视图解析器：<code>configureViewResolvers(ViewResolverRegistry)</code></li>
+</ol>
+</li>
+<li>常用扩展类方法：
+<ol>
+<li>拦截器注册器：<code>addInterceptors(InterceptorRegistry)</code></li>
+<li>函数解析器：<code>addArgumentResolvers(List&lt;HandlerMethodArgumentResolver&gt;)</code></li>
+<li>返回值数据处理器：<code>addReturnValueHandlers(List&lt;HandlerMethodReturnValueHandler&gt;)</code></li>
+<li>跨域请求全局配置注册器：<code>addCorsMappings(CorsRegistry)</code></li>
+<li>格式与类型转换器：<code>addFomatters(FormatterRegistry)</code></li>
+<li>处理器异常解析器：<code>extendHandlerExceptionResolvers(List&lt;HandlerExceptionResolver&gt;)</code></li>
+<li>消息转换器：<code>extendMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt;)</code></li>
+<li>注册视图控制器：<code>addViewControllers(ViewControllerRegistry)</code></li>
+<li>注册资源处理器：<code>adRsourceHandlers(ResourceHandlerRegistry)</code></li>
+</ol>
+</li>
+</ul>
+<h1 id="框架源码">框架源码</h1>
+<ul>
+<li>入口：对于Spring Web应用，有两个最主要的入口，即应用启动入口和请求处理入口。
+<ul>
+<li>应用启动入口：<code>SpringApplication.run()</code>，该方法包括初始化全部Spring MVC相关的组件、把Spring MVC组件、Spring上下文与Web容器连接的过程，执行完成后Web应用进入就绪状态，等待接收HTTP请求。</li>
+<li>请求处理入口：原始的请求处理入口是Web容器，负责接收HTTP请求，并把该请求分配给Spring MVC组件进行处理。Spring MVC的组件又通过一定的策略找到开发者编写的处理器方法，经过一定的与处理后执行处理器方法。（处理器方法不是真正的请求处理入口，但却是Spring框架层之外的可以追踪的请求处理过程的入口）</li>
+</ul>
+</li>
+</ul>
+<h2 id="启动阶段">启动阶段</h2>
+<ul>
+<li>问题：
+<ol>
+<li>Spring Boot如何启动Web容器？</li>
+<li>Spring Boot如何初始化MVC相关组件？</li>
+<li>Spring Boot如何把MVC组件与Web容器整合？</li>
+</ol>
+</li>
+</ul>
+<h3 id="springapplication的创建">SpringApplication的创建</h3>
+<h2 id="请求处理阶段">请求处理阶段</h2>
+<ul>
+<li>问题：
+<ol>
+<li>Web容器接收请求后，Spring MVC如何把它交给处理器方法执行？</li>
+<li>处理器方法的参数是如何从请求参数转换而来的？</li>
+<li>处理器方法的返回值如何转换为响应内容返回？</li>
+</ol>
+</li>
+</ul>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/lesslesstu-jie-she-ji-mo-shi-greatergreater-du-shu-bi-ji/">
+                  <h3 class="post-title">
+                    《图解设计模式》读书笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>

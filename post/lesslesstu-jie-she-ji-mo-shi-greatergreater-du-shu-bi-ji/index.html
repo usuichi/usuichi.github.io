@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《图解设计模式》读书笔记 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1619096785649">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+创建型模式
+
+单例模式(Singleton)
+原型模式(Prototype)
+工厂方法模式(FactoryMethod)
+抽象工厂模式(AbstractFactory)
+建造者模式(Builder)
+
+
+结构型模式
+
+代理模式(Proxy..." />
+    <meta name="keywords" content="" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1619096785649" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《图解设计模式》读书笔记</h2>
+            <div class="post-date">2021-02-07</div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E5%88%9B%E5%BB%BA%E5%9E%8B%E6%A8%A1%E5%BC%8F">创建型模式</a>
+<ul>
+<li><a href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8Fsingleton">单例模式(Singleton)</a></li>
+<li><a href="#%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8Fprototype">原型模式(Prototype)</a></li>
+<li><a href="#%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8Ffactorymethod">工厂方法模式(FactoryMethod)</a></li>
+<li><a href="#%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8Fabstractfactory">抽象工厂模式(AbstractFactory)</a></li>
+<li><a href="#%E5%BB%BA%E9%80%A0%E8%80%85%E6%A8%A1%E5%BC%8Fbuilder">建造者模式(Builder)</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BB%93%E6%9E%84%E5%9E%8B%E6%A8%A1%E5%BC%8F">结构型模式</a>
+<ul>
+<li><a href="#%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8Fproxy">代理模式(Proxy)</a></li>
+<li><a href="#%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8Fadapter">适配器模式(Adapter)</a></li>
+<li><a href="#%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8Fbridge">桥接模式(Bridge)</a></li>
+<li><a href="#%E8%A3%85%E9%A5%B0%E5%99%A8%E6%A8%A1%E5%BC%8Fdecorator">装饰器模式(Decorator)</a></li>
+<li><a href="#%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8Ffacade">外观模式(Facade)</a></li>
+<li><a href="#%E4%BA%AB%E5%85%83%E6%A8%A1%E5%BC%8Fflyweight">享元模式(Flyweight)</a></li>
+<li><a href="#%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8Fcomposite">组合模式(Composite)</a></li>
+</ul>
+</li>
+<li><a href="#%E8%A1%8C%E4%B8%BA%E5%9E%8B%E6%A8%A1%E5%BC%8F">行为型模式</a>
+<ul>
+<li><a href="#%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8Ftemplatemethod">模板方法模式(TemplateMethod)</a></li>
+<li><a href="#%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8Fstrategy">策略模式(Strategy)</a></li>
+<li><a href="#%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8Fcommand">命令模式(Command)</a></li>
+<li><a href="#%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8Fchain-of-responsibility">责任链模式(Chain of Responsibility)</a></li>
+<li><a href="#%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8Fstate">状态模式(State)</a></li>
+<li><a href="#%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8Fobserver">观察者模式(Observer)</a></li>
+<li><a href="#%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8Fmediator">中介者模式(Mediator)</a></li>
+<li><a href="#%E8%BF%AD%E4%BB%A3%E5%99%A8%E6%A8%A1%E5%BC%8Fiterator">迭代器模式(Iterator)</a></li>
+<li><a href="#%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8Fvisitor">访问者模式(Visitor)</a></li>
+<li><a href="#%E5%A4%87%E5%BF%98%E5%BD%95%E6%A8%A1%E5%BC%8Fmemento">备忘录模式(Memento)</a></li>
+<li><a href="#%E8%A7%A3%E9%87%8A%E5%99%A8%E6%A8%A1%E5%BC%8Finterpreter">解释器模式(Interpreter)</a></li>
+</ul>
+</li>
+</ul>
+</p>
+<h1 id="创建型模式">创建型模式</h1>
+<ul>
+<li>创建型模式：对类的实例化进行抽象，共有5种。</li>
+</ul>
+<h2 id="单例模式singleton">单例模式(Singleton)</h2>
+<ul>
+<li>概念：一个类只有一个实例，且该类能自行创建这个实例。</li>
+<li>模式结构：单例类包含一个自身的实例且能自行创建它，并对外提供一个静态的公有函数用于获取该实例。<br>
+<img src="https://usuichi.github.io/post-images/1612843519562.png" alt="单例模式结构" loading="lazy"></li>
+<li>实现：
+<ul>
+<li>饿汉模式：在类加载时就完成了初始化。</li>
+<li>懒汉模式：在用户第一次调用getInstance()时初始化，通过加锁来实现线程安全。</li>
+<li>静态内部类单例模式：在用户第一次调用getInstance()时初始化，能够确保线程安全。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-java">public class Singleton { 
+    private Singleton(){
+    }
+      public static Singleton getInstance(){  
+        return SingletonHolder.Instance;  
+    }  
+    private static class SingletonHolder {  
+        private static final Singleton Instance = new Singleton();  
+    }  
+}
+</code></pre>
+<h2 id="原型模式prototype">原型模式(Prototype)</h2>
+<ul>
+<li>概念：用一个已经创建的实例作为原型，通过复制该原型对象来创建一个和原型相同或相似的新对象。</li>
+<li>模式结构：抽象原型接口规定了具体原型对象必须实现的方法，具体原型类实现了抽象原型接口中规定的方法。<br>
+<img src="https://usuichi.github.io/post-images/1612845152288.png" alt="原型模式结构" loading="lazy"></li>
+<li>实现：实现Cloneable接口并重写Object.clone()方法。</li>
+</ul>
+<h2 id="工厂方法模式factorymethod">工厂方法模式(FactoryMethod)</h2>
+<ul>
+<li>概念：定义一个创建对象的接口，让实现这个接口的类来决定实例化哪个类。</li>
+<li>模式结构：抽象工厂定义了创建产品的接口，调用者通过它访问具体工厂的工厂方法来创建产品；具体工厂实现了抽象工厂中的抽象方法；抽象产品定义了产品规范；具体产品实现了抽象产品接口，由具体工厂创建。<br>
+<img src="https://usuichi.github.io/post-images/1612840096394.png" alt="工厂方法模式结构" loading="lazy"></li>
+<li>实现：调用<code>java.lang.Class.newInstance()</code>静态方法来实例化对象。</li>
+</ul>
+<h2 id="抽象工厂模式abstractfactory">抽象工厂模式(AbstractFactory)</h2>
+<ul>
+<li>概念：定义一个创建工厂的接口，让实现该接口的工厂去实现创建对象的方法。是工厂的工厂。</li>
+<li>模式结构：与工厂方法模式类似，但抽象工厂定义了创建多种产品的接口。<br>
+<img src="https://usuichi.github.io/post-images/1612857612822.png" alt="抽象工厂模式结构" loading="lazy"></li>
+<li>实现：<code>NumberFormat.getInstance()</code></li>
+<li>工厂方法模式与抽象工厂模式：工厂方法模式中有多个派生于一个基类的具体工厂类，每个具体工厂只生产一种基类的一个派生类；抽象工厂模式中有多个派生于一个基类的具体工厂类，每个具体工厂生产多个相关基类的各一个派生类。</li>
+</ul>
+<h2 id="建造者模式builder">建造者模式(Builder)</h2>
+<ul>
+<li>概念：将一个复杂对象的构建与它的表示分离，使得同样的构建过程可以创建不同的表示。</li>
+<li>模式结构：抽象建造者定义了创建产品各个子部件的抽象方法，包含了特定的产品。具体建造者实现了创建产品的方法。用户通过实例化指挥者来获得产品。<br>
+<img src="https://usuichi.github.io/post-images/1612850119315.png" alt="建造者模式结构" loading="lazy"></li>
+<li>实现：<code>java.lang.StringBuilder</code>类是指挥者，它继承自AbstractStringBuilder是实现了Appendable接口的具体建造者，Appendable接口定义了append方法，是一个抽象建造者。</li>
+</ul>
+<h1 id="结构型模式">结构型模式</h1>
+<ul>
+<li>结构型模式：对类间关系进行抽象，共有7种。</li>
+</ul>
+<h2 id="代理模式proxy">代理模式(Proxy)</h2>
+<ul>
+<li>概念：代理对象作为访问对象和目标对象之间的中介。</li>
+<li>模式结构：抽象主题通过接口或抽象类声明真实主题和代理对象实现的业务方法，真实主题实现了抽象主题中的具体业务，是代理对象所代表的真实对象，是最终要引用的对象。代理类提供了与真实主题相同的接口，其内部含有对真实主题的引用，它可以访问、控制或扩展真实主题的功能。<br>
+<img src="https://usuichi.github.io/post-images/1613224036437.png" alt="代理模式结构" loading="lazy"></li>
+<li>实现：<code>Proxy.newProxyInstance</code>方法</li>
+</ul>
+<h2 id="适配器模式adapter">适配器模式(Adapter)</h2>
+<ul>
+<li>概念：将一个不兼容的接口转换为一个兼容的接口，以消除接口不匹配导致的兼容性问题。</li>
+<li>模式结构：分为类适配器模式和对象适配器模式两种。
+<ul>
+<li>类适配器模式：适配器类通过继承作为适配者类的现存组件来满足目标接口。<br>
+<img src="https://usuichi.github.io/post-images/1612790450991.png" alt="类适配器模式结构" loading="lazy"></li>
+<li>对象适配器模式：适配器类通过聚合作为适配者类的现存组件来满足目标接口。<br>
+<img src="https://usuichi.github.io/post-images/1612790796331.png" alt="对象适配器模式结构" loading="lazy"></li>
+</ul>
+</li>
+<li>实现：<code>Arrays.asList()</code>方法能够将已有数组数据或一些元素（适配者）适配为一个长度不可变的List（目标接口），适配器类是一个Arrays类中定义的内部类。</li>
+</ul>
+<h2 id="桥接模式bridge">桥接模式(Bridge)</h2>
+<ul>
+<li>概念：用组合关系替代继承关系，将抽象与实现分离，使其可以独立变化。</li>
+<li>模式结构：抽象化类中包含一个对实现化类对象的引用，扩展抽象化类中实现父类的业务方法。实现化类定义了接口供抽象化调用，具体实现化类给出了实现化接口的具体实现。<br>
+<img src="https://usuichi.github.io/post-images/1612862889073.png" alt="桥接模式结构" loading="lazy"></li>
+<li>实现：JDBC中，Java定义了一套接口供厂商实现，定义了一套接口供程序开发者调用。</li>
+</ul>
+<h2 id="装饰器模式decorator">装饰器模式(Decorator)</h2>
+<ul>
+<li>概念：在不改变现有对象结构的情况下，动态地给该对象增加额外功能。</li>
+<li>模式结构：抽象构件定义抽象方法，由具体构件实现。抽象装饰器实现抽象构件定义的接口并包含一个实现了抽象构件定义接口的类，通过具体装饰器实现增加的功能。<br>
+<img src="https://usuichi.github.io/post-images/1612884060185.png" alt="装饰器模式结构" loading="lazy"></li>
+<li>实现：StringReader被LineNumberReader装饰后，为字符流扩展出了line相关接口。</li>
+</ul>
+<h2 id="外观模式facade">外观模式(Facade)</h2>
+<ul>
+<li>概念：为多个复杂的子系统提供一个一致的接口，而使这些子系统更加容易被访问。</li>
+<li>模式结构：外观类为多个子系统定义一个通用接口，子系统实现系统的功能。<br>
+<img src="https://usuichi.github.io/post-images/1613013579594.png" alt="外观模式结构" loading="lazy"></li>
+<li>实现：Tomcat中，Request和RequestFacade类都实现了HttpServletRequest接口，在Request中调用getRequest()实际获取的是RequestFacade对象。</li>
+</ul>
+<h2 id="享元模式flyweight">享元模式(Flyweight)</h2>
+<ul>
+<li>概念：运用共享技术来有效地支持大量细粒度对象的复用。它通过共享已经存在的对象来大幅度减少需要创建的对象数量、避免大量相似类的开销，从而提高系统资源的利用率。</li>
+<li>模式结构：非享元包含了非共享的外部状态信息，抽象享元包含了享元方法，非享元的外部状态以参数的形式通过该方法传入。享元角色工厂通过关键字来管理具体享元。<br>
+<img src="https://usuichi.github.io/post-images/1613207027464.png" alt="享元模式结构" loading="lazy"></li>
+<li>实现：valueOf这个方法中它会先判断传进去的值是否在IntegerCache中，如果不在就创建新的对象，在就直接返回缓存池里的对象。这个valueOf方法就用到享元模式。</li>
+</ul>
+<h2 id="组合模式composite">组合模式(Composite)</h2>
+<ul>
+<li>概念：将对象组合成树状的层次结构，用来表示“整体-部分”的关系。</li>
+<li>模式结构：在抽象构件类中定义了访问管理它的子构件的方法，树枝构件可以继承和实现抽象构件，用于存储和管理子构件，实现了在抽象构件中定义的行为，叶子构件用于继承和实现抽象构件。<br>
+<img src="https://usuichi.github.io/post-images/1612880923427.png" alt="组合模式结构" loading="lazy"></li>
+<li>实现：在<code>java.awt</code>GUI设计包中使用较多。</li>
+</ul>
+<h1 id="行为型模式">行为型模式</h1>
+<ul>
+<li>行为型模式：对类的职责进行抽象，共有11种。</li>
+</ul>
+<h2 id="模板方法模式templatemethod">模板方法模式(TemplateMethod)</h2>
+<ul>
+<li>概念：定义一个操作的算法骨架，而将算法的一些步骤延迟到子类中实现，使子类可以在不改变算法流程的情况下重新定义算法的特定步骤。</li>
+<li>模式结构：具体子类继承抽象类并实现其中的抽象方法。<br>
+<img src="https://usuichi.github.io/post-images/1612799332191.png" alt="模板方法模式结构" loading="lazy"></li>
+<li>实现：当类实现了Comparable接口后可以使用Collections.sort进行排序。</li>
+</ul>
+<h2 id="策略模式strategy">策略模式(Strategy)</h2>
+<ul>
+<li>概念：封装了一系列可以相互替换的算法，算法的变化不影响使用。</li>
+<li>模式结构：环境持有一个策略引用，抽象策略定义的方法由具体策略实现。<br>
+<img src="https://usuichi.github.io/post-images/1612877223947.png" alt="策略模式结构" loading="lazy"></li>
+<li>实现：Arrays作为一个环境，其中的sort方法由抽象策略Comparator接口定义，有着不同的具体策略实现。</li>
+</ul>
+<h2 id="命令模式command">命令模式(Command)</h2>
+<ul>
+<li>概念：将一个请求封装为一个对象，使发出请求的责任和执行请求的责任分割开。</li>
+<li>模式结构：抽象命令类声明执行命令的接口，拥有执行命令的抽象方法 execute()。具体命令类是抽象命令类的具体实现类，它拥有接收者对象，并通过调用接收者的功能来完成命令要执行的操作。接收者执行命令功能的相关操作，是具体命令对象业务的真正实现者。调用者是请求的发送者，它通常拥有很多的命令对象，并通过访问命令对象来执行相关请求，它不直接访问接收者。<br>
+<img src="https://usuichi.github.io/post-images/1613224411900.gif" alt="命令模式结构" loading="lazy"></li>
+<li>实现：定时任务、线程任务的设计都使用了命令模式。</li>
+</ul>
+<h2 id="责任链模式chain-of-responsibility">责任链模式(Chain of Responsibility)</h2>
+<ul>
+<li>概念：对请求的发送者和处理者解耦，将所有请求的处理者通过前一对象记住其下一个对象的引用而连成一条链；当有请求发生时，可将请求沿着这条链传递，直到有对象处理它为止。</li>
+<li>模式结构：抽象处理者定义一个处理请求的接口并包含抽象处理方法和一个后继连接，具体处理者实现抽象处理者的处理方法。<br>
+<img src="https://usuichi.github.io/post-images/1613012609591.png" alt="责任链模式结构" loading="lazy"></li>
+<li>实现：Spring MVC的DispatcherServlet的doDispatch方法中，通过HandlerExecutionChain获取与请求匹配的处理器。</li>
+</ul>
+<h2 id="状态模式state">状态模式(State)</h2>
+<ul>
+<li>概念：对有状态的对象，把复杂的“判断逻辑”提取到不同的状态对象中，允许状态对象在其内部状态发生改变时改变其行为。</li>
+<li>模式结构：环境上下文定义了用户需要的接口，内部维护一个当前状态，并负责状态的切换。状态定义一个用以封装环境对象中的特定状态所对应的行为，具体状态实现抽象状态所对应的行为，在需要的情况下进行状态切换。<br>
+<img src="https://usuichi.github.io/post-images/1613205012251.png" alt="状态模式结构" loading="lazy"></li>
+</ul>
+<h2 id="观察者模式observer">观察者模式(Observer)</h2>
+<ul>
+<li>概念：多个对象间存在一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并被自动更新。</li>
+<li>模式结构：抽象主题提供了一个用于保存观察者对象的聚集类，提供了一个增加、删除观察者对象的方法，以及通知所有观察者的抽象方法。具体主题实现抽象目标中的通知方法，当具体主题的内部状态发生改变时，通过所有注册过的观察者对象。抽象观察者包含了一个更新自己的抽象方法，当接到具体主题的更改通知时被调用。具体观察者实现抽象观察者中定义的抽象方法。<br>
+<img src="https://usuichi.github.io/post-images/1613020744379.png" alt="观察者模式结构" loading="lazy"></li>
+<li>实现：Spring中，ApplicationEventMulticaster用于ApplicationListener的注册和ApplicationEvent的广播，ApplicationEvent由ApplicationContext发布。</li>
+</ul>
+<h2 id="中介者模式mediator">中介者模式(Mediator)</h2>
+<ul>
+<li>概念：定义一个中介对象来封装一系列对象之间的交互，使原有对象之间的耦合松散，且可以独立地改变它们之间的交互。</li>
+<li>模式结构：抽象中介者提供同事对象注册与同事对象转发的抽象方法。具体中介者实现了中介者接口，定义一个集合里管理同事对象。抽象同事类保存中介者对象，提供同事对象交互的抽象方法。具体同事类是抽象同事类的实现者，当需要与其他同时对象交互时，由中介者对象负责后续的交互。<br>
+<img src="https://usuichi.github.io/post-images/1613019021562.png" alt="中介者模式结构" loading="lazy"></li>
+<li>实现：<code>java.util.concurrent.Executor#execute()</code></li>
+</ul>
+<h2 id="迭代器模式iterator">迭代器模式(Iterator)</h2>
+<ul>
+<li>概念：提供一种顺序访问一个聚合对象中各个元素的方法，而无需暴露聚合对象内部表示。</li>
+<li>模式结构：抽象聚合是一个接口，其中定义了创建迭代器对象的方法。具体聚合实现抽象聚合接口方法，以获得具体迭代器。抽象迭代器是一个接口，其中定义了访问和遍历聚合元素的方法，具体迭代器实现抽象迭代器接口方法，以完成对聚合对象的遍历。<br>
+<img src="https://usuichi.github.io/post-images/1612768035248.png" alt="迭代器模式结构" loading="lazy"></li>
+<li>实现：<code>java.util.Iterator</code>是抽象迭代器接口，<code>java.util.Iterable</code>是抽象聚合接口，常见集合如List、Set实现了Iterable接口成为具体聚合，通过iterator()方法获得具体迭代器。常见集合中通过私有内部类Itr实现迭代器规则成为具体迭代器。</li>
+</ul>
+<h2 id="访问者模式visitor">访问者模式(Visitor)</h2>
+<ul>
+<li>概念：将作用于某种数据结构中的各元素的操作分离出来封装成独立的类，使其在不改变数据结构的前提下可以添加作用于这些元素的新的操作，为数据结构中的每个元素提供多种访问方式。</li>
+<li>模式结构：抽象访问者定义对具体元素类的访问操作，该操作由具体访问者实现。抽象元素声明一个包含accpet(Visitor visitor)的接口，具体元素可以通过visitor.visit(this)进行实现，还可以包含业务逻辑操作。对象结构是一个包含元素的容器。<br>
+<img src="https://usuichi.github.io/post-images/1612925663212.png" alt="访问者模式结构" loading="lazy"></li>
+<li>实现：在Spring中，BeanDefinition接口用于存储SpringBean的定义信息，作为抽象元素，具体元素是ChildBeanDefinition等实现类，BeanDefinationVisitor用于访问BeanDefinition，解析属性或构造方法中的占位符，并把解析结果更新到BeanDefinition中。</li>
+</ul>
+<h2 id="备忘录模式memento">备忘录模式(Memento)</h2>
+<ul>
+<li>概念：能记录一个对象的内部状态，当用户后悔时能撤销当前操作，使数据恢复到它原先的状态。</li>
+<li>模式结构：发起人记录当前时刻的内部状态信息，提供创建备忘录和恢复备忘录的功能，实现其他业务功能，可以访问备忘录里的所有信息。备忘录负责存储发起人的内部状态，在需要的时候提供这些内部状态给发起人。管理者对备忘录进行管理，提供保存与获取备忘录的功能。<br>
+<img src="https://usuichi.github.io/post-images/1613197071247.png" alt="备忘录模式结构" loading="lazy"></li>
+<li>实现：<code>java.io.Serializable</code>使用备忘录对象将一个对象的内部状态快照存储在外部，之后可还原到当初的状态。</li>
+</ul>
+<h2 id="解释器模式interpreter">解释器模式(Interpreter)</h2>
+<ul>
+<li>概念：给分析对象定义一个语言，并定义该语言的文法表示，再设计一个解析器来解释语言中的句子。也就是说，用编译语言的方式来分析应用中的实例。这种模式实现了文法表达式处理的接口，该接口解释一个特定的上下文。</li>
+<li>模式结构：
+<ul>
+<li>抽象表达式（Abstract Expression）角色：定义解释器的接口，约定解释器的解释操作，主要包含解释方法 interpret()。</li>
+<li>终结符表达式（Terminal Expression）角色：是抽象表达式的子类，用来实现文法中与终结符相关的操作，文法中的每一个终结符都有一个具体终结表达式与之相对应。</li>
+<li>非终结符表达式（Nonterminal Expression）角色：也是抽象表达式的子类，用来实现文法中与非终结符相关的操作，文法中的每条规则都对应于一个非终结符表达式。</li>
+<li>环境（Context）角色：通常包含各个解释器需要的数据或是公共的功能，一般用来传递被所有解释器共享的数据，后面的解释器可以从这里获取这些值。</li>
+<li>客户端（Client）：主要任务是将需要分析的句子或表达式转换成使用解释器对象描述的抽象语法树，然后调用解释器的解释方法，当然也可以通过环境角色间接访问解释器的解释方法。<br>
+<img src="https://usuichi.github.io/post-images/1613224792426.gif" alt="解释器模式结构" loading="lazy"></li>
+</ul>
+</li>
+<li>实现：<code>java.util.Pattern</code>、<code>java.text.Format</code></li>
+</ul>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/lesslessjava-bing-fa-shi-xian-yuan-li-greatergreater-du-shu-bi-ji/">
+                  <h3 class="post-title">
+                    《Java并发实现原理》读书笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>

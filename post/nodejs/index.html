@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《Node.js实战》阅读笔记 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1619096785649">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+Node.js编程基础
+
+模块系统
+异步编程
+
+
+Web应用
+
+Node HTTP服务器
+RESTful Web服务
+
+
+Connect
+Express
+Web程序模板
+
+
+Node.js编程基础
+
+Node.js的目的是提供简单高效的底..." />
+    <meta name="keywords" content="node.js" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1619096785649" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《Node.js实战》阅读笔记</h2>
+            <div class="post-date">2020-09-21</div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#nodejs%E7%BC%96%E7%A8%8B%E5%9F%BA%E7%A1%80">Node.js编程基础</a>
+<ul>
+<li><a href="#%E6%A8%A1%E5%9D%97%E7%B3%BB%E7%BB%9F">模块系统</a></li>
+<li><a href="#%E5%BC%82%E6%AD%A5%E7%BC%96%E7%A8%8B">异步编程</a></li>
+</ul>
+</li>
+<li><a href="#web%E5%BA%94%E7%94%A8">Web应用</a>
+<ul>
+<li><a href="#node-http%E6%9C%8D%E5%8A%A1%E5%99%A8">Node HTTP服务器</a></li>
+<li><a href="#restful-web%E6%9C%8D%E5%8A%A1">RESTful Web服务</a></li>
+</ul>
+</li>
+<li><a href="#connect">Connect</a></li>
+<li><a href="#express">Express</a></li>
+<li><a href="#web%E7%A8%8B%E5%BA%8F%E6%A8%A1%E6%9D%BF">Web程序模板</a></li>
+</ul>
+</p>
+<h1 id="nodejs编程基础">Node.js编程基础</h1>
+<ul>
+<li>Node.js的目的是提供简单高效的底层API，把其他处理逻辑留给第三方框架。</li>
+</ul>
+<h2 id="模块系统">模块系统</h2>
+<ul>
+<li>模块系统：避免了对全局作用域的污染，也就避免了命名冲突，并简化了代码的重用。
+<ul>
+<li>模块既可能是一个文件，也可能是包含一个或多个文件的目录。</li>
+<li>允许从被引入的文件中选择要暴露给程序的函数和变量。</li>
+<li>设定exports对象的属性来指明模块返回的多个函数或变量；设定module.exports属性指定只返回一个函数或变量。</li>
+<li>使用模块需要调用require函数，该函数以模块的路径为参数。Node以同步的方式定位并加载它。</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://usuichi.github.io/post-images/1600743303252.png" alt="查找模块的步骤" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://usuichi.github.io/post-images/1600743402922.png" alt="在模块目录中查找定义模块的文件" loading="lazy"></figure>
+<h2 id="异步编程">异步编程</h2>
+<ul>
+<li>回调：通常用来定义一次性响应的逻辑。它是一个函数，被当做参数传给异步函数，描述了异步操作完成之后要做什么。</li>
+<li>事件监听器：通常用来定义处理重复性事件的逻辑。是与一个事件相关联的回调。</li>
+<li>事件发射器：一个可以被继承、能够添加事件发射及处理能力的类。一个Node HTTP服务器实例就是一个事件发射器。</li>
+<li>串行流程控制：把任务按预期的执行顺序放到一个数组中。这个数组将起到队列的作用，完成一个任务后按顺序从数组中取出下一个。
+<ul>
+<li>工具：Nimble、Step、Seq</li>
+</ul>
+</li>
+<li>并行流程控制：把任务放到数组中，但任务的存放顺序无关紧要。每个任务都应该调用处理器函数增加已完成任务的计数值。当所有任务都完成后，处理器函数应该执行后续的逻辑。</li>
+</ul>
+<h1 id="web应用">Web应用</h1>
+<h2 id="node-http服务器">Node HTTP服务器</h2>
+<figure data-type="image" tabindex="3"><img src="https://usuichi.github.io/post-images/1600750869264.png" alt="HTTP请求的生命周期" loading="lazy"></figure>
+<h2 id="restful-web服务">RESTful Web服务</h2>
+<ul>
+<li>创建标准的REST服务器需要实现四个HTTP谓词。每个谓词会覆盖一个待办事项清单的操作任务：
+<ol>
+<li>POST：向待办事项清单中添加事项。</li>
+<li>GET：显示当前事项列表，或者显示某一事项的详情。</li>
+<li>DELETE：从待办事项清单中移除事项。</li>
+<li>PUT：修改已有事项。</li>
+</ol>
+</li>
+<li>提供静态文件服务：<br>
+<img src="https://usuichi.github.io/post-images/1600761699074.png" alt="HTTP服务器从文件系统中提供静态文件" loading="lazy"></li>
+</ul>
+<h1 id="connect">Connect</h1>
+<ul>
+<li>Connect是一个框架，它使用被称为中间件的模块化组件，以可重用的方式实现Web程序中的逻辑。
+<ul>
+<li>中间件组件:是一个函数，它拦截HTTP服务器提供的请求和响应对象，执行逻辑，然后或者结束响应，或者把它传递给下一个中间件组件。</li>
+<li>分派器：用于把中间件“连接”在一起。</li>
+<li>Express框架就是基于Connect框架构建的。</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://usuichi.github.io/post-images/1600762449591.png" alt="请求经过Connect服务的的生命周期" loading="lazy"></figure>
+<ul>
+<li>工作机制：中间件组件是一个JavaScript函数，它会接受三个参数，一个请求对象，一个响应对象，还有一个通常命名为next的参数，它是一个回调函数，表明这个组件已经完成了它的工作，可以执行下一个中间件组件了。</li>
+</ul>
+<figure data-type="image" tabindex="5"><img src="https://usuichi.github.io/post-images/1600763851863.png" alt="路由器组件的流程图" loading="lazy"></figure>
+<ul>
+<li>Connect自带中间件：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cookieParser()</td>
+<td>为后续中间件提供req.cookies和req.signedCookies</td>
+</tr>
+<tr>
+<td>bodyParser()</td>
+<td>为后续中间件提供req.body 和 req.files</td>
+</tr>
+<tr>
+<td>limit()</td>
+<td>基于给定字节长度限制请求主体的大小。必须用在bodyParser中间件之前</td>
+</tr>
+<tr>
+<td>query()</td>
+<td>为后续中间件提供req.query</td>
+</tr>
+<tr>
+<td>logger()</td>
+<td>将HTTP请求的信息输出到stdout或日志文件之类的流中</td>
+</tr>
+<tr>
+<td>favicon()</td>
+<td>响应 /favicon.ico HTTP 请求。通常放在中间件logger前面，这样它就不会出现在你的日志文件中了</td>
+</tr>
+<tr>
+<td>methodOverride()</td>
+<td>可以替不能使用正确请求方法的浏览器仿造req.method，依赖于bodyParser</td>
+</tr>
+<tr>
+<td>vhost()</td>
+<td>根据指定的主机名（比如nodejs.org）使用给定的中间件和/或HTTP服务器实例</td>
+</tr>
+<tr>
+<td>session()</td>
+<td>为用户设置一个HTTP会话，并提供一个可以跨越请求的持久化req.session对象。依赖于cookieParser</td>
+</tr>
+<tr>
+<td>basicAuth()</td>
+<td>为程序提供HTTP基本认证</td>
+</tr>
+<tr>
+<td>csrf()</td>
+<td>防止HTTP表单中的跨站请求伪造攻击，依赖于session</td>
+</tr>
+<tr>
+<td>errorHandler()</td>
+<td>当出现错误时把堆栈跟踪信息返回给客户端。在开发时很实用，不过不要用在生产环境中</td>
+</tr>
+<tr>
+<td>static()</td>
+<td>把指定目录中的文件发给HTTP客户端。跟Connect的挂载功能配合得很好</td>
+</tr>
+<tr>
+<td>compress()</td>
+<td>用gzip压缩优化HTTP响应</td>
+</tr>
+<tr>
+<td>directory()</td>
+<td>为HTTP客户端提供目录清单服务，基于客户端的Accept请求头（普通文本，JSON或HTML）提供经过优化的结果</td>
+</tr>
+</tbody>
+</table>
+<h1 id="express">Express</h1>
+<ul>
+<li>配置：由环境变量NODE_ENV驱动的5个方法。
+<ul>
+<li>app.configure()：接受一个表示环境的可选字符串，以及一个函数。当环境与传入的字符串相匹配时，回调函数会被立即调用；当只给出函数时，在所有环境中都会调用它。</li>
+<li>app.set()：分配给name一个value，并将name作为settings的一个属性。</li>
+<li>app.get()：获得通过app.set()设置的值。</li>
+<li>app.enable()：相当于set(name, true)。</li>
+<li>app.disable()：相当于set(name, false)。</li>
+</ul>
+</li>
+<li>渲染视图：把数据传给视图，然后数据会被转换，通常是变成Web程序中的HTML。在程序层面用app.render()，在请求或响应层面用res.render()，直接传给res.render()的值优先级要高于通过res.locals和app.locals设定的值。
+<ul>
+<li>Express默认只会向视图中输出一个程序级变量，settings，这个对象中包含所有用app.set()设定的值。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-javascript">// 1. 改变查找目录：
+// Node中的__dirname（前面有两个下划线）是一个全局变量，用来确定当前运行的文件所在的目录。
+app.set('views', __dirname + '/views');
+// 2. 设置默认查找引擎
+app.set('view engine', 'jade');
+// 3. 默认启用视图缓存
+// 在view cache被禁用时，每次请求都会从硬盘上读取模板。在view cache被启用时，每个模板只会读取一次硬盘。
+app.enable('view cache');
+</code></pre>
+<pre><code>- 视图的查找流程：
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://usuichi.github.io/post-images/1600771078708.png" alt="视图的查找流程" loading="lazy"></figure>
+<h1 id="web程序模板">Web程序模板</h1>
+<ul>
+<li>MVC：<br>
+<img src="https://usuichi.github.io/post-images/1600772299578.png" alt="MVC程序流程以及它跟模板层的交互" loading="lazy"></li>
+<li>常见模板引擎：
+<ul>
+<li>Embedded JavaScript（EJS）引擎</li>
+<li>遵循极简主义的Hogan引擎</li>
+<li>Jade模板引擎</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/704uL1kPR/" class="tag">
+                    node.js
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/JavaScript/">
+                  <h3 class="post-title">
+                    《JavaScript高级程序设计(第4版)》阅读笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>

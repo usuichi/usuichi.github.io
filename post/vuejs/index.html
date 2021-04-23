@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>《深入浅出Vue.js》阅读笔记 | wzl&#39;s blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://usuichi.github.io/favicon.ico?v=1619096785649">
+<link rel="stylesheet" href="https://usuichi.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-173955752-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-173955752-1');
+</script>
+
+
+    <meta name="description" content="
+基础概念
+变化侦测
+
+Object的变化侦测
+Array的变化侦测
+变化侦测相关API
+
+vm.$watch
+vm.$set
+vm.$delete
+
+
+
+
+虚拟DOM
+
+概念
+VNode
+patch
+
+
+模板编译原理
+整体流程
+
+实例方法..." />
+    <meta name="keywords" content="vue.js" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://usuichi.github.io">
+        <img src="https://usuichi.github.io/images/avatar.png?v=1619096785649" class="site-logo">
+        <h1 class="site-title">wzl&#39;s blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            Home
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            Archives
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            Tags
+          </a>
+        
+      
+        
+          <a href="https://usuichi.github.io/post/about-me" class="site-nav">
+            About
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      A programmer's reading notes.
+    </div>
+    <div class="site-footer">
+       | <a class="rss" href="https://usuichi.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">《深入浅出Vue.js》阅读笔记</h2>
+            <div class="post-date">2020-09-22</div>
+            
+            <div class="post-content" v-pre>
+              <p><ul class="markdownIt-TOC">
+<li><a href="#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5">基础概念</a></li>
+<li><a href="#%E5%8F%98%E5%8C%96%E4%BE%A6%E6%B5%8B">变化侦测</a>
+<ul>
+<li><a href="#object%E7%9A%84%E5%8F%98%E5%8C%96%E4%BE%A6%E6%B5%8B">Object的变化侦测</a></li>
+<li><a href="#array%E7%9A%84%E5%8F%98%E5%8C%96%E4%BE%A6%E6%B5%8B">Array的变化侦测</a></li>
+<li><a href="#%E5%8F%98%E5%8C%96%E4%BE%A6%E6%B5%8B%E7%9B%B8%E5%85%B3api">变化侦测相关API</a>
+<ul>
+<li><a href="#vmwatch"><code>vm.$watch</code></a></li>
+<li><a href="#vmset"><code>vm.$set</code></a></li>
+<li><a href="#vmdelete"><code>vm.$delete</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E8%99%9A%E6%8B%9Fdom">虚拟DOM</a>
+<ul>
+<li><a href="#%E6%A6%82%E5%BF%B5">概念</a></li>
+<li><a href="#vnode">VNode</a></li>
+<li><a href="#patch">patch</a></li>
+</ul>
+</li>
+<li><a href="#%E6%A8%A1%E6%9D%BF%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86">模板编译原理</a></li>
+<li><a href="#%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B">整体流程</a>
+<ul>
+<li><a href="#%E5%AE%9E%E4%BE%8B%E6%96%B9%E6%B3%95">实例方法</a></li>
+<li><a href="#%E5%85%A8%E5%B1%80api">全局API</a></li>
+<li><a href="#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F">生命周期</a></li>
+<li><a href="#%E6%8C%87%E4%BB%A4">指令</a></li>
+<li><a href="#%E8%BF%87%E6%BB%A4%E5%99%A8">过滤器</a></li>
+</ul>
+</li>
+</ul>
+</p>
+<h1 id="基础概念">基础概念</h1>
+<ul>
+<li>渐进式框架：将框架分层，可以先使用其基础功能，然后在此基础上逐渐增加使用所需要的其他的功能。
+<ul>
+<li>由最内层到最外层：声明式渲染-&gt;组件机制-&gt;路由机制-&gt;状态管理-&gt;构建工具</li>
+</ul>
+</li>
+<li>响应式系统：Vue中数据模型仅仅是普通的JavaScript对象。而它们被修改时，视图会进行更新。</li>
+<li>渲染：从状态生成DOM，再输出到用户界面显示的一整套流程。</li>
+<li>声明式渲染：Vue使用 &quot;模板语法&quot; 来将数据渲染进DOM系统。</li>
+<li>事件循环：JavaScript是一门单线程且非阻塞的脚本语言，这意味着JavaScript代码在执行的任何时候都只有一个主线程来处理所有任务。而非阻塞是指当代码需要处理异步任务时，主线程会挂起(pending)这个任务，当异步任务处理完毕后，JavaScript会将这个事件加入一个队列（事件队列，微任务和宏任务在不同的队列中）中，被放入事件队列中的事件不会立刻执行回调，而是等待执行栈中的所有任务执行完毕后，主线程会去检查微任务队列中是否有事件存在，如果存在则会依次执行微任务队列中事件对应的回调，直到为空，然后去宏任务队列中取出一个事件，把对应的回调加入当前执行栈，当执行栈中的所有任务都执行完毕后，再重复检查微任务队列中是否有任务存在。</li>
+<li>执行栈：</li>
+</ul>
+<h1 id="变化侦测">变化侦测</h1>
+<ul>
+<li>作用：侦测数据的变化，当数据变化时，会通知视图进行相应的更新。</li>
+<li>方式：
+<ul>
+<li>推(Push)：当状态发生改变，通过变化侦测技术，框架就立即知道了，可以进行细粒度的更新。
+<ul>
+<li>Vue实现了推。</li>
+</ul>
+</li>
+<li>拉(Pull)：当状态发生变化时，不知道哪个状态变了，但是知道状态发生了变化，就发送一个信号告诉框架，框架内部收到信号后，会进行暴力比对找出哪些DOM节点需要重新渲染。
+<ul>
+<li>Angular、React实现了拉。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="object的变化侦测">Object的变化侦测</h2>
+<ul>
+<li>实现：
+<ul>
+<li>Object.defineProperty</li>
+<li>Proxy：ES6中实现。</li>
+</ul>
+</li>
+<li>追踪变化（以Object.defineProperty为例）：在getter中收集依赖，即了解哪些地方用到了该属性；在setter中触发依赖，即属性发生变化就将已经收集好的依赖全部触发一遍使其更新。
+<ul>
+<li>收集什么：专门有一个对依赖进行抽象的类Watcher，在依赖收集阶段只收集这个类的实例进来，通知也只通知它一个，由它负责通知其他地方。</li>
+<li>收集到哪：专门有一个管理依赖的类Dep，类中持有一个数组，将依赖收集到该类中。</li>
+<li>怎么收集：Watcher的getter方法会将自身收集到Dep中。</li>
+<li>怎么触发：Watcher中有update方法，每当属性变化，就调用该方法，它调用回调函数进行触发。</li>
+<li>Observer类：为了使数据中的所有属性及子属性都能被侦测到而设置的封装类。它将数据的所有属性及子属性都转换成getter/setter形式，然后追踪它们的变化。</li>
+<li>这种方法无法追踪新增属性和删除属性。（通过vm.$set/vm.$deleteAPI解决此问题。）<br>
+<img src="https://usuichi.github.io/post-images/1600786042497.png" alt="Data/Observer/Dep和Watcher之间的关系" loading="lazy"></li>
+</ul>
+</li>
+<li>Data/Observer/Dep和Watcher之间的关系：
+<ul>
+<li>Data通过Observer转换成了getter/setter的形式来追踪变化。</li>
+<li>当外界通过Watcher 读取数据时，会触发getter从而将Watcher收集到依赖中。</li>
+<li>当数据发生了变化时会触发setter，从而向Dep中的Watcher依赖发送通知。</li>
+<li>Watcher接收到通知后，会向外界发送通知，变化通知到外界后可能会触发视图更新，也有可能触发用户的某个回调函数等。</li>
+</ul>
+</li>
+</ul>
+<h2 id="array的变化侦测">Array的变化侦测</h2>
+<ul>
+<li>与Object的不同点：可以通过Array原型上的方法来访问和改变数组的内容，不会触发getter/setter。</li>
+<li>思路：用一个拦截器覆盖Array.prototype。之后每当使用Array原型上的方法操作数组时，执行的都是拦截器中提供的方法。
+<ul>
+<li>Array原型中可以改变自身内容的方法有7个，分别是push/pop/shift/unshift/splice/sort/reverse。</li>
+<li>定义拦截器，在Observer中使用拦截器覆盖那些即将被转换成响应式Array类型的数据的原型（使用<code>__proto__</code>覆盖原型，如果不支持<code>__proto</code>就直接将arrayMethods身上的这些方法设置到被侦测的数组上）。</li>
+<li>Array在getter中收集依赖，在拦截器中触发依赖，依赖列表dep存放在Observer中。通过Observer的实例的dep执行depend()方法收集依赖。使用dep.notify()去通知依赖(Watcher)数据发生了改变。</li>
+<li>通过数组数据的<code>__ob__</code>属性可以获取Observer实例（该属性表示这个数据已经被侦测了，是响应式的），然后就可以获取Observer实例的dep。</li>
+<li>使用observeArray方法循环Array中的每一项，执行observe()来递归地侦测所有子元素的变化。</li>
+</ul>
+</li>
+</ul>
+<h2 id="变化侦测相关api">变化侦测相关API</h2>
+<h3 id="vmwatch"><code>vm.$watch</code></h3>
+<ul>
+<li><code>vm.$watch</code>其实是对Watcher的一种封装，增加的deep和immediate的功能。</li>
+<li><code>vm.$watch(expOrFn, callback, [options])</code>：
+<ul>
+<li>参数：
+<ul>
+<li><code>{string | Function} expOrFn</code>：被观察的表达式(只接受以点分隔的路径)或computed函数(computed：当其依赖的属性的值发生变化时，计算属性会重新计算，反之则使用缓存中的属性值。)</li>
+<li><code>{Function | Object} callback</code>：回调函数，参数为新数据(newVal)和旧数据(oldVal)。</li>
+<li><code>{Object} [options]</code>
+<ul>
+<li><code>{boolean} deep</code>：为true时可以发现对象内部值的变化。(监听变动的数组时不需要这么做)</li>
+<li><code>{boolean} immediate</code>：为true时立即以表达式的当前值触发回调。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>返回值：
+<ul>
+<li><code>{Function} unwatch</code>：返回一个取消观察函数，用来停止触发回调。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="vmset"><code>vm.$set</code></h3>
+<ul>
+<li><code>vm.$set</code>主要用于避开Vue不能侦测属性被添加的限制。</li>
+<li><code>vm.$set(target, key, value)</code></li>
+<li>参数：
+<ul>
+<li><code>{Object | Array} target</code>：要添加属性的object。</li>
+<li><code>{string | number} key</code>：要添加的属性名。</li>
+<li><code>{any} value</code>：要添加的属性值。</li>
+</ul>
+</li>
+<li>返回值：
+<ul>
+<li><code>{Function} unwatch</code>：返回一个取消观察函数，用来停止触发回调。</li>
+</ul>
+</li>
+</ul>
+<h3 id="vmdelete"><code>vm.$delete</code></h3>
+<ul>
+<li><code>vm.$delete</code>主要用于避开Vue不能侦测属性被删除的限制。</li>
+<li><code>vm.$delete(target ,key)</code></li>
+<li>参数：
+<ul>
+<li><code>{Object | Array} target</code>：要删除属性的object。</li>
+<li><code>{string | number} key/index</code>：要删除的属性名或下标。</li>
+</ul>
+</li>
+</ul>
+<h1 id="虚拟dom">虚拟DOM</h1>
+<h2 id="概念">概念</h2>
+<ul>
+<li>命令式操作DOM的问题：简单易用，但随着业务逻辑复杂，程序中的状态难以管理，代码逻辑也很混乱。</li>
+<li>Vue使用声明式操作DOM的方法：通过描述状态和DOM之间的映射关系是怎么样的，就可以将状态渲染成视图，关于状态到视图的转换过程，由框架负责实现，不需要写出如何操作DOM的过程。</li>
+<li>如何确定状态中发生了什么变化以及需要在哪里更新DOM：虚拟DOM的解决方式是通过状态生成一个虚拟节点(Virtual Node, vnode)树，然后使用虚拟节点树进行渲染。在渲染之前，会使用新生成的虚拟节点树和上一次生成的虚拟节点树进行对比，只渲染不同的部分。</li>
+<li>Vue2.0开始使用一个中等粒度的方案：每个组件有一个watcher实例观察组件内节点的状态变化，当状态发生变化时，只能通知到组件，然后组件内部通过虚拟DOM进行比对与渲染。</li>
+<li>模板转换成视图的过程：Vue通过编译将模板转换为渲染函数(render)，执行渲染函数就可以得到一个虚拟节点树，使用这个虚拟节点树就可以渲染页面。
+<ul>
+<li>在patch中将当前vnode与oldVnode进行比对，判断出哪些节点发生了变化，从而只对发生了变化的节点进行更新操作。<br>
+<img src="https://usuichi.github.io/post-images/1600858660673.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+</ul>
+<h2 id="vnode">VNode</h2>
+<ul>
+<li>VNode可以理解为节点描述对象，它描述了应该怎样去创建真实的DOM节点，一个VNode表示一个真实的DOM元素，所有真实的DOM节点都使用VNode创建并插入到页面中。
+<ul>
+<li>渲染视图的过程：先创建vnode，再使用vnode去生成真实的DOM元素，最后插入到页面渲染视图。将上一次渲染视图时所创建的vnode缓存起来，之后每当需要重新渲染视图时，将新创建的vnode和上一次缓存的vnode进行对比，查看它们之间有哪些不一样的地方，找出这些不一样的地方并基于此去修改真实的DOM。</li>
+</ul>
+</li>
+<li>vnode的类型：不同类型的vnode只是有效属性不同，无效属性会默认被赋值为undefined或false。
+<ul>
+<li>注释节点：text、isComment</li>
+<li>文本节点：text</li>
+<li>元素节点：tag(节点名称)、data(节点数据)、children(子节点列表)、context(当前组建的Vue.js实例)</li>
+<li>组件节点：componentOptions(组件节点的选项参数，包含propsData/tag/children等)、componentInstance(组件的实例，也是Vue.js的实例)</li>
+<li>函数式组件：functionalContext、functionalOptions</li>
+<li>克隆节点：isCloned</li>
+</ul>
+</li>
+</ul>
+<h2 id="patch">patch</h2>
+<ul>
+<li>patch用于将vnode渲染成真实的DOM。对现有DOM进行修改需要做三件事：
+<ul>
+<li>创建新增的节点。</li>
+<li>删除已经废弃的节点。</li>
+<li>修改需要更新的节点。<br>
+<img src="https://usuichi.github.io/post-images/1600863269824.png" alt="patch运行流程" loading="lazy"></li>
+</ul>
+</li>
+<li>新增节点：
+<ul>
+<li>只有元素节点(有效tag属性)、注释节点(有效isComment属性)、文本节点(不是前两种)会被创建并插入到DOM中。<br>
+<img src="https://usuichi.github.io/post-images/1600863842445.png" alt="创建节点的流程" loading="lazy"></li>
+</ul>
+</li>
+<li>删除节点：
+<ul>
+<li>当一个节点只在oldVnode存在时，这时就需要从DOM中删除。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-javascript">function removeVnodes (vnodes, startIdx, endIdx) {
+    for (; startIdx &lt;= endIdx; ++startIdx) {
+        const ch = vnodes[startIdx];
+        if (isDef(ch)) {
+            removeNode(ch.elm);
+        }
+    }
+}
+</code></pre>
+<pre><code>- 过程就是删除vnodes数组中从startIdx指定的位置到endIdx指定位置的内容。
+</code></pre>
+<ul>
+<li>更新节点：
+<ul>
+<li>静态节点：指那些一旦渲染到界面上之后，无论状态如何变化都不会发生任何变化的节点。判断出静态节点后就可以跳过更新节点的操作过程。<br>
+<img src="https://usuichi.github.io/post-images/1600864311736.png" alt="更新节点的流程" loading="lazy"></li>
+</ul>
+</li>
+<li>更新子节点：
+<ul>
+<li>更新策略：大概可以分为四种操作，即更新节点、新增节点、删除节点、移动节点位置。</li>
+<li>优化策略：尝试使用相同位置的两个节点来比对是否是同一节点，如果是，直接进入节点更新操作，如果不是，再用循环的方式查找节点。</li>
+</ul>
+</li>
+</ul>
+<h1 id="模板编译原理">模板编译原理</h1>
+<ul>
+<li>模板编译规定的是如何让虚拟DOM拿到vnode，之后才是上一节虚拟DOM拿到vnode后所做的事。
+<ul>
+<li>模板编译的主要目标就是生成渲染函数。</li>
+<li>渲染函数的作用是每次执行它，它就会使用当前最新的状态生成一份新的vnode，然后使用这个vnode进行渲染。<br>
+<img src="https://usuichi.github.io/post-images/1600868615923.png" alt="模板编译在整个渲染过程中的位置" loading="lazy"></li>
+</ul>
+</li>
+<li>模板编译的步骤：
+<ol>
+<li>解析器模块：将模板解析成抽象语法树(Abstract Syntax Tree, AST)。</li>
+<li>优化器模块：遍历AST标记静态节点，在虚拟DOM中更新节点时，如果发现节点有这个标记，就不会重新渲染它。</li>
+<li>代码生成器：使用AST生成渲染函数。</li>
+</ol>
+</li>
+<li>解析器：内部有很多小解析器，通过一条主线将这些解析器组装在一起。
+<ul>
+<li>主线的任务是监听HTML解析器。每当触发钩子函数(hook)时，就生成一个对应的AST节点。生成AST前，会根据类型使用不同的方式生成不同的AST。当HTML解析器把所有模板都解析完毕后，AST也就生成好了。</li>
+<li>带变量的文本需要使用文本解析器二次加工。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-javascript">// HTML解析器的整体逻辑伪代码
+parseHTML(template, {
+    start (tag, attrs, unary){
+        // 每当解析到标签的开始位置时，触发该函数
+    },
+    end (){
+        // 每当解析到标签的结束位置时，触发该函数
+    },
+    chars (text){
+        // 每当解析到文本时，触发该函数
+    },
+    comment (text){
+        // 每当解析到注释时，触发该函数
+    }
+})
+</code></pre>
+<ul>
+<li>优化器：避免一些无用功（标记静态节点使其不会被重新渲染）来提升性能。
+<ul>
+<li>static属性：是否静态节点；staticRoot属性：是否静态根节点。</li>
+<li>静态节点的特征是它的子节点必须是静态节点。</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-javascript">export function optimize (root) {
+    if (!root) return
+    // 第一步：标记所有静态节点
+    markStatic(root)
+    // 第二步：标记所有静态根节点
+    markStaticRoots(root)
+}
+</code></pre>
+<ul>
+<li>代码生成器：将AST转换成渲染函数中的内容，称为“代码字符串”，这个字符串最终导出到外界使用时，会将代码字符串放到函数里，这个函数就叫做渲染函数。
+<ul>
+<li>渲染函数可以生成VNode的原因：渲染函数执行了createElement，而createElement可以创建一个VNode。</li>
+<li>代码生成器其实就是字符串拼接的过程。通过递归AST来生成字符串，最先生成根节点，然后在子节点字符串生成后，将其拼接在根节点的参数中，子节点的子节点拼接在子节点的参数中，这样一层一层地拼接，直到最后拼接成完整的字符串，当字符串拼接好后，会将字符串拼在with中返回给调用者。</li>
+</ul>
+</li>
+<li>AST：用JavaScript中的对象来描述一个节点，一个对象表示一个节点，对象中的属性用来保存节点所需的各种数据。</li>
+</ul>
+<h1 id="整体流程">整体流程</h1>
+<ul>
+<li>Vue.js源码目录结构：
+<ol>
+<li>scripts：与构建相关的脚本和配置文件</li>
+<li>dist：构建后的文件</li>
+<li>flow：Flow的类型声明</li>
+<li>packages：包含vue-server-renderer和vue-template-compiler，它们作为单独的NPM包发布，自动从源码中生成，且始终与Vue.js具有相同的版本。</li>
+<li>test：所有的测试代码</li>
+<li>src：源代码
+<ol>
+<li>compiler：与模板编译相关的代码。</li>
+<li>core：通用的、与平台无关的运行时代码。
+<ol>
+<li>observer：实现变化侦测的代码。</li>
+<li>vdom：实现虚拟DOM的代码。</li>
+<li>instance：Vue.js实例的构造函数和原型方法</li>
+<li>global-api：全局API的代码。</li>
+<li>components：通用的抽象组件。</li>
+</ol>
+</li>
+<li>server：与服务端渲染相关的代码。</li>
+<li>platforms：特定平台代码。</li>
+<li>sfc：单文件组件(.vue文件)解析逻辑</li>
+<li>shared：整个项目的公用工具代码。</li>
+</ol>
+</li>
+<li>types：TypeScript类型定义
+<ol>
+<li>test：类型定义测试</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>Vue.js构建版本：
+<ul>
+<li>完整版：构建后的文件同时包含编译器和运行时。
+<ul>
+<li>如果需要在客户端编译模板 (比如传入一个字符串给 template 选项，或挂载到一个元素上并以其 DOM 内部的 HTML 作为模板)，就将需要加上编译器，即完整版。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-javascript">// 需要编译器
+new Vue({
+  template: '&lt;div&gt;{{ hi }}&lt;/div&gt;'
+})
+ 
+// 不需要编译器
+new Vue({
+  render (h) {
+    return h('div', this.hi)
+  }
+})
+</code></pre>
+<pre><code>- 编译器：负责将模板字符串编译成JavaScript渲染函数。
+- 运行时：负责创建Vue.js实例，渲染视图和使用虚拟DOM实现重新渲染。（体积较小，推荐使用）
+    - 当使用 vue-loader 或 vueify 的时候，*.vue 文件内部的模板会在构建时预编译成JavaScript。你在最终打好的包里实际上是不需要编译器的，所以只用运行时版本即可。
+- UMD：可以通过`&lt;script&gt;`标签直接在浏览器中使用。
+- CommonJS：用来配合比较旧的打包工具。
+- ES Module：用来配合现代的打包工具。
+</code></pre>
+<h2 id="实例方法">实例方法</h2>
+<ul>
+<li>向Vue构造函数的prototype中挂载方法：将Vue构造函数当做参数传给了下面5个函数
+<ul>
+<li>initMixin：被调用时，会向Vue构造函数的prototype中挂载<code>_init</code>方法，该方法实现了一系列初始化操作，包括整个生命周期的流程以及响应式系统流程的启动等。</li>
+<li>stateMixin：被调用时，会向Vue构造函数的prototype中挂载<code>vm.$set</code>、<code>vm.$delete</code>、<code>vm.$watch</code>三个数据相关的实例方法。</li>
+<li>eventsMixin：被调用时，会向Vue构造函数的prototype中挂载<code>vm.$on</code>、<code>vm.$off</code>、<code>vm.$once</code>、<code>vm.$emit</code>四个事件相关的实例方法。</li>
+<li>lifecycleMixin：被调用时，会向Vue构造函数的prototype中挂载<code>vm.$forceUpdate</code>、<code>vm.$destroy</code>两个生命周期相关的实例方法。</li>
+<li>renderMixin：被调用时，会向Vue构造函数的prototype中挂载<code>vm.$nextTick</code>这个与生命周期相关的实例方法。</li>
+</ul>
+</li>
+<li><code>vm.$on(event, callback)</code>：监听当前实例上的自定义事件，事件可以由<code>vm.$emit</code>触发。回调函数会接受所有传入事件所触发的函数的额外参数。
+<ul>
+<li>参数：
+<ul>
+<li><code>{string | Array&lt;string&gt;} event</code>：监听事件。</li>
+<li><code>{Function} callback</code>：回调函数。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>vm.$off([event, callback])</code>：移除自定义事件监听器。如果没有参数就移除所有事件的监听器；如果只提供了事件就移除该事件的所有监听器；如果提供了事件与回调则只移除这个回调的监听器。
+<ul>
+<li>参数：
+<ul>
+<li><code>{string | Array&lt;string&gt;} event</code>：监听事件。</li>
+<li><code>{Function} callback</code>：回调函数。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>vm.$once(event, callback)</code>：监听一个自定义事件，但是只触发一次，在第一次触发之后移除监听器。
+<ul>
+<li>参数：
+<ul>
+<li><code>{string | Array&lt;string&gt;} event</code>：监听事件。</li>
+<li><code>{Function} callback</code>：回调函数。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>vm.$emit(event, [..args])</code>：触发当前实例上的事件，附加参数都回传给监听器回调。
+<ul>
+<li>参数：
+<ul>
+<li><code>{string} event</code>：事件。</li>
+<li><code>[...args]</code>：附加参数。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>vm.$forceUpdate</code>：迫使Vue.js实例重新渲染，它只影响实力本身以及插入插槽内容的子组件。</li>
+<li><code>vm.$destroy</code>：完全销毁一个实例，它会清理该实例与其他实例的连接，并解绑其全部指令及监听器，同时会触发beforeDestroy和destroyed钩子函数。</li>
+<li><code>vm.$nextTick</code>：接收一个回调函数作为参数，它的作用是将回调延迟到下次DOM更新周期之后执行。</li>
+<li><code>vm.$mount</code>：如果Vue.js实例在实例化时没有收到el选项，则它处于“未挂载”状态，没有关联的DOM元素。可以通过此方法手动挂载一个未挂载的实例。
+<ul>
+<li>参数：
+<ul>
+<li><code>{Element | string} [elementOrSelector]</code>：如果没有此参数，模板将被渲染为文档之外的元素，并且必须使用原生DOM的API把它插入文档中。</li>
+</ul>
+</li>
+<li>返回值：实例自身，因此可以链式调用其他实例方法。</li>
+</ul>
+</li>
+</ul>
+<h2 id="全局api">全局API</h2>
+<ul>
+<li><code>Vue.extend(options)</code>：使用基础Vue构造器创建一个“子类”，其参数是一个包含“组件选项”的对象。
+<ul>
+<li>参数：
+<ul>
+<li><code>{Object} options</code>：组件选项。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>Vue.nextTick([callback, context])</code>：在下次DOM更新循环结束之后执行延迟回调，修改数据之后立即使用这个方法获取更新后的DOM。
+<ul>
+<li>参数：
+<ul>
+<li><code>{Function} [callback]</code></li>
+<li><code>{Object} [context]</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>Vue.set(target, key, value)</code>：设置对象的属性，如果对象是响应式的，确保属性被创建后也是响应式的，同时触发视图更新，这个方法主要用于避开Vue不能检测属性被添加的限制。
+<ul>
+<li>参数：
+<ul>
+<li><code>{Object | Array} target</code>：目标对象。</li>
+<li><code>{string | number} key</code>：属性名/属性下标。</li>
+<li><code>{any} value</code>：属性值。</li>
+</ul>
+</li>
+<li>返回值：设置的值。</li>
+</ul>
+</li>
+<li><code>Vue.delete(target ,key)</code>：删除对象的属性。如果对象是响应式的，确保删除能触发更新视图。这个方法主要用于避开Vue.js不能检测到属性被删除的限制。
+<ul>
+<li>参数：
+<ul>
+<li><code>{Object | Array} target</code>：目标对象。</li>
+<li><code>{string | number} key/index</code>：属性名/属性下表</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>Vue.directive(id, [definition])</code>：注册或获取全局指令。
+<ul>
+<li>参数：
+<ul>
+<li><code>{string} id</code>：指令名</li>
+<li><code>{Function | Object} [definition]</code>：指令函数</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>Vue.filter(id ,[definition])</code>：注册或获取全局过滤器。
+<ul>
+<li>参数：
+<ul>
+<li><code>{string} id</code>：过滤器名</li>
+<li><code>{Function | Object} [definition]</code>：过滤器函数</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>Vue.component(id ,[definition])</code>：注册或获取全局组件。
+<ul>
+<li>参数：
+<ul>
+<li><code>{string} id</code>：组件名</li>
+<li><code>{Function | Object} [definition]</code>：组件函数</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>Vue.use(plugin)</code>：安装Vue.js插件。如果插件是一个对象则必须提供install方法，如果插件是一个函数，它会被作为install方法。
+<ul>
+<li>参数：
+<ul>
+<li><code>{Function | Object} plugin</code>：插件</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>Vue.mixin(mixin)</code>：全局注册一个混入(mixin)，影响注册之后创建的每个Vue.js实例。插件作者可以使用混入向组件注入自定义行为，不推荐在代码中使用。
+<ul>
+<li>参数：
+<ul>
+<li><code>{Object} mixin</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>Vue.compile(template)</code>：编译模板字符串并返回包含渲染函数的对象，只在完整版中才有效。
+<ul>
+<li>参数：
+<ul>
+<li><code>{string} template</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>Vue.version</code>：提供字符串形式的Vue.js安装版本号。</li>
+</ul>
+<h2 id="生命周期">生命周期</h2>
+<ul>
+<li>Vue.js实例的生命周期可以分为4个阶段：初始化阶段、模板编译阶段、挂载阶段、卸载阶段。<br>
+<img src="https://usuichi.github.io/post-images/1600934989811.png" alt="生命周期图示" loading="lazy"></li>
+<li>初始化阶段：从new Vue()到created之间的阶段。这个阶段的主要目的是在Vue.js实例上初始化一些属性、事件以及响应式数据，如props/methods/data/computed/watch/provide/inject等。</li>
+<li>模板编译阶段：从created到beforeMount之间的截阶段。这个阶段的主要目的是将模板编译为渲染函数，只存在于完整版中。</li>
+<li>挂载阶段：从beforeMount到mounted之间的阶段。这个阶段的主要目的是将模板渲染到指定的DOM元素中。在运行时的大部分时间下，Vue.js处于已挂在状态，每当状态发生变化时，Vue.js都会通知组件使用虚拟DOM重新渲染，这个状态会持续到组件被销毁。</li>
+<li>卸载阶段：调用<code>vm.$destroy</code>方法后。这个阶段的主要目的是将Vue.js实例自身从父组件中删除，取消实例上所有依赖的追踪并且移除所有的事件监听器。</li>
+</ul>
+<h2 id="指令">指令</h2>
+<ul>
+<li>指令(Directive)是Vue.js提供的带有v-前缀的特殊特性。
+<ul>
+<li>指令属性的值预期是单个JavaScript表达式。</li>
+<li>指令的职责是，当表达式的值改变时，将其产生的连带影响响应式地作用于DOM。</li>
+</ul>
+</li>
+<li>指令原理概述：
+<ol>
+<li>在模板解析阶段，会将节点上的指令解析出来并添加到AST的directives属性中。</li>
+<li>随后directives数据会传递到VNode中</li>
+<li>接着就可以通过vnode.data.directives获取一个节点所绑定的指令。</li>
+<li>最后当虚拟DOM进行修补时，会根据节点的对比结果触发一些钩子函数。（更新指令的程序会监听create/update/destroy钩子函数，并在这三个钩子函数触发时对VNode和OldVNode进行对比，最终根据对比结果触发指令的钩子函数）</li>
+<li>指令的钩子函数被出发后，就说明指令生效了。</li>
+</ol>
+</li>
+<li>常见指令：
+<ul>
+<li><code>v-if/v-else</code></li>
+<li><code>v-for</code></li>
+<li><code>v-on</code>：绑定事件监听器，事件类型由参数指定。</li>
+</ul>
+</li>
+</ul>
+<h2 id="过滤器">过滤器</h2>
+<ul>
+<li>Vue.js允许自定义过滤器来格式化文本。它可以用在两个地方：双花括号插值和v-bind表达式。可以在组件的选项中定义本地过滤器，或者在创建Vue.js实例之前全局定义过滤器。</li>
+<li>过滤器函数总接收表达式的值 (之前的操作链的结果) 作为第一个参数。</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://usuichi.github.io/tag/NkpR3YfCD/" class="tag">
+                    vue.js
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://usuichi.github.io/post/nodejs/">
+                  <h3 class="post-title">
+                    《Node.js实战》阅读笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+  <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad()
+  </script>
+
+
+
+
+
+  </body>
+</html>
